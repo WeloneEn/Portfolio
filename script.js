@@ -9,6 +9,34 @@ const adminNavLink = document.getElementById("adminNavLink");
 const themeToggle = document.getElementById("themeToggle");
 
 const API_IS_AVAILABLE = window.location.protocol === "http:" || window.location.protocol === "https:";
+const META_API_BASE_SELECTOR = 'meta[name="welone-api-base"]';
+
+function resolveApiBase() {
+  const meta = document.querySelector(META_API_BASE_SELECTOR);
+  const metaValue = meta ? String(meta.getAttribute("content") || "").trim() : "";
+  const globalValue = typeof window.WELONE_API_BASE === "string" ? window.WELONE_API_BASE.trim() : "";
+
+  let base = metaValue || globalValue || window.location.origin;
+  base = String(base || "").trim().replace(/\/+$/g, "");
+  if (base.toLowerCase().endsWith("/api")) {
+    base = base.slice(0, -4);
+  }
+
+  return `${base}/`;
+}
+
+const API_BASE = resolveApiBase();
+
+function apiUrl(pathname) {
+  const rel = String(pathname || "").trim().replace(/^\/+/, "");
+  return new URL(rel, API_BASE).toString();
+}
+
+// Expose API helper for admin scripts (admin.js/admin-leads.js).
+window.WELONE_API = window.WELONE_API || {};
+window.WELONE_API.base = API_BASE;
+window.WELONE_API.url = apiUrl;
+
 const VISITOR_STORAGE_KEY = "neon_visitor_id";
 const ADMIN_UNLOCK_KEY = "neon_admin_unlocked";
 const WORKSPACE_KEY = "neon_workspace_mode";
@@ -868,7 +896,7 @@ async function resolveOwnerRoleFromSession() {
   }
 
   try {
-    const response = await fetch("/api/admin/me", {
+    const response = await fetch(apiUrl("/api/admin/me"), {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`
@@ -1077,7 +1105,7 @@ function trackVisit() {
     userAgent: navigator.userAgent || ""
   };
 
-  sendBackgroundJson("/api/visit", payload);
+  sendBackgroundJson(apiUrl("/api/visit"), payload);
 }
 
 trackVisit();
@@ -1101,7 +1129,7 @@ function trackEngagementDuration() {
   }
 
   engagementTracked = true;
-  sendBackgroundJson("/api/engagement", {
+  sendBackgroundJson(apiUrl("/api/engagement"), {
     visitorId: getVisitorId(),
     path: window.location.pathname || "index.html",
     durationMs
@@ -1269,7 +1297,7 @@ if (contactForm) {
     };
 
     try {
-      const response = await fetch("/api/leads", {
+      const response = await fetch(apiUrl("/api/leads"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -1318,7 +1346,7 @@ function trackSecretDiscovery(secretId) {
     return;
   }
 
-  sendBackgroundJson("/api/secret", {
+  sendBackgroundJson(apiUrl("/api/secret"), {
     visitorId: getVisitorId(),
     path: window.location.pathname || "index.html",
     secret

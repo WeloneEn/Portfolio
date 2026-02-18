@@ -19,12 +19,20 @@ const dec = new TextDecoder();
 let schemaReady = null;
 const hmacKeys = new Map();
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Max-Age": "86400"
+};
+
 const json = (status, payload) =>
   new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS
     }
   });
 
@@ -605,6 +613,9 @@ export async function onRequest(context) {
   const method = String(request.method || "GET").toUpperCase();
 
   if (!pathname.startsWith("/api/")) return context.next();
+  if (method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   if (!(env.DB || env.DB1 || env.DATABASE || env.APP_DB || env.db || env.database || env.app_db)) {
     return json(500, { error: "DB_BINDING_MISSING" });
   }

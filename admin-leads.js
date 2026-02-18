@@ -16,6 +16,16 @@ const leadAssigneeFilter = document.getElementById("leadAssigneeFilter");
 
 const apiAllowed = window.location.protocol === "http:" || window.location.protocol === "https:";
 
+function resolveApiUrl(path) {
+  const helper = window.WELONE_API && typeof window.WELONE_API.url === "function" ? window.WELONE_API.url : null;
+  if (helper) {
+    return helper(path);
+  }
+
+  const rel = String(path || "").trim().replace(/^\/+/, "");
+  return new URL(rel, `${window.location.origin}/`).toString();
+}
+
 const roleLabels = {
   owner: "Владелец",
   help: "Help",
@@ -150,7 +160,7 @@ async function apiRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(resolveApiUrl(path), {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined
@@ -176,6 +186,21 @@ async function apiRequest(path, options = {}) {
 }
 
 function handleApiError(error, fallbackMessage) {
+  if (error && error.name === "TypeError") {
+    setText(leadsStatus, "Backend недоступен. Проверьте WELONE_API_BASE в config.js и CORS на backend.", "var(--tone-error)");
+    return;
+  }
+
+  if (error && error.message === "DB_BINDING_MISSING") {
+    setText(leadsStatus, "Backend запущен без базы данных (DB_BINDING_MISSING). Настройте DB/D1 и повторите.", "var(--tone-error)");
+    return;
+  }
+
+  if (error && (error.status === 404 || error.message === "HTTP_404")) {
+    setText(leadsStatus, "API /api не найден (404). GitHub Pages не запускает backend: нужен отдельный сервер/API.", "var(--tone-error)");
+    return;
+  }
+
   if (error && error.status === 401) {
     setText(leadsStatus, "Доступ без авторизации недоступен. Проверьте backend.", "var(--tone-error)");
     return;

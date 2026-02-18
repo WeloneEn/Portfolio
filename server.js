@@ -773,6 +773,18 @@ function collectLastDays(byDay, count) {
 async function handleApi(req, res, urlObject) {
   const { pathname } = urlObject;
 
+  // Allow calling the API from a separately hosted frontend (например, GitHub Pages).
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Max-Age", "86400");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   if (pathname === "/api/health" && req.method === "GET") {
     sendJson(res, 200, { ok: true, time: new Date().toISOString() });
     return;

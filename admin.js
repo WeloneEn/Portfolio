@@ -29,6 +29,16 @@ let permissions = {};
 let isBusy = false;
 let adminUsers = [];
 
+function resolveApiUrl(path) {
+  const helper = window.WELONE_API && typeof window.WELONE_API.url === "function" ? window.WELONE_API.url : null;
+  if (helper) {
+    return helper(path);
+  }
+
+  const rel = String(path || "").trim().replace(/^\/+/, "");
+  return new URL(rel, `${window.location.origin}/`).toString();
+}
+
 function setText(element, message, color) {
   if (!element) {
     return;
@@ -230,6 +240,26 @@ function renderAdminUsers() {
   });
 }
 
+function resolveAdminLoadError(error, fallbackMessage) {
+  if (!error) {
+    return fallbackMessage;
+  }
+
+  if (error.name === "TypeError") {
+    return "Backend недоступен. Проверьте WELONE_API_BASE в config.js и CORS на backend.";
+  }
+
+  if (error.message === "DB_BINDING_MISSING") {
+    return "Backend запущен без базы данных (DB_BINDING_MISSING). Настройте DB/D1 и повторите.";
+  }
+
+  if (error.status === 404 || error.message === "HTTP_404") {
+    return "API /api не найден (404). GitHub Pages не запускает backend: нужен отдельный сервер/API.";
+  }
+
+  return fallbackMessage;
+}
+
 function resolveAdminUserError(error, fallbackMessage) {
   if (error.status === 401) {
     return "Доступ без авторизации недоступен. Проверьте backend.";
@@ -353,7 +383,7 @@ async function apiRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(resolveApiUrl(path), {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined
@@ -403,7 +433,7 @@ async function refreshDashboard() {
     await loadStats();
     setText(adminStatus, "Данные обновлены.", "var(--tone-ok)");
   } catch (error) {
-    setText(adminStatus, "Не удалось обновить данные.", "var(--tone-error)");
+    setText(adminStatus, resolveAdminLoadError(error, "Не удалось обновить данные."), "var(--tone-error)");
   } finally {
     setBusyState(false);
   }
@@ -420,7 +450,7 @@ async function restoreSession() {
     await loadStats();
     setText(adminStatus, "Панель готова к работе.", "var(--tone-info)");
   } catch (error) {
-    setText(adminStatus, "Не удалось загрузить панель.", "var(--tone-error)");
+    setText(adminStatus, resolveAdminLoadError(error, "Не удалось загрузить панель."), "var(--tone-error)");
   } finally {
     setBusyState(false);
   }
