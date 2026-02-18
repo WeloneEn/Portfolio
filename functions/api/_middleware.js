@@ -640,6 +640,7 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const { pathname } = url;
   const method = String(request.method || "GET").toUpperCase();
+  const debug = url.searchParams.get("debug") === "1";
 
   if (!pathname.startsWith("/api/")) return context.next();
   if (method === "OPTIONS") {
@@ -654,6 +655,8 @@ export async function onRequest(context) {
 
   try {
     if (pathname === "/api/health" && method === "GET") {
+      // Make /api/health reflect DB readiness (schema + first row).
+      await ensureSchema(env);
       return json(200, { ok: true, time: new Date().toISOString() });
     }
 
@@ -1213,7 +1216,14 @@ export async function onRequest(context) {
 
     return json(404, { error: "API_ROUTE_NOT_FOUND" });
   } catch (error) {
+    const message = String(error?.message || "");
     console.error("API error:", error);
-    return json(500, { error: "INTERNAL_SERVER_ERROR" });
+
+    // Expose the exact error only in debug mode, to avoid leaking internals by default.
+    if (debug && message) {
+      return json(500, { error: message });
+    }
+
+    return json(500, { error: "INTERNAL_SERVER_ERROR", hint: "Open /api/health?debug=1 to inspect the error." });
   }
 }
