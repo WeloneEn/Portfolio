@@ -31,7 +31,7 @@ function isD1Database(candidate) {
     Boolean(candidate) &&
     typeof candidate === "object" &&
     typeof candidate.prepare === "function" &&
-    typeof candidate.exec === "function"
+    (typeof candidate.exec === "function" || typeof candidate.batch === "function")
   );
 }
 
@@ -540,15 +540,18 @@ async function ensureSchema(env) {
   if (!db) throw new Error("DB_BINDING_MISSING");
   if (schemaReady) return schemaReady;
   schemaReady = (async () => {
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS app_state (
-        id INTEGER PRIMARY KEY CHECK(id = 1),
-        data_json TEXT NOT NULL,
-        admin_users_json TEXT NOT NULL,
-        version INTEGER NOT NULL DEFAULT 1,
-        updated_at TEXT NOT NULL
+    // Avoid db.exec() because some runtime combinations throw opaque errors there.
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS app_state (
+          id INTEGER PRIMARY KEY CHECK(id = 1),
+          data_json TEXT NOT NULL,
+          admin_users_json TEXT NOT NULL,
+          version INTEGER NOT NULL DEFAULT 1,
+          updated_at TEXT NOT NULL
+        )`
       )
-    `);
+      .run();
     await db
       .prepare(
         "INSERT INTO app_state (id, data_json, admin_users_json, version, updated_at) VALUES (1, ?, ?, 1, ?) ON CONFLICT(id) DO NOTHING"
@@ -1221,7 +1224,13 @@ export async function onRequest(context) {
 
     // Expose the exact error only in debug mode, to avoid leaking internals by default.
     if (debug && message) {
-      return json(500, { error: message });
+      const stack = String(error?.stack || "")
+        .split("\n")
+        .slice(0, 10)
+        .join("\n")
+        .trim();
+      const bindingKeys = env && typeof env === "object" ? Object.keys(env) : [];
+      return json(500, { error: message, stack, bindings: bindingKeys });
     }
 
     return json(500, { error: "INTERNAL_SERVER_ERROR", hint: "Open /api/health?debug=1 to inspect the error." });
