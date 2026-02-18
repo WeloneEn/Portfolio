@@ -1,0 +1,110 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05080d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Projects</title>
+  <meta name="description" content="Портфолио проектов и демо-версий сайтов." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z13" />
+  <script defer src="script.js?v=20260218z13"></script>
+</head>
+<body data-page="projects">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a href="about.html">Обо мне</a>
+      <a class="is-active" href="projects.html" aria-current="page">Проекты</a>
+      <a href="contact.html">Контакты</a>
+      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
+      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true" tabindex="-1">Заявки</a>
+      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true" tabindex="-1">Статистика</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">Проекты</p>
+      <h1>Примеры работ</h1>
+      <p>Реальные демо и версии развития одного проекта, от ранней сборки до финала.</p>
+    </section>
+
+    <section class="projects-controls reveal">
+      <div class="projects-controls__head">
+        <h2>Фильтр по типу</h2>
+        <p class="projects-controls__status" id="projectFilterStatus" aria-live="polite">Показаны все проекты.</p>
+      </div>
+      <div class="filters" id="filters">
+        <button class="btn btn--ghost is-active" type="button" data-filter="all">Все</button>
+        <button class="btn btn--ghost" type="button" data-filter="version">Версии</button>
+        <button class="btn btn--ghost" type="button" data-filter="final">Финал</button>
+        <button class="btn btn--ghost" type="button" data-filter="special">Special</button>
+      </div>
+    </section>
+
+    <section class="projects reveal" id="projectsList">
+      <article class="project-card tilt" data-category="version">
+        <p class="project-card__tag">Версия 2</p>
+        <h2>Sashnaz v2</h2>
+        <p>Эволюция структуры и UI по сравнению с базовой версией.</p>
+        <a href="https://weloneen.github.io/sashnaz/index.html">Открыть проект</a>
+      </article>
+
+      <article class="project-card tilt" data-category="version">
+        <p class="project-card__tag">Версия 3</p>
+        <h2>Sashnaz Demo v3</h2>
+        <p>Следующий шаг: улучшенная подача контента и расширенная визуальная часть.</p>
+        <a href="https://weloneen.github.io/sashnazDemo/index.html">Открыть проект</a>
+      </article>
+
+      <article class="project-card tilt" data-category="final">
+        <p class="project-card__tag">Версия 4 / Финал</p>
+        <h2>Sashnaz Final v4</h2>
+        <p>Финальная версия с выверенной структурой и аккуратным дизайном.</p>
+        <a href="https://weloneen.github.io/sashnazdemodemo/index.html">Открыть проект</a>
+      </article>
+
+      <article class="project-card tilt" data-category="special">
+        <p class="project-card__tag">Special Case</p>
+        <h2>Popis Box</h2>
+        <p>Отдельный проект с уникальной подачей контента.</p>
+        <a href="https://weloneen.github.io/popisbox/index.html">Открыть проект</a>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+
+  <button class="filters-jump" id="filtersJump" type="button" aria-label="Перейти к фильтрам">Фильтры</button>
+
+  <dialog class="easter-egg" id="easterEgg">
+    <h2>Спасибо!</h2>
+    <p>Приятного просмотра.</p>
+    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
+  </dialog>
+</body>
+</html>
+
+
+
+
+
+

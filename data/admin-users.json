@@ -1,0 +1,10 @@
+[
+  {
+    "id": "help_helpteam1",
+    "username": "helpteam1",
+    "password": "sashylya",
+    "name": "Сашуля",
+    "role": "help",
+    "department": "sales"
+  }
+]

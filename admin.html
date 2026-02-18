@@ -1,0 +1,125 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05080d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Статистика</title>
+  <meta name="description" content="Панель статистики и заявок." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z13" />
+  <script defer src="script.js?v=20260218z13"></script>
+  <script defer src="admin.js?v=20260218z13"></script>
+</head>
+<body data-page="admin">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier <span class="brand-initial">C</span>ommand</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a class="is-active" href="admin.html" aria-current="page">Статистика</a>
+      <a href="admin-leads.html">Заявки</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">Stats</p>
+      <h1>Статистика</h1>
+      <p>Сводка посещаемости, времени просмотра, пасхалок и заявок с сайта.</p>
+    </section>
+
+    <section class="admin-auth reveal" id="adminAuth" hidden></section>
+
+    <section class="admin-panel reveal" id="adminPanel" hidden>
+      <div class="admin-actions">
+        <button class="btn btn--ghost" id="refreshAdmin" type="button">Обновить</button>
+        <a class="btn btn--ghost" href="admin-leads.html">К заявкам</a>
+      </div>
+      <p class="admin-status" id="adminStatus">Загрузка статистики...</p>
+      <p class="admin-status" id="adminUserMeta"></p>
+      <p class="admin-status" id="adminStatsHint" hidden></p>
+
+      <div class="admin-stats" id="adminStats">
+        <article class="card stat-card">
+          <p>Уникальные посетители сегодня</p>
+          <h2 data-stat="todayUniqueVisitors">0</h2>
+        </article>
+        <article class="card stat-card">
+          <p>Повторные посещения</p>
+          <h2 data-stat="todayRepeatVisits">0</h2>
+        </article>
+        <article class="card stat-card">
+          <p>Среднее время просмотра</p>
+          <h2 data-stat="avgViewTime">0:00</h2>
+        </article>
+        <article class="card stat-card">
+          <p>Найдено пасхалок</p>
+          <h2 data-stat="secretFindsTotal">0</h2>
+        </article>
+        <article class="card stat-card stat-card--action">
+          <p>Заявки с сайта</p>
+          <h2 data-stat="leadsTotal">0</h2>
+          <a class="stat-card__link" href="admin-leads.html">Открыть заявки</a>
+        </article>
+        <article class="card stat-card">
+          <p>Новые заявки</p>
+          <h2 data-stat="leadsNew">0</h2>
+        </article>
+        <article class="card stat-card">
+          <p>Без исполнителя</p>
+          <h2 data-stat="leadsUnassigned">0</h2>
+        </article>
+      </div>
+
+      <article class="card admin-team" id="adminTeamSection">
+        <h2>Сотрудники Help</h2>
+        <form class="admin-team__form" id="adminUserCreateForm" autocomplete="off">
+          <label>
+            Логин
+            <input id="adminCreateUsername" name="username" type="text" required placeholder="Например: help_team1" />
+          </label>
+          <label>
+            Имя
+            <input id="adminCreateName" name="name" type="text" required placeholder="Имя сотрудника" />
+          </label>
+          <label>
+            Отдел
+            <input id="adminCreateDepartment" name="department" type="text" required placeholder="sales / production" />
+          </label>
+          <button class="btn btn--primary" type="submit">Добавить сотрудника</button>
+        </form>
+        <p class="admin-status" id="adminUserStatus">Только владелец может управлять сотрудниками.</p>
+        <div class="admin-team__list" id="adminUserList"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+
+  <dialog class="easter-egg" id="easterEgg">
+    <h2>Спасибо!</h2>
+    <p>Приятного просмотра.</p>
+    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
+  </dialog>
+</body>
+</html>
+
+
+
+
+

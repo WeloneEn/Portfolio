@@ -1,0 +1,106 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05080d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Заявки</title>
+  <meta name="description" content="Распределение заявок по отделам и исполнителям." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z13" />
+  <script defer src="script.js?v=20260218z13"></script>
+  <script defer src="admin-leads.js?v=20260218z13"></script>
+</head>
+<body data-page="admin">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier <span class="brand-initial">C</span>ommand</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a href="admin.html">Статистика</a>
+      <a class="is-active" href="admin-leads.html" aria-current="page">Заявки</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">Leads</p>
+      <h1>Работа с заявками</h1>
+      <p>Назначайте заявки по отделам, распределяйте исполнителей и фиксируйте ход работы по каждому обращению.</p>
+    </section>
+
+    <section class="admin-auth reveal" id="authRequired" hidden></section>
+
+    <section class="admin-panel reveal" id="leadsPanel">
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="admin.html">Статистика</a>
+        <button class="btn btn--ghost" id="refreshLeads" type="button">Обновить</button>
+      </div>
+
+      <p class="admin-status" id="leadsActorMeta"></p>
+      <p class="admin-status" id="leadsStatus">Загрузка заявок...</p>
+
+      <div class="leads-filters">
+        <label class="leads-filters__field" for="leadSearch">
+          <span>Поиск</span>
+          <input id="leadSearch" type="text" placeholder="Имя, контакт, описание..." autocomplete="off" />
+        </label>
+
+        <label class="leads-filters__field" for="leadStatusFilter">
+          <span>Статус</span>
+          <select id="leadStatusFilter">
+            <option value="">Все статусы</option>
+            <option value="new">Новая</option>
+            <option value="in_progress">В работе</option>
+            <option value="done">Завершена</option>
+          </select>
+        </label>
+
+        <label class="leads-filters__field" for="leadDepartmentFilter">
+          <span>Отдел</span>
+          <select id="leadDepartmentFilter">
+            <option value="">Все отделы</option>
+          </select>
+        </label>
+
+        <label class="leads-filters__field" for="leadAssigneeFilter">
+          <span>Исполнитель</span>
+          <select id="leadAssigneeFilter">
+            <option value="">Все исполнители</option>
+            <option value="__none__">Без исполнителя</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="leads-list" id="leadsList"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+
+  <dialog class="easter-egg" id="easterEgg">
+    <h2>Спасибо!</h2>
+    <p>Приятного просмотра.</p>
+    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
+  </dialog>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,91 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05080d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | About</title>
+  <meta name="description" content="О подходе и технологиях веб-разработчика Welone Digital Atelier." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z13" />
+  <script defer src="script.js?v=20260218z13"></script>
+</head>
+<body data-page="about">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a class="is-active" href="about.html" aria-current="page">Обо мне</a>
+      <a href="projects.html">Проекты</a>
+      <a href="contact.html">Контакты</a>
+      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
+      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true" tabindex="-1">Заявки</a>
+      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true" tabindex="-1">Статистика</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">Обо мне</p>
+      <h1>Я проектирую впечатление, а не просто страницы</h1>
+      <p>Собираю сайты как цифровые пространства: с ритмом, интерактивом и точным акцентом на действия пользователя.</p>
+    </section>
+
+    <section class="about-grid reveal">
+      <article class="card">
+        <h2>Подход</h2>
+        <p>Каждый проект строится вокруг сценария: куда пользователь заходит, где задерживается и что делает после просмотра.</p>
+      </article>
+      <article class="card">
+        <h2>Инструменты</h2>
+        <ul class="chip-list">
+          <li>Современная верстка</li>
+          <li>JavaScript</li>
+          <li>Анимации интерфейса</li>
+          <li>Оптимизация скорости</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h2>Сильные стороны</h2>
+        <p>Интерфейсная драматургия, микроанимации, адаптив, чистая структура кода и продуманная архитектура страниц.</p>
+      </article>
+    </section>
+
+    <section class="signal reveal" id="signalScanner">
+      <h2>Ключевые навыки</h2>
+      <p>Наведите курсор на карточку, чтобы увидеть уровень.</p>
+      <div class="signal__grid">
+        <button class="signal__item" type="button" data-level="96" data-skill="UI Engineering">UI Engineering</button>
+        <button class="signal__item" type="button" data-level="91" data-skill="Animation Logic">Animation Logic</button>
+        <button class="signal__item" type="button" data-level="94" data-skill="UX Flow">UX Flow</button>
+        <button class="signal__item" type="button" data-level="89" data-skill="Performance">Performance</button>
+      </div>
+      <p class="signal__output" id="signalOutput">Выберите навык.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+
+  <dialog class="easter-egg" id="easterEgg">
+    <h2>Спасибо!</h2>
+    <p>Приятного просмотра.</p>
+    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
+  </dialog>
+</body>
+</html>

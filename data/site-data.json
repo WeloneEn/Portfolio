@@ -1,0 +1,100 @@
+{
+  "visits": {
+    "totalHits": 216,
+    "uniqueVisitors": 1,
+    "knownVisitors": {
+      "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
+        "firstSeen": "2026-02-16T05:02:38.133Z",
+        "sourcePage": "/index.html",
+        "referrer": "http://localhost:3000/admin.html",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
+        "lastSeen": "2026-02-18T12:09:19.817Z",
+        "lastSecretPage": "/index.html"
+      }
+    },
+    "byDay": {
+      "2026-02-16": {
+        "hits": 162,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      },
+      "2026-02-18": {
+        "hits": 54,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      }
+    }
+  },
+  "engagement": {
+    "totalDurationMs": 1605671,
+    "samplesCount": 76,
+    "byPage": {
+      "/index.html": {
+        "durationMs": 1458123,
+        "samples": 50
+      },
+      "/contact.html": {
+        "durationMs": 48909,
+        "samples": 14
+      },
+      "/about.html": {
+        "durationMs": 50136,
+        "samples": 6
+      },
+      "/projects.html": {
+        "durationMs": 42994,
+        "samples": 5
+      },
+      "/": {
+        "durationMs": 5509,
+        "samples": 1
+      }
+    }
+  },
+  "secrets": {
+    "totalEvents": 75,
+    "bySecret": {
+      "admin-hotspot": 8,
+      "adadsw": 6,
+      "logo-7tap": 3,
+      "future": 33,
+      "logo-2tap": 25
+    },
+    "byVisitor": {
+      "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
+        "totalEvents": 75,
+        "uniqueSecrets": {
+          "admin-hotspot": true,
+          "adadsw": true,
+          "logo-7tap": true,
+          "future": true,
+          "logo-2tap": true
+        }
+      }
+    }
+  },
+  "leads": [
+    {
+      "id": "lead_1771406176683_6928025c",
+      "name": "QA UI",
+      "contact": "qa@example.com",
+      "type": "Test",
+      "message": "hello",
+      "sourcePage": "/contact.html",
+      "status": "new",
+      "department": "sales",
+      "assigneeId": "help_helpteam1",
+      "assigneeName": "Сашуля",
+      "priority": "high",
+      "internalNote": "patched",
+      "updatedById": "workspace",
+      "updatedByName": "Workspace",
+      "createdAt": "2026-02-18T09:16:16.684Z",
+      "updatedAt": "2026-02-18T09:19:05.821Z"
+    }
+  ]
+}
