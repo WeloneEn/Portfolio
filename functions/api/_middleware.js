@@ -26,6 +26,35 @@ const CORS_HEADERS = {
   "Access-Control-Max-Age": "86400"
 };
 
+function isD1Database(candidate) {
+  return (
+    Boolean(candidate) &&
+    typeof candidate === "object" &&
+    typeof candidate.prepare === "function" &&
+    typeof candidate.exec === "function"
+  );
+}
+
+function getDb(env) {
+  const db = env.DB || env.DB1 || env.DATABASE || env.APP_DB || env.db || env.database || env.app_db || null;
+  if (isD1Database(db)) {
+    return db;
+  }
+
+  if (!env || typeof env !== "object") {
+    return null;
+  }
+
+  // Fallback for custom binding names: pick the first D1-like binding.
+  for (const value of Object.values(env)) {
+    if (isD1Database(value)) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
 const json = (status, payload) =>
   new Response(JSON.stringify(payload), {
     status,
@@ -507,7 +536,7 @@ async function readBodyJson(request) {
 }
 
 async function ensureSchema(env) {
-  const db = env.DB || env.DB1 || env.DATABASE || env.APP_DB || env.db || env.database || env.app_db || null;
+  const db = getDb(env);
   if (!db) throw new Error("DB_BINDING_MISSING");
   if (schemaReady) return schemaReady;
   schemaReady = (async () => {
@@ -534,7 +563,7 @@ async function ensureSchema(env) {
 }
 
 async function loadState(env) {
-  const db = env.DB || env.DB1 || env.DATABASE || env.APP_DB || env.db || env.database || env.app_db || null;
+  const db = getDb(env);
   if (!db) throw new Error("DB_BINDING_MISSING");
   await ensureSchema(env);
   const row = await db
@@ -564,7 +593,7 @@ async function loadState(env) {
 }
 
 async function mutateState(env, mutator) {
-  const db = env.DB || env.DB1 || env.DATABASE || env.APP_DB || env.db || env.database || env.app_db || null;
+  const db = getDb(env);
   if (!db) throw new Error("DB_BINDING_MISSING");
   for (let attempt = 0; attempt < 6; attempt += 1) {
     const state = await loadState(env);
@@ -616,8 +645,11 @@ export async function onRequest(context) {
   if (method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
-  if (!(env.DB || env.DB1 || env.DATABASE || env.APP_DB || env.db || env.database || env.app_db)) {
-    return json(500, { error: "DB_BINDING_MISSING" });
+  if (!getDb(env)) {
+    return json(500, {
+      error: "DB_BINDING_MISSING",
+      hint: "Cloudflare Pages: Settings -> Functions/Bindings -> D1 database -> add binding named DB"
+    });
   }
 
   try {
