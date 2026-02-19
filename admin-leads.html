@@ -12,9 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css?v=20260218z14" />
+  <link rel="stylesheet" href="admin-ui.css?v=20260219ux2" />
   <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260218z14"></script>
-  <script defer src="admin-leads.js?v=20260218z14"></script>
+  <script defer src="script.js?v=20260219ux2"></script>
+  <script defer src="admin-leads.js?v=20260219ux2"></script>
 </head>
 <body data-page="admin">
   <div class="preloader" id="preloader" aria-hidden="true">
@@ -41,7 +42,7 @@
     <section class="page-hero reveal">
       <p class="label">Leads</p>
       <h1>Работа с заявками</h1>
-      <p>Назначайте заявки по отделам, распределяйте исполнителей и фиксируйте ход работы по каждому обращению.</p>
+      <p>Один список, понятные фильтры и быстрый переход в карточку заявки с комментариями команды.</p>
     </section>
 
     <section class="admin-auth reveal" id="authRequired" hidden>
@@ -59,10 +60,16 @@
       <p class="admin-status" id="leadsActorMeta"></p>
       <p class="admin-status" id="leadsStatus">Загрузка заявок...</p>
 
+      <nav class="admin-subnav" aria-label="Разделы заявок">
+        <a href="#leadsOps">Очередь</a>
+        <a href="#leadsFilters">Фильтры</a>
+        <a href="#leadsList">Список</a>
+      </nav>
+
       <section class="leads-ops" id="leadsOps">
         <div class="leads-ops__meta">
-          <p class="leads-ops__title">Операционный режим</p>
-          <p class="leads-ops__hint" id="leadsOpsHint">Очередь новых и заявок без исполнителя.</p>
+          <p class="leads-ops__title">Очередь обработки</p>
+          <p class="leads-ops__hint" id="leadsOpsHint">Приоритет новых и неназначенных заявок.</p>
         </div>
         <div class="leads-ops__actions">
           <button class="btn btn--primary" id="takeNextLead" type="button">Взять следующую</button>
@@ -72,10 +79,45 @@
 
       <div class="leads-summary" id="leadsSummary"></div>
 
-      <div class="leads-toolbar">
+      <div class="leads-filters" id="leadsFilters">
         <label class="leads-filters__field leads-filters__field--grow" for="leadSearch">
           <span>Текстовый поиск</span>
-          <input id="leadSearch" type="text" placeholder="Имя, контакт, описание, заметка..." autocomplete="off" />
+          <input id="leadSearch" type="text" placeholder="Имя, контакт, описание, комментарий..." autocomplete="off" />
+        </label>
+
+        <label class="leads-filters__field" for="leadStatusFilter">
+          <span>Статус</span>
+          <select id="leadStatusFilter">
+            <option value="all">Все статусы</option>
+            <option value="new">Новые</option>
+            <option value="in_progress">В работе</option>
+            <option value="done">Завершенные</option>
+            <option value="unassigned">Без исполнителя</option>
+          </select>
+        </label>
+
+        <label class="leads-filters__field" for="leadPriorityFilter">
+          <span>Приоритет</span>
+          <select id="leadPriorityFilter">
+            <option value="all">Любой</option>
+            <option value="high">Высокий</option>
+            <option value="normal">Обычный</option>
+            <option value="low">Низкий</option>
+          </select>
+        </label>
+
+        <label class="leads-filters__field" for="leadDepartmentFilter">
+          <span>Отдел</span>
+          <select id="leadDepartmentFilter">
+            <option value="">Все отделы</option>
+          </select>
+        </label>
+
+        <label class="leads-filters__field" for="leadAssigneeFilter">
+          <span>Исполнитель</span>
+          <select id="leadAssigneeFilter">
+            <option value="">Все исполнители</option>
+          </select>
         </label>
 
         <label class="leads-filters__field" for="leadSortMode">
@@ -89,27 +131,10 @@
           </select>
         </label>
 
-        <button class="btn btn--ghost" id="resetLeadFilters" type="button">Сбросить</button>
-      </div>
-
-      <details class="leads-filters-panel">
-        <summary>Расширенные фильтры</summary>
-        <div class="leads-filters">
-          <label class="leads-filters__field" for="leadDepartmentFilter">
-            <span>Отдел</span>
-            <select id="leadDepartmentFilter">
-              <option value="">Все отделы</option>
-            </select>
-          </label>
-
-          <label class="leads-filters__field" for="leadAssigneeFilter">
-            <span>Исполнитель</span>
-            <select id="leadAssigneeFilter">
-              <option value="">Все исполнители</option>
-            </select>
-          </label>
+        <div class="leads-filters__actions">
+          <button class="btn btn--ghost" id="resetLeadFilters" type="button">Сбросить фильтры</button>
         </div>
-      </details>
+      </div>
 
       <div class="leads-list" id="leadsList"></div>
     </section>

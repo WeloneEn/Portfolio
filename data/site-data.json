@@ -90,11 +90,46 @@
       "assigneeId": "help_helpteam1",
       "assigneeName": "Сашуля",
       "priority": "high",
+      "outcome": "pending",
       "internalNote": "patched",
       "updatedById": "workspace",
       "updatedByName": "Workspace",
+      "completedAt": "",
+      "completedById": "",
+      "completedByName": "",
+      "comments": [],
       "createdAt": "2026-02-18T09:16:16.684Z",
       "updatedAt": "2026-02-18T09:19:05.821Z"
     }
-  ]
+  ],
+  "crm": {
+    "importantEvents": []
+  },
+  "training": {
+    "profiles": [],
+    "callReviews": []
+  },
+  "performance": {
+    "plans": {
+      "day": {
+        "target": 3,
+        "updatedAt": "2026-02-19T10:25:00.638Z",
+        "updatedById": "workspace",
+        "updatedByName": "Workspace"
+      },
+      "week": {
+        "target": 12,
+        "updatedAt": "2026-02-19T10:25:00.638Z",
+        "updatedById": "workspace",
+        "updatedByName": "Workspace"
+      },
+      "month": {
+        "target": 50,
+        "updatedAt": "2026-02-19T10:25:00.638Z",
+        "updatedById": "workspace",
+        "updatedByName": "Workspace"
+      }
+    },
+    "trainingAssignments": []
+  }
 }

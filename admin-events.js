@@ -10,15 +10,23 @@ const refreshEvents = document.getElementById("refreshEvents");
 const eventSearch = document.getElementById("eventSearch");
 const eventScopeFilter = document.getElementById("eventScopeFilter");
 const eventsList = document.getElementById("eventsList");
+const trainingNavLinks = Array.from(document.querySelectorAll('a[href="admin-training.html"]'));
 
 const apiAllowed = window.location.protocol === "http:" || window.location.protocol === "https:";
 
 const roleLabels = {
   owner: "Владелец",
-  help: "Help",
-  manager: "Руководитель",
-  worker: "Сотрудник"
+  product: "Продакт",
+  manager: "Менеджер"
 };
+
+function resolveRoleLabel(roleValue) {
+  const role = String(roleValue || "").trim().toLowerCase();
+  if (role === "help" || role === "worker") {
+    return roleLabels.manager;
+  }
+  return roleLabels[role] || roleLabels.manager;
+}
 
 const timelineLabels = {
   soon: "Скоро",
@@ -32,6 +40,7 @@ let permissions = {};
 let allEvents = [];
 let stats = {
   total: 0,
+  today: 0,
   overdue: 0,
   soon: 0,
   upcoming: 0,
@@ -70,6 +79,15 @@ function setAuthState(isRequired) {
     eventsPanel.hidden = isRequired;
     eventsPanel.setAttribute("aria-hidden", String(isRequired));
   }
+}
+
+function setTrainingNavVisible(isVisible) {
+  trainingNavLinks.forEach((link) => {
+    const visible = Boolean(isVisible);
+    link.classList.toggle("is-hidden-link", !visible);
+    link.setAttribute("aria-hidden", String(!visible));
+    link.tabIndex = visible ? 0 : -1;
+  });
 }
 
 function normalizeForSearch(value) {
@@ -117,7 +135,7 @@ function renderActorMeta() {
     return;
   }
 
-  const role = roleLabels[actor.role] || actor.role || "Сотрудник";
+  const role = resolveRoleLabel(actor.role);
   const name = actor.name || actor.username || actor.id || "Пользователь";
   const scope = permissions.canViewAllLeads ? "видит все события" : "видит события своего контура";
   eventsActorMeta.textContent = `${name} • ${role} • ${scope}`;
@@ -159,6 +177,7 @@ function renderSummary() {
   eventsSummary.innerHTML = "";
   eventsSummary.append(
     createSummaryButton("all", "Все события", stats.total),
+    createSummaryButton("today", "Сегодня", stats.today),
     createSummaryButton("soon", "В течение 7 дней", stats.soon),
     createSummaryButton("upcoming", "Ближайшие", stats.soon + stats.upcoming),
     createSummaryButton("overdue", "Просроченные", stats.overdue),
@@ -320,6 +339,7 @@ async function loadEventsData() {
 
     actor = payload.actor || actor;
     permissions = payload.permissions || {};
+    setTrainingNavVisible(permissions.canAccessTraining !== false);
     allEvents = Array.isArray(payload.events) ? payload.events : [];
     stats = payload.stats || stats;
 
@@ -345,10 +365,12 @@ function handleSearchChange() {
 
 if (!apiAllowed) {
   setAuthState(false);
+  setTrainingNavVisible(false);
   setText(eventsAuthStatus, "Откройте через сервер: http://localhost:3000/admin-events.html", "var(--tone-error)");
   setText(eventsStatus, "Откройте через сервер: http://localhost:3000/admin-events.html", "var(--tone-error)");
 } else {
   setAuthState(false);
+  setTrainingNavVisible(true);
   loadEventsData();
 
   if (refreshEvents) {

@@ -13,13 +13,14 @@ const takeNextLeadFab = document.getElementById("takeNextLeadFab");
 const leadsSummary = document.getElementById("leadsSummary");
 const leadsList = document.getElementById("leadsList");
 const refreshLeads = document.getElementById("refreshLeads");
-const ownerAdminLink = document.getElementById("ownerAdminLink");
-const leadsAdminNavLink = document.getElementById("leadsAdminNavLink");
 const leadSearch = document.getElementById("leadSearch");
+const leadStatusFilter = document.getElementById("leadStatusFilter");
+const leadPriorityFilter = document.getElementById("leadPriorityFilter");
 const leadSortMode = document.getElementById("leadSortMode");
 const leadDepartmentFilter = document.getElementById("leadDepartmentFilter");
 const leadAssigneeFilter = document.getElementById("leadAssigneeFilter");
 const resetLeadFilters = document.getElementById("resetLeadFilters");
+const trainingNavLinks = Array.from(document.querySelectorAll('a[href="admin-training.html"]'));
 
 const apiAllowed = window.location.protocol === "http:" || window.location.protocol === "https:";
 
@@ -35,10 +36,17 @@ function resolveApiUrl(path) {
 
 const roleLabels = {
   owner: "Владелец",
-  help: "Help",
-  manager: "Руководитель",
-  worker: "Сотрудник"
+  product: "Продакт",
+  manager: "Менеджер"
 };
+
+function resolveRoleLabel(roleValue) {
+  const role = String(roleValue || "").trim().toLowerCase();
+  if (role === "help" || role === "worker") {
+    return roleLabels.manager;
+  }
+  return roleLabels[role] || roleLabels.manager;
+}
 
 const statusLabels = {
   new: "Новая",
@@ -50,21 +58,6 @@ const priorityLabels = {
   low: "Низкий",
   normal: "Обычный",
   high: "Высокий"
-};
-
-const flowLabels = {
-  all: "Все заявки",
-  new: "Новые",
-  in_progress: "В работе",
-  done: "Завершенные",
-  unassigned: "Без исполнителя"
-};
-
-const flowHints = {
-  new: "Первичная обработка и назначение исполнителя.",
-  in_progress: "Активные заявки в производстве.",
-  done: "Архив завершенных обращений.",
-  unassigned: "Требуют назначения ответственного."
 };
 
 const sortLabels = {
@@ -93,6 +86,8 @@ const quickStatusTransitions = {
   done: { status: "in_progress", label: "Вернуть в работу" }
 };
 
+const deletableLeadStatuses = new Set(["new", "in_progress"]);
+
 const errorMessages = {
   FORBIDDEN: "Недостаточно прав для этой заявки.",
   FORBIDDEN_STATUS: "Недостаточно прав для смены статуса.",
@@ -103,6 +98,14 @@ const errorMessages = {
   FORBIDDEN_ASSIGNEE: "Нельзя назначить этого сотрудника.",
   FORBIDDEN_DEPARTMENT: "Нельзя назначить этот отдел.",
   ASSIGNEE_NOT_FOUND: "Сотрудник для назначения не найден.",
+  MANAGER_CANNOT_RESET: "Менеджер не может вернуть свою заявку из работы в новую.",
+  MANAGER_CANNOT_UNASSIGN: "Менеджер не может снять заявку с себя.",
+  MANAGER_REASON_REQUIRED: "Для закрытия заявки добавьте подробный комментарий (минимум 8 символов).",
+  MANAGER_CANNOT_SET_FAILURE: "Менеджер не может закрыть заявку как отказ. Отказ оформляет продакт.",
+  MANAGER_SUCCESS_REQUIRED: "Менеджер может закрыть заявку только как успешную сделку.",
+  MANAGER_CANNOT_TAKE_ASSIGNED: "Менеджер может брать только свободные заявки.",
+  FORBIDDEN_DELETE: "Удаление доступно только владельцу и продакту.",
+  FORBIDDEN_DELETE_STATUS: "Можно удалять только входящие и заявки в работе.",
   COMMENT_REQUIRED: "Введите текст комментария.",
   LEAD_NOT_FOUND: "Заявка не найдена."
 };
@@ -113,7 +116,6 @@ let permissions = {};
 let teamUsers = [];
 let visibleDepartments = [];
 let allLeads = [];
-let activeFlow = "all";
 const pendingLeadIds = new Set();
 let focusedLeadId = String(new URLSearchParams(window.location.search).get("lead") || "").trim();
 let shouldScrollToFocusedLead = Boolean(focusedLeadId);
@@ -145,17 +147,13 @@ function setAuthRequiredState(isRequired) {
   }
 }
 
-function setOwnerAdminVisible(isVisible) {
-  if (ownerAdminLink) {
-    ownerAdminLink.classList.toggle("is-hidden-link", !isVisible);
-    ownerAdminLink.setAttribute("aria-hidden", String(!isVisible));
-    ownerAdminLink.tabIndex = isVisible ? 0 : -1;
-  }
-  if (leadsAdminNavLink) {
-    leadsAdminNavLink.classList.toggle("is-hidden-link", !isVisible);
-    leadsAdminNavLink.setAttribute("aria-hidden", String(!isVisible));
-    leadsAdminNavLink.tabIndex = isVisible ? 0 : -1;
-  }
+function setTrainingNavVisible(isVisible) {
+  trainingNavLinks.forEach((link) => {
+    const visible = Boolean(isVisible);
+    link.classList.toggle("is-hidden-link", !visible);
+    link.setAttribute("aria-hidden", String(!visible));
+    link.tabIndex = visible ? 0 : -1;
+  });
 }
 
 function formatDate(value) {
@@ -170,6 +168,22 @@ function formatDate(value) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit"
+  }).format(date);
+}
+
+function formatDateTimePrecise(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value || "-";
+  }
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
   }).format(date);
 }
 
@@ -217,6 +231,10 @@ function buildSelectOption(value, text) {
 
 function canAssignLeads() {
   return Boolean(permissions && permissions.canAssignLeads);
+}
+
+function canTakeLeads() {
+  return Boolean(permissions && permissions.canTakeLeads);
 }
 
 async function apiRequest(path, options = {}) {
@@ -300,7 +318,7 @@ function refreshActorMeta() {
     return;
   }
 
-  const role = roleLabels[actor.role] || actor.role || "Сотрудник";
+  const role = resolveRoleLabel(actor.role);
   const department = prettifyDepartment(actor.department);
   const name = actor.name || actor.username || actor.id || "Пользователь";
   const scope = permissions.canViewAllLeads ? "видит все заявки" : "видит заявки своего контура";
@@ -399,11 +417,11 @@ function syncFilterState() {
     return;
   }
 
-  const isUnassignedFlow = activeFlow === "unassigned";
-  if (isUnassignedFlow && leadAssigneeFilter.value) {
+  const isUnassignedScope = String(leadStatusFilter?.value || "all") === "unassigned";
+  if (isUnassignedScope && leadAssigneeFilter.value) {
     leadAssigneeFilter.value = "";
   }
-  leadAssigneeFilter.disabled = isUnassignedFlow;
+  leadAssigneeFilter.disabled = isUnassignedScope;
 }
 
 function updateFocusedLeadUrl() {
@@ -445,24 +463,29 @@ function scrollToFocusedLeadIfNeeded() {
   target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function matchesActiveFlow(lead) {
+function matchesStatusScope(lead) {
   const status = normalizeLeadStatus(lead.status);
-  if (activeFlow === "all") {
+  const scope = String(leadStatusFilter?.value || "all");
+  if (scope === "all") {
     return true;
   }
-  if (activeFlow === "unassigned") {
+  if (scope === "unassigned") {
     return !lead.assigneeId;
   }
-  return status === activeFlow;
+  return status === scope;
 }
 
 function getFilteredLeads() {
   const query = normalizeForSearch(leadSearch?.value || "");
+  const priorityFilterValue = String(leadPriorityFilter?.value || "all");
   const departmentFilterValue = String(leadDepartmentFilter?.value || "");
   const assigneeFilterValue = String(leadAssigneeFilter?.value || "");
 
   return allLeads.filter((lead) => {
-    if (!matchesActiveFlow(lead)) {
+    if (!matchesStatusScope(lead)) {
+      return false;
+    }
+    if (priorityFilterValue !== "all" && normalizeLeadPriority(lead.priority) !== priorityFilterValue) {
       return false;
     }
     if (departmentFilterValue && (lead.department || "unassigned") !== departmentFilterValue) {
@@ -476,6 +499,13 @@ function getFilteredLeads() {
       return true;
     }
 
+    const commentsText = Array.isArray(lead.comments)
+      ? lead.comments.map((item) => item?.text || "").join(" ")
+      : "";
+    const eventsText = Array.isArray(lead.importantEvents)
+      ? lead.importantEvents.map((item) => item?.sourceText || item?.title || "").join(" ")
+      : "";
+
     const searchBlob = [
       lead.id,
       lead.name,
@@ -484,7 +514,9 @@ function getFilteredLeads() {
       lead.message,
       lead.sourcePage,
       lead.assigneeName,
-      lead.internalNote
+      lead.internalNote,
+      commentsText,
+      eventsText
     ]
       .map((item) => normalizeForSearch(item))
       .join(" ");
@@ -620,9 +652,20 @@ function setTakeNextButtonsState(enabled, labelText) {
 function refreshOperationalPanel() {
   const queue = getOperationalQueue();
   const nextLead = queue[0] || null;
-  const canOperate = Boolean(actor?.id && canAssignLeads());
+  const canOperate = Boolean(actor?.id && canTakeLeads());
   const hasPending = pendingLeadIds.size > 0;
   const isEnabled = canOperate && !hasPending && Boolean(nextLead);
+
+  if (!canOperate) {
+    if (leadsOps) {
+      leadsOps.hidden = true;
+    }
+    if (leadsOpsStatus) {
+      leadsOpsStatus.textContent = "";
+    }
+    setTakeNextButtonsState(false, "Взять следующую");
+    return;
+  }
 
   if (leadsOps) {
     leadsOps.hidden = false;
@@ -639,9 +682,7 @@ function refreshOperationalPanel() {
   }
 
   if (leadsOpsStatus) {
-    if (!canOperate) {
-      leadsOpsStatus.textContent = "Доступно только руководителю или владельцу.";
-    } else if (hasPending) {
+    if (hasPending) {
       leadsOpsStatus.textContent = "Подождите завершения текущего сохранения.";
     } else if (!queue.length) {
       leadsOpsStatus.textContent = "Очередь обработана.";
@@ -661,6 +702,55 @@ function replaceLeadInList(nextLead) {
   if (index >= 0) {
     allLeads[index] = nextLead;
   }
+}
+
+function removeLeadFromList(leadId) {
+  const id = String(leadId || "").trim();
+  if (!id) {
+    return;
+  }
+  allLeads = allLeads.filter((item) => String(item?.id || "") !== id);
+}
+
+async function deleteLeadCompletely(lead, fallbackErrorMessage) {
+  if (!lead || !lead.id) {
+    setText(leadsStatus, "Заявка не найдена.", "var(--tone-error)");
+    return false;
+  }
+
+  if (pendingLeadIds.has(lead.id)) {
+    return false;
+  }
+
+  pendingLeadIds.add(lead.id);
+  renderLeads();
+  updateCounterStatus();
+  refreshOperationalPanel();
+
+  let ok = false;
+  try {
+    await apiRequest(`/api/admin/leads/${encodeURIComponent(lead.id)}`, {
+      method: "DELETE"
+    });
+
+    removeLeadFromList(lead.id);
+    if (String(focusedLeadId || "") === String(lead.id)) {
+      setFocusedLead("", false);
+    }
+    setText(leadsStatus, `Заявка удалена: ${leadDisplayName(lead)}.`, "var(--tone-ok)");
+    ok = true;
+  } catch (error) {
+    handleApiError(error, fallbackErrorMessage || "Не удалось удалить заявку.");
+  } finally {
+    pendingLeadIds.delete(lead.id);
+    refreshFilterOptions();
+    renderSummary();
+    renderLeads();
+    updateCounterStatus();
+    refreshOperationalPanel();
+  }
+
+  return ok;
 }
 
 async function applyLeadPatch(lead, patch, successMessage, fallbackErrorMessage) {
@@ -787,8 +877,8 @@ async function addLeadComment(lead, text) {
 }
 
 async function handleTakeNextLead() {
-  if (!actor?.id || !canAssignLeads()) {
-    setText(leadsStatus, "Операционный режим доступен руководителю или владельцу.", "var(--tone-error)");
+  if (!actor?.id || !canTakeLeads()) {
+    setText(leadsStatus, "Операционный режим доступен владельцу, продакту и менеджеру.", "var(--tone-error)");
     refreshOperationalPanel();
     return;
   }
@@ -885,13 +975,9 @@ function buildEditorControl(labelText, control, hintText) {
   return wrapper;
 }
 
-function createSummaryCard(flowKey, label, value, hint) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "lead-summary";
-  if (flowKey === activeFlow) {
-    button.classList.add("is-active");
-  }
+function createSummaryCard(label, value, hint) {
+  const card = document.createElement("article");
+  card.className = "lead-summary";
 
   const valueNode = document.createElement("strong");
   valueNode.className = "lead-summary__value";
@@ -905,12 +991,8 @@ function createSummaryCard(flowKey, label, value, hint) {
   hintNode.className = "lead-summary__hint";
   hintNode.textContent = hint;
 
-  button.append(valueNode, labelNode, hintNode);
-  button.addEventListener("click", () => {
-    setActiveFlow(flowKey);
-  });
-
-  return button;
+  card.append(valueNode, labelNode, hintNode);
+  return card;
 }
 
 function renderSummary() {
@@ -936,111 +1018,12 @@ function renderSummary() {
 
   leadsSummary.innerHTML = "";
   leadsSummary.append(
-    createSummaryCard("all", "Все заявки", counts.all, "Полный список"),
-    createSummaryCard("new", "Новые", counts.new, "Требуют разбора"),
-    createSummaryCard("in_progress", "В работе", counts.in_progress, "Текущие задачи"),
-    createSummaryCard("unassigned", "Без исполнителя", counts.unassigned, "Нужно назначить"),
-    createSummaryCard("done", "Завершенные", counts.done, "Готово")
+    createSummaryCard("Все заявки", counts.all, "Общее количество"),
+    createSummaryCard("Новые", counts.new, "Нужна первичная обработка"),
+    createSummaryCard("В работе", counts.in_progress, "Активные задачи"),
+    createSummaryCard("Без исполнителя", counts.unassigned, "Требуют назначения"),
+    createSummaryCard("Завершенные", counts.done, "Закрытые обращения")
   );
-}
-
-function setActiveFlow(nextFlow) {
-  const normalized = Object.prototype.hasOwnProperty.call(flowLabels, nextFlow) ? nextFlow : "all";
-  if (activeFlow === normalized) {
-    return;
-  }
-  activeFlow = normalized;
-  syncFilterState();
-  renderSummary();
-  handleFilterChange();
-}
-
-function createStageSection(stageKey, title, hint, leads) {
-  const section = document.createElement("section");
-  section.className = `lead-stage lead-stage--${stageKey}`;
-
-  const head = document.createElement("header");
-  head.className = "lead-stage__head";
-
-  const titleNode = document.createElement("h3");
-  titleNode.className = "lead-stage__title";
-  titleNode.textContent = title;
-
-  const meta = document.createElement("p");
-  meta.className = "lead-stage__meta";
-  meta.textContent = `${formatNumber(leads.length)} заявок`;
-
-  head.append(titleNode, meta);
-
-  section.appendChild(head);
-  if (hint) {
-    const hintNode = document.createElement("p");
-    hintNode.className = "lead-stage__hint";
-    hintNode.textContent = hint;
-    section.appendChild(hintNode);
-  }
-
-  const list = document.createElement("div");
-  list.className = "lead-stage__list";
-
-  if (!leads.length) {
-    const empty = document.createElement("p");
-    empty.className = "lead-stage__empty";
-    empty.textContent = "Заявок в этой секции нет.";
-    list.appendChild(empty);
-  } else {
-    leads.forEach((lead) => {
-      list.appendChild(createLeadCard(lead));
-    });
-  }
-
-  section.appendChild(list);
-  return section;
-}
-
-function buildLeadSections(leads) {
-  if (activeFlow === "all") {
-    return [
-      {
-        key: "new",
-        title: "Новые",
-        hint: flowHints.new,
-        leads: leads.filter((lead) => normalizeLeadStatus(lead.status) === "new")
-      },
-      {
-        key: "in_progress",
-        title: "В работе",
-        hint: flowHints.in_progress,
-        leads: leads.filter((lead) => normalizeLeadStatus(lead.status) === "in_progress")
-      },
-      {
-        key: "done",
-        title: "Завершенные",
-        hint: flowHints.done,
-        leads: leads.filter((lead) => normalizeLeadStatus(lead.status) === "done")
-      }
-    ];
-  }
-
-  if (activeFlow === "unassigned") {
-    return [
-      {
-        key: "unassigned",
-        title: "Без исполнителя",
-        hint: flowHints.unassigned,
-        leads
-      }
-    ];
-  }
-
-  return [
-    {
-      key: activeFlow,
-      title: flowLabels[activeFlow] || "Заявки",
-      hint: flowHints[activeFlow] || "",
-      leads
-    }
-  ];
 }
 
 function createLeadCard(lead) {
@@ -1083,10 +1066,14 @@ function createLeadCard(lead) {
   );
 
   const isReadOnlyViewer = !actor || !actor.id;
+  const isOwnerOrProduct = !isReadOnlyViewer && (actor?.role === "owner" || actor?.role === "product");
+  const isManagerRole = !isReadOnlyViewer && actor?.role === "manager";
+  const isAssignedToActor = !isReadOnlyViewer && lead.assigneeId === actor?.id;
   const canAssign = !isReadOnlyViewer && canAssignLeads();
-  const isHelpOnlyRole = !isReadOnlyViewer && (actor?.role === "worker" || actor?.role === "help");
-  const canEditStatus = !isReadOnlyViewer && (!isHelpOnlyRole || lead.assigneeId === actor?.id);
-  const canEditNote = !isReadOnlyViewer && (!isHelpOnlyRole || lead.assigneeId === actor?.id);
+  const canTakeSelf = isManagerRole && !lead.assigneeId;
+  const canEditStatus = isOwnerOrProduct || isAssignedToActor;
+  const canEditNote = isOwnerOrProduct || isAssignedToActor;
+  const canDeleteLead = isOwnerOrProduct && deletableLeadStatuses.has(leadStatus);
   const canComment = !isReadOnlyViewer;
 
   const quickActions = document.createElement("div");
@@ -1106,6 +1093,24 @@ function createLeadCard(lead) {
     quickStatusButton.type = "button";
     quickStatusButton.textContent = transition.label;
     quickActions.appendChild(quickStatusButton);
+  }
+
+  let takeSelfButton = null;
+  if (canTakeSelf) {
+    takeSelfButton = document.createElement("button");
+    takeSelfButton.className = "btn btn--ghost lead-quick-actions__btn";
+    takeSelfButton.type = "button";
+    takeSelfButton.textContent = "Взять себе";
+    quickActions.appendChild(takeSelfButton);
+  }
+
+  let deleteLeadButton = null;
+  if (canDeleteLead) {
+    deleteLeadButton = document.createElement("button");
+    deleteLeadButton.className = "btn btn--ghost lead-quick-actions__btn lead-quick-actions__btn--danger";
+    deleteLeadButton.type = "button";
+    deleteLeadButton.textContent = "Удалить";
+    quickActions.appendChild(deleteLeadButton);
   }
 
   if (canAssign && !lead.assigneeId) {
@@ -1168,6 +1173,10 @@ function createLeadCard(lead) {
   const commentsTitle = document.createElement("h4");
   commentsTitle.textContent = "Комментарии сотрудников";
   commentsBlock.appendChild(commentsTitle);
+  const commentsHint = document.createElement("p");
+  commentsHint.className = "lead-comments__hint";
+  commentsHint.textContent = "Сохраняются логин автора, дата и точное время.";
+  commentsBlock.appendChild(commentsHint);
 
   const commentsListNode = document.createElement("div");
   commentsListNode.className = "lead-comments__list";
@@ -1184,8 +1193,18 @@ function createLeadCard(lead) {
 
       const commentMeta = document.createElement("p");
       commentMeta.className = "lead-comment__meta";
-      const author = String(comment.authorName || comment.authorId || "Сотрудник").trim();
-      commentMeta.textContent = `${author} • ${formatDate(comment.createdAt)}`;
+      const authorName = String(comment.authorName || "").trim();
+      const authorUsername = String(comment.authorUsername || "").trim();
+      const authorRole = String(comment.authorRole || "").trim().toLowerCase();
+      const roleLabel = resolveRoleLabel(authorRole);
+      const authorTitle =
+        authorUsername && authorName
+          ? `@${authorUsername} (${authorName})`
+          : authorUsername
+            ? `@${authorUsername}`
+            : authorName || String(comment.authorId || "Менеджер").trim();
+      const rolePart = roleLabel ? ` • ${roleLabel}` : "";
+      commentMeta.textContent = `${authorTitle}${rolePart} • ${formatDateTimePrecise(comment.createdAt)}`;
 
       const commentText = document.createElement("p");
       commentText.className = "lead-comment__text";
@@ -1223,18 +1242,18 @@ function createLeadCard(lead) {
     statusSelect.appendChild(buildSelectOption(value, label));
   });
   statusSelect.value = leadStatus;
-  grid.appendChild(
-    buildEditorControl("Статус", statusSelect, canEditStatus ? "" : "Изменение недоступно")
-  );
+  if (canEditStatus) {
+    grid.appendChild(buildEditorControl("Статус", statusSelect, ""));
+  }
 
   const prioritySelect = document.createElement("select");
   Object.entries(priorityLabels).forEach(([value, label]) => {
     prioritySelect.appendChild(buildSelectOption(value, label));
   });
   prioritySelect.value = leadPriority;
-  grid.appendChild(
-    buildEditorControl("Приоритет", prioritySelect, canAssign ? "" : "Доступно руководителю")
-  );
+  if (canAssign) {
+    grid.appendChild(buildEditorControl("Приоритет", prioritySelect, ""));
+  }
 
   const departmentSelect = document.createElement("select");
   collectDepartments().forEach((department) => {
@@ -1246,9 +1265,9 @@ function createLeadCard(lead) {
     departmentSelect.appendChild(buildSelectOption(lead.department || "unassigned", prettifyDepartment(lead.department)));
   }
   departmentSelect.value = lead.department || "unassigned";
-  grid.appendChild(
-    buildEditorControl("Отдел", departmentSelect, canAssign ? "" : "Доступно руководителю")
-  );
+  if (canAssign) {
+    grid.appendChild(buildEditorControl("Отдел", departmentSelect, ""));
+  }
 
   const assigneeSelect = document.createElement("select");
   fillAssigneeSelect(
@@ -1257,9 +1276,9 @@ function createLeadCard(lead) {
     lead.assigneeId || "",
     lead.assigneeName || ""
   );
-  grid.appendChild(
-    buildEditorControl("Исполнитель", assigneeSelect, canAssign ? "" : "Доступно руководителю")
-  );
+  if (canAssign) {
+    grid.appendChild(buildEditorControl("Исполнитель", assigneeSelect, ""));
+  }
 
   if (canAssign) {
     departmentSelect.addEventListener("change", () => {
@@ -1268,29 +1287,44 @@ function createLeadCard(lead) {
     });
   }
 
-  editor.appendChild(grid);
+  if (grid.childElementCount > 0) {
+    editor.appendChild(grid);
+  }
 
   const note = document.createElement("textarea");
   note.rows = 3;
   note.placeholder = "Внутренняя заметка по задаче";
   note.value = lead.internalNote || "";
-  editor.appendChild(
-    buildEditorControl("Задача и комментарии", note, canEditNote ? "" : "Изменение недоступно")
-  );
+  if (canEditNote) {
+    editor.appendChild(buildEditorControl("Задача и комментарии", note, ""));
+  }
+
+  const hasAnyEditRights = canEditStatus || canAssign || canEditNote;
+  if (!hasAnyEditRights) {
+    const readonlyHint = document.createElement("p");
+    readonlyHint.className = "admin-status";
+    readonlyHint.textContent = "Для вашей роли доступен просмотр. Изменения выполняет руководитель или владелец.";
+    editor.appendChild(readonlyHint);
+  }
 
   const actions = document.createElement("div");
   actions.className = "lead-editor__actions";
 
-  const saveButton = document.createElement("button");
-  saveButton.className = "btn btn--primary";
-  saveButton.type = "button";
-  saveButton.textContent = "Сохранить";
-
   const updated = document.createElement("p");
   updated.className = "lead-editor__updated";
   updated.textContent = lead.updatedAt ? `Обновлено: ${formatDate(lead.updatedAt)}` : "";
-  actions.append(saveButton, updated);
-  editor.appendChild(actions);
+  let saveButton = null;
+  if (hasAnyEditRights) {
+    saveButton = document.createElement("button");
+    saveButton.className = "btn btn--primary";
+    saveButton.type = "button";
+    saveButton.textContent = "Сохранить";
+    actions.append(saveButton, updated);
+    editor.appendChild(actions);
+  } else {
+    actions.append(updated);
+    editor.appendChild(actions);
+  }
 
   const editorPanel = document.createElement("details");
   editorPanel.className = "lead-editor-panel";
@@ -1300,7 +1334,6 @@ function createLeadCard(lead) {
   editorSummary.textContent = "Подробное редактирование";
   editorPanel.append(editorSummary, editor);
 
-  const hasAnyEditRights = canEditStatus || canAssign || canEditNote;
   function syncControls() {
     const isPending = pendingLeadIds.has(lead.id);
     item.classList.toggle("is-saving", isPending);
@@ -1312,9 +1345,17 @@ function createLeadCard(lead) {
     commentInput.disabled = !canComment || isPending;
     commentButton.disabled = !canComment || isPending;
     openCrmButton.disabled = isPending;
-    saveButton.disabled = !hasAnyEditRights || isPending;
+    if (saveButton) {
+      saveButton.disabled = isPending;
+    }
     if (quickStatusButton) {
       quickStatusButton.disabled = !canEditStatus || isPending;
+    }
+    if (takeSelfButton) {
+      takeSelfButton.disabled = !canTakeSelf || isPending;
+    }
+    if (deleteLeadButton) {
+      deleteLeadButton.disabled = !canDeleteLead || isPending;
     }
   }
 
@@ -1349,36 +1390,64 @@ function createLeadCard(lead) {
     });
   }
 
-  saveButton.addEventListener("click", () => {
-    const patch = {};
-    const nextStatus = statusSelect.value;
-    const nextPriority = prioritySelect.value;
-    const nextDepartment = departmentSelect.value || "unassigned";
-    const nextAssigneeId = assigneeSelect.value || "";
-    const nextNote = note.value.trim();
+  if (saveButton) {
+    saveButton.addEventListener("click", () => {
+      const patch = {};
+      const nextStatus = statusSelect.value;
+      const nextPriority = prioritySelect.value;
+      const nextDepartment = departmentSelect.value || "unassigned";
+      const nextAssigneeId = assigneeSelect.value || "";
+      const nextNote = note.value.trim();
 
-    if (canEditStatus && nextStatus !== normalizeLeadStatus(lead.status)) {
-      patch.status = nextStatus;
-    }
-    if (canAssign && nextPriority !== normalizeLeadPriority(lead.priority)) {
-      patch.priority = nextPriority;
-    }
-    if (canAssign && nextDepartment !== (lead.department || "unassigned")) {
-      patch.department = nextDepartment;
-    }
-    if (canAssign && nextAssigneeId !== (lead.assigneeId || "")) {
-      patch.assigneeId = nextAssigneeId;
-    }
-    if (canEditNote && nextNote !== (lead.internalNote || "")) {
-      patch.internalNote = nextNote;
-    }
+      if (canEditStatus && nextStatus !== normalizeLeadStatus(lead.status)) {
+        patch.status = nextStatus;
+      }
+      if (canAssign && nextPriority !== normalizeLeadPriority(lead.priority)) {
+        patch.priority = nextPriority;
+      }
+      if (canAssign && nextDepartment !== (lead.department || "unassigned")) {
+        patch.department = nextDepartment;
+      }
+      if (canAssign && nextAssigneeId !== (lead.assigneeId || "")) {
+        patch.assigneeId = nextAssigneeId;
+      }
+      if (canEditNote && nextNote !== (lead.internalNote || "")) {
+        patch.internalNote = nextNote;
+      }
 
-    applyPatch(
-      patch,
-      `Заявка обновлена: ${lead.name || lead.id}.`,
-      "Не удалось сохранить изменения."
-    );
-  });
+      applyPatch(
+        patch,
+        `Заявка обновлена: ${lead.name || lead.id}.`,
+        "Не удалось сохранить изменения."
+      );
+    });
+  }
+
+  if (takeSelfButton) {
+    takeSelfButton.addEventListener("click", () => {
+      const patch = { assigneeId: actor.id };
+      if (normalizeLeadStatus(lead.status) === "new") {
+        patch.status = "in_progress";
+      }
+      applyPatch(
+        patch,
+        `Заявка взята в работу: ${lead.name || lead.id}.`,
+        "Не удалось взять заявку."
+      );
+    });
+  }
+
+  if (deleteLeadButton) {
+    deleteLeadButton.addEventListener("click", async () => {
+      const confirmDelete = window.confirm(
+        `Удалить заявку "${leadDisplayName(lead)}"? Это действие удалит всю информацию по заявке без возможности восстановления.`
+      );
+      if (!confirmDelete) {
+        return;
+      }
+      await deleteLeadCompletely(lead, "Не удалось удалить заявку.");
+    });
+  }
 
   commentButton.addEventListener("click", async () => {
     const text = commentInput.value.trim();
@@ -1399,7 +1468,11 @@ function createLeadCard(lead) {
   if (quickActions.childElementCount > 0) {
     item.appendChild(quickActions);
   }
-  item.append(detailsBlock, crmPanel, editorPanel);
+  if (hasAnyEditRights) {
+    item.append(detailsBlock, crmPanel, editorPanel);
+  } else {
+    item.append(detailsBlock, crmPanel);
+  }
   return item;
 }
 
@@ -1416,10 +1489,12 @@ function updateCounterStatus() {
 
   const hasExtraFilters =
     Boolean(normalizeForSearch(leadSearch?.value || "")) ||
+    String(leadStatusFilter?.value || "all") !== "all" ||
+    String(leadPriorityFilter?.value || "all") !== "all" ||
     Boolean(String(leadDepartmentFilter?.value || "")) ||
     Boolean(String(leadAssigneeFilter?.value || ""));
 
-  if (!hasExtraFilters && activeFlow === "all") {
+  if (!hasExtraFilters) {
     const queueTotal = getOperationalQueue().length;
     setText(
       leadsStatus,
@@ -1429,11 +1504,13 @@ function updateCounterStatus() {
     return;
   }
 
-  const flowName = flowLabels[activeFlow] || flowLabels.all;
   const sortName = sortLabels[String(leadSortMode?.value || "queue")] || sortLabels.queue;
+  const scope = String(leadStatusFilter?.value || "all");
+  const scopeLabel =
+    scope === "all" ? "Все статусы" : scope === "unassigned" ? "Без исполнителя" : statusLabels[scope] || scope;
   setText(
     leadsStatus,
-    `Поток: ${flowName}. Показано ${formatNumber(shown)} из ${formatNumber(allLeads.length)} (сортировка по ${sortName}).`,
+    `${scopeLabel}. Показано ${formatNumber(shown)} из ${formatNumber(allLeads.length)} (сортировка по ${sortName}).`,
     "var(--tone-info)"
   );
 }
@@ -1455,9 +1532,8 @@ function renderLeads() {
     return;
   }
 
-  const sections = buildLeadSections(filteredLeads);
-  sections.forEach((section) => {
-    leadsList.appendChild(createStageSection(section.key, section.title, section.hint, section.leads));
+  filteredLeads.forEach((lead) => {
+    leadsList.appendChild(createLeadCard(lead));
   });
 
   scrollToFocusedLeadIfNeeded();
@@ -1480,9 +1556,9 @@ async function loadLeadsData() {
     teamUsers = Array.isArray(teamPayload.users) ? teamPayload.users : [];
     visibleDepartments = Array.isArray(teamPayload.departments) ? teamPayload.departments : [];
     allLeads = Array.isArray(leadsPayload.leads) ? leadsPayload.leads : [];
+    setTrainingNavVisible(permissions.canAccessTraining !== false);
 
     setAuthRequiredState(false);
-    setOwnerAdminVisible(actor?.role === "owner");
     refreshActorMeta();
     refreshFilterOptions();
     renderSummary();
@@ -1500,6 +1576,7 @@ async function loadLeadsData() {
 }
 
 function handleFilterChange() {
+  syncFilterState();
   renderLeads();
   updateCounterStatus();
   refreshOperationalPanel();
@@ -1508,6 +1585,12 @@ function handleFilterChange() {
 function resetFilters() {
   if (leadSearch) {
     leadSearch.value = "";
+  }
+  if (leadStatusFilter) {
+    leadStatusFilter.value = "all";
+  }
+  if (leadPriorityFilter) {
+    leadPriorityFilter.value = "all";
   }
   if (leadSortMode) {
     leadSortMode.value = "queue";
@@ -1518,7 +1601,6 @@ function resetFilters() {
   if (leadAssigneeFilter) {
     leadAssigneeFilter.value = "";
   }
-  activeFlow = "all";
   syncFilterState();
   renderSummary();
   handleFilterChange();
@@ -1526,13 +1608,14 @@ function resetFilters() {
 
 if (!apiAllowed) {
   setAuthRequiredState(false);
-  setOwnerAdminVisible(false);
+  setTrainingNavVisible(false);
   setText(leadsAuthStatus, "Откройте через сервер: http://localhost:3000/admin-leads.html", "var(--tone-error)");
   setText(leadsStatus, "Откройте через сервер: http://localhost:3000/admin-leads.html", "var(--tone-error)");
   refreshOperationalPanel();
 } else {
   token = "";
   setAuthRequiredState(false);
+  setTrainingNavVisible(true);
   refreshOperationalPanel();
   loadLeadsData();
 
@@ -1544,6 +1627,12 @@ if (!apiAllowed) {
 
   if (leadSearch) {
     leadSearch.addEventListener("input", handleFilterChange);
+  }
+  if (leadStatusFilter) {
+    leadStatusFilter.addEventListener("change", handleFilterChange);
+  }
+  if (leadPriorityFilter) {
+    leadPriorityFilter.addEventListener("change", handleFilterChange);
   }
   if (leadSortMode) {
     leadSortMode.addEventListener("change", handleFilterChange);

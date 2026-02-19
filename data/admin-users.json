@@ -1,10 +1,26 @@
 [
   {
+    "id": "product_lead",
+    "username": "product_lead",
+    "password": "change-product",
+    "name": "Product Lead",
+    "role": "product",
+    "department": "sales"
+  },
+  {
+    "id": "manager_main",
+    "username": "manager_main",
+    "password": "change-manager",
+    "name": "Manager Main",
+    "role": "manager",
+    "department": "sales"
+  },
+  {
     "id": "help_helpteam1",
     "username": "helpteam1",
     "password": "sashylya",
     "name": "Сашуля",
-    "role": "help",
+    "role": "manager",
     "department": "sales"
   }
 ]

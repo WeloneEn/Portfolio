@@ -7,6 +7,7 @@ const { spawn, spawnSync } = require("child_process");
 
 const ROOT_DIR = __dirname;
 const DATA_FILE = path.join(ROOT_DIR, "data", "site-data.json");
+const ADMIN_USERS_FILE = path.join(ROOT_DIR, "data", "admin-users.json");
 
 const QA_PORT = Number(process.env.QA_PORT || 3199);
 const QA_ADMIN_PASSWORD =
@@ -16,9 +17,6 @@ const QA_ADMIN_USERNAME =
 const QA_TOKEN_SECRET =
   process.env.QA_TOKEN_SECRET ||
   `qa_token_secret_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-const QA_HELP_LOGIN = process.env.QA_HELP_LOGIN || "sales_help";
-const QA_HELP_PASSWORD =
-  process.env.QA_HELP_PASSWORD || "change-sales-help";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -61,6 +59,20 @@ function verifyThemeCoverage(styleText) {
 
   requiredSelectors.forEach((selector) => {
     assertIncludes(styleText, selector, `Missing theme selector: ${selector}`);
+  });
+}
+
+function verifyAdminUiCoverage(adminUiText) {
+  const requiredSelectors = [
+    'body[data-page="admin"] .site-header',
+    'body[data-page="admin"] .leads-filters',
+    'body[data-page="admin"] .lead-item',
+    'body[data-page="admin"] .event-card',
+    'body[data-page="admin"] .training-layout'
+  ];
+
+  requiredSelectors.forEach((selector) => {
+    assertIncludes(adminUiText, selector, `Missing admin-ui selector: ${selector}`);
   });
 }
 
@@ -155,9 +167,9 @@ async function waitForServer(maxAttempts = 40) {
   throw new Error("Server did not start in time.");
 }
 
-async function readDataBackup() {
+async function readFileBackup(filePath) {
   try {
-    const raw = await fs.readFile(DATA_FILE, "utf8");
+    const raw = await fs.readFile(filePath, "utf8");
     return {
       hadFile: true,
       raw
@@ -170,21 +182,37 @@ async function readDataBackup() {
   }
 }
 
-async function restoreDataBackup(backup) {
+async function restoreFileBackup(filePath, backup) {
   if (!backup) {
     return;
   }
 
   if (backup.hadFile) {
-    await fs.writeFile(DATA_FILE, backup.raw, "utf8");
+    await fs.writeFile(filePath, backup.raw, "utf8");
     return;
   }
 
   try {
-    await fs.unlink(DATA_FILE);
+    await fs.unlink(filePath);
   } catch {
     // Ignore if file does not exist.
   }
+}
+
+async function readDataBackup() {
+  return {
+    siteData: await readFileBackup(DATA_FILE),
+    adminUsers: await readFileBackup(ADMIN_USERS_FILE)
+  };
+}
+
+async function restoreDataBackup(backup) {
+  if (!backup) {
+    return;
+  }
+
+  await restoreFileBackup(DATA_FILE, backup.siteData);
+  await restoreFileBackup(ADMIN_USERS_FILE, backup.adminUsers);
 }
 
 async function stopServer(serverProcess) {
@@ -263,6 +291,7 @@ async function run() {
     const pageMarkers = {
       "/admin.html": [
         'id="adminPanel"',
+        "admin-ui.css",
         'href="admin-leads.html"',
         'href="admin-events.html"',
         'href="admin-training.html"'
@@ -270,12 +299,16 @@ async function run() {
       "/admin-leads.html": [
         'id="leadsPanel"',
         'id="leadsList"',
+        'id="leadStatusFilter"',
+        'id="leadPriorityFilter"',
+        "admin-ui.css",
         'href="admin-events.html"',
         'href="admin-training.html"'
       ],
       "/admin-events.html": [
         'id="eventsPanel"',
         'id="eventsList"',
+        "admin-ui.css",
         'href="admin-leads.html"',
         'href="admin-training.html"'
       ],
@@ -283,6 +316,7 @@ async function run() {
         'id="trainingPanel"',
         'id="trainingReviewForm"',
         'id="trainingUserSelect"',
+        "admin-ui.css",
         'href="admin-events.html"',
         'href="admin-leads.html"'
       ]
@@ -312,6 +346,10 @@ async function run() {
     assertIncludes(styleText, ".training-layout", "Missing training layout styles");
     assertIncludes(styleText, ".training-summary", "Missing training summary styles");
     console.log("OK: theme mode coverage");
+
+    const adminUiText = await fs.readFile(path.join(ROOT_DIR, "admin-ui.css"), "utf8");
+    verifyAdminUiCoverage(adminUiText);
+    console.log("OK: admin-ui coverage");
 
     const coreScript = await fs.readFile(path.join(ROOT_DIR, "script.js"), "utf8");
     assertIncludes(coreScript, 'href="admin-events.html"', "Workspace shell missing events link");
@@ -411,7 +449,99 @@ async function run() {
         team.json.departments.length > 0,
       "Failed: /api/admin/team payload"
     );
+    const allowedRoles = new Set(["owner", "product", "manager"]);
+    const hasOnlySupportedRoles = team.json.users.every((user) =>
+      allowedRoles.has(String(user?.role || ""))
+    );
+    assert(hasOnlySupportedRoles, "Failed: /api/admin/team contains deprecated roles.");
     console.log("OK: /api/admin/team (public workspace)");
+
+    const legacyHelpLogin = await request({
+      method: "POST",
+      pathname: "/api/admin/login",
+      body: {
+        username: "sales_help",
+        password: "change-sales-help"
+      },
+      expectedStatus: 401
+    });
+    assert(
+      legacyHelpLogin.json && legacyHelpLogin.json.error === "INVALID_CREDENTIALS",
+      "Failed: legacy sales_help account should not be available."
+    );
+    console.log("OK: legacy system help account is disabled");
+
+    const ownerLogin = await request({
+      method: "POST",
+      pathname: "/api/admin/login",
+      body: {
+        username: QA_ADMIN_USERNAME,
+        password: QA_ADMIN_PASSWORD
+      },
+      expectedStatus: 200
+    });
+    const ownerToken = String(ownerLogin.json?.token || "");
+    assert(ownerToken.length > 20, "Failed: owner token not received.");
+    console.log("OK: /api/admin/login");
+
+    const legacyRoleUsername = `qa_role_${Date.now()}`;
+    const createdLegacyRoleUser = await request({
+      method: "POST",
+      pathname: "/api/admin/users",
+      token: ownerToken,
+      body: {
+        username: legacyRoleUsername,
+        password: "qa_role_password",
+        name: "QA Legacy Role",
+        role: "help",
+        department: "sales"
+      },
+      expectedStatus: 201
+    });
+    const createdLegacyRole = String(createdLegacyRoleUser.json?.user?.role || "");
+    const createdLegacyUserId = String(createdLegacyRoleUser.json?.user?.id || "");
+    assert(createdLegacyRole === "manager", "Failed: POST /api/admin/users role help should map to manager.");
+    assert(createdLegacyUserId.length > 0, "Failed: created user id is empty.");
+
+    const patchedLegacyRoleUser = await request({
+      method: "PATCH",
+      pathname: `/api/admin/users/${encodeURIComponent(createdLegacyUserId)}`,
+      token: ownerToken,
+      body: {
+        role: "worker"
+      },
+      expectedStatus: 200
+    });
+    assert(
+      String(patchedLegacyRoleUser.json?.user?.role || "") === "manager",
+      "Failed: PATCH /api/admin/users role worker should map to manager."
+    );
+
+    const adminUsers = await request({
+      method: "GET",
+      pathname: "/api/admin/users",
+      token: ownerToken,
+      expectedStatus: 200
+    });
+    assert(
+      Array.isArray(adminUsers.json?.users) &&
+        adminUsers.json.users.every((user) => allowedRoles.has(String(user?.role || ""))),
+      "Failed: /api/admin/users contains deprecated roles."
+    );
+
+    const removedLegacyRoleUser = await request({
+      method: "DELETE",
+      pathname: `/api/admin/users/${encodeURIComponent(createdLegacyUserId)}`,
+      token: ownerToken,
+      expectedStatus: 200
+    });
+    assert(
+      removedLegacyRoleUser.json &&
+        removedLegacyRoleUser.json.ok === true &&
+        removedLegacyRoleUser.json.removedUserId === createdLegacyUserId,
+      "Failed: DELETE /api/admin/users/:id for qa legacy role user."
+    );
+    console.log("OK: user role migration compatibility");
 
     const leads = await request({
       method: "GET",
@@ -442,6 +572,108 @@ async function run() {
       "Failed: PATCH /api/admin/leads/:id (public workspace)"
     );
     console.log("OK: PATCH /api/admin/leads/:id (public workspace)");
+
+    const deleteDoneLead = await request({
+      method: "DELETE",
+      pathname: `/api/admin/leads/${encodeURIComponent(leadId)}`,
+      expectedStatus: 403
+    });
+    assert(
+      deleteDoneLead.json && deleteDoneLead.json.error === "FORBIDDEN_DELETE_STATUS",
+      "Failed: DELETE /api/admin/leads/:id should reject done leads."
+    );
+
+    const deletableLead = await request({
+      method: "POST",
+      pathname: "/api/leads",
+      body: {
+        name: "QA Delete Candidate",
+        contact: "qa-delete@example.com",
+        type: "Landing",
+        message: "Lead for deletion test",
+        sourcePage: "/contact.html"
+      },
+      expectedStatus: 201
+    });
+    const deletableLeadId = String(deletableLead.json?.leadId || "");
+    assert(deletableLeadId.length > 0, "Failed: second lead creation for delete test.");
+
+    const moveDeletableToWork = await request({
+      method: "PATCH",
+      pathname: `/api/admin/leads/${encodeURIComponent(deletableLeadId)}`,
+      body: { status: "in_progress" },
+      expectedStatus: 200
+    });
+    assert(
+      moveDeletableToWork.json &&
+        moveDeletableToWork.json.ok === true &&
+        moveDeletableToWork.json.lead &&
+        moveDeletableToWork.json.lead.status === "in_progress",
+      "Failed: prepare in_progress lead for delete."
+    );
+
+    const deleteInProgressLead = await request({
+      method: "DELETE",
+      pathname: `/api/admin/leads/${encodeURIComponent(deletableLeadId)}`,
+      expectedStatus: 200
+    });
+    assert(
+      deleteInProgressLead.json &&
+        deleteInProgressLead.json.ok === true &&
+        deleteInProgressLead.json.deletedLeadId === deletableLeadId,
+      "Failed: DELETE /api/admin/leads/:id in_progress lead."
+    );
+
+    const leadsAfterDelete = await request({
+      method: "GET",
+      pathname: "/api/admin/leads?limit=5000",
+      expectedStatus: 200
+    });
+    const deletedStillExists = Array.isArray(leadsAfterDelete.json?.leads)
+      ? leadsAfterDelete.json.leads.some((item) => item.id === deletableLeadId)
+      : true;
+    assert(!deletedStillExists, "Failed: deleted lead still exists in /api/admin/leads.");
+    console.log("OK: DELETE /api/admin/leads/:id");
+
+    const commentText = `QA comment ${Date.now()}`;
+    const comment = await request({
+      method: "POST",
+      pathname: `/api/admin/leads/${encodeURIComponent(leadId)}/comments`,
+      body: { text: commentText },
+      expectedStatus: 201
+    });
+    assert(
+      comment.json &&
+        comment.json.ok === true &&
+        comment.json.comment &&
+        comment.json.comment.text === commentText &&
+        typeof comment.json.comment.authorUsername === "string" &&
+        comment.json.comment.authorUsername.length > 0 &&
+        /\d{4}-\d{2}-\d{2}T/.test(String(comment.json.comment.createdAt || "")),
+      "Failed: POST /api/admin/leads/:id/comments metadata"
+    );
+
+    const leadsAfterComment = await request({
+      method: "GET",
+      pathname: "/api/admin/leads?limit=5000",
+      expectedStatus: 200
+    });
+    const foundLeadAfterComment = Array.isArray(leadsAfterComment.json?.leads)
+      ? leadsAfterComment.json.leads.find((item) => item.id === leadId)
+      : null;
+    const persistedComment = Array.isArray(foundLeadAfterComment?.comments)
+      ? foundLeadAfterComment.comments.find((item) => item.text === commentText)
+      : null;
+    assert(
+      Boolean(
+        persistedComment &&
+          typeof persistedComment.authorUsername === "string" &&
+          persistedComment.authorUsername.length > 0 &&
+          /\d{4}-\d{2}-\d{2}T/.test(String(persistedComment.createdAt || ""))
+      ),
+      "Failed: comment persistence in /api/admin/leads"
+    );
+    console.log("OK: POST /api/admin/leads/:id/comments");
 
     const events = await request({
       method: "GET",
@@ -476,6 +708,27 @@ async function run() {
     const trainingUser = training.json.users.find((item) => item.role !== "owner") || null;
     assert(Boolean(trainingUser && trainingUser.id), "No training user available for QA checks.");
     console.log("OK: /api/admin/training");
+
+    const trainingAssign = await request({
+      method: "PATCH",
+      pathname: `/api/admin/training/assignments/${encodeURIComponent(trainingUser.id)}`,
+      body: {
+        assigned: true,
+        note: "QA assignment"
+      },
+      expectedStatus: 200
+    });
+    assert(
+      trainingAssign.json &&
+        trainingAssign.json.ok === true &&
+        trainingAssign.json.assignment &&
+        trainingAssign.json.assignment.user &&
+        trainingAssign.json.assignment.user.id === trainingUser.id &&
+        trainingAssign.json.assignment.assignment &&
+        trainingAssign.json.assignment.assignment.assigned === true,
+      "Failed: PATCH /api/admin/training/assignments/:id"
+    );
+    console.log("OK: PATCH /api/admin/training/assignments/:id");
 
     const trainingProfilePatch = await request({
       method: "PATCH",

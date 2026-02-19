@@ -7,6 +7,8 @@ const adminHotspot = document.getElementById("adminHotspot");
 const leadsNavLink = document.getElementById("leadsNavLink");
 const adminNavLink = document.getElementById("adminNavLink");
 const themeToggle = document.getElementById("themeToggle");
+const easterEggDialog = document.getElementById("easterEgg");
+const closeEggButton = document.getElementById("closeEgg");
 
 const API_IS_AVAILABLE = window.location.protocol === "http:" || window.location.protocol === "https:";
 const META_API_BASE_SELECTOR = 'meta[name="welone-api-base"]';
@@ -354,6 +356,43 @@ function showSecretToast(message) {
   toastHideTimer = window.setTimeout(() => {
     toast.classList.remove("is-visible");
   }, 3300);
+}
+
+function closeEasterEggDialog() {
+  if (!easterEggDialog || !easterEggDialog.open) {
+    return;
+  }
+
+  easterEggDialog.close();
+}
+
+function showEasterEggDialog(message) {
+  if (!easterEggDialog || typeof easterEggDialog.showModal !== "function") {
+    return;
+  }
+
+  const textNode = easterEggDialog.querySelector("p");
+  if (textNode && typeof message === "string" && message.trim()) {
+    textNode.textContent = message.trim();
+  }
+
+  if (!easterEggDialog.open) {
+    easterEggDialog.showModal();
+  }
+}
+
+if (closeEggButton) {
+  closeEggButton.addEventListener("click", () => {
+    closeEasterEggDialog();
+  });
+}
+
+if (easterEggDialog) {
+  easterEggDialog.addEventListener("click", (event) => {
+    if (event.target === easterEggDialog) {
+      closeEasterEggDialog();
+    }
+  });
 }
 
 function wait(milliseconds) {
@@ -772,43 +811,55 @@ function ensureWorkspaceShell() {
     <header class="workspace-shell__head">
       <div>
         <p class="workspace-shell__kicker">Workspace</p>
-        <h1>Операционный центр</h1>
-        <p class="workspace-shell__lead">Рабочий режим активен. Доступны инструменты команды.</p>
+        <h1>Админ-панель команды</h1>
+        <p class="workspace-shell__lead">Единое рабочее пространство: заявки, CRM-события, обучение сотрудников и аналитика.</p>
+      </div>
+      <div class="workspace-shell__head-actions">
+        <button class="btn btn--ghost" id="workspaceExitBtn" type="button">Клиентский режим</button>
       </div>
     </header>
     <section class="workspace-shell__quick">
       <a class="workspace-tile workspace-tile--primary" href="admin-leads.html">
         <h2>Заявки</h2>
-        <p>Очередь обращений, фильтры, статусы и приоритеты.</p>
+        <p>Единый список заявок, статусы, приоритеты, исполнители, CRM-карточка и комментарии.</p>
       </a>
       <a class="workspace-tile" href="admin.html">
         <h2>Статистика</h2>
-        <p>Трафик, повторы, время просмотра и динамика.</p>
+        <p>Трафик, вовлеченность, повторные визиты и сводка по воронке лидов.</p>
       </a>
       <a class="workspace-tile" href="admin-events.html">
-        <h2>События</h2>
-        <p>Дни рождения клиентов и другие важные даты.</p>
+        <h2>Важные события</h2>
+        <p>Дни рождения клиентов и ключевые даты, найденные в заявках и комментариях.</p>
       </a>
       <a class="workspace-tile" href="admin-training.html">
         <h2>Обучение</h2>
-        <p>30-дневная программа, контроль разговоров и рейтинг.</p>
+        <p>30-дневная программа, чек-лист разбора, рейтинг и мотивация сотрудников.</p>
       </a>
     </section>
     <section class="workspace-shell__board">
       <article class="workspace-panel">
-        <h3>Ежедневный цикл</h3>
+        <h3>Рабочий цикл</h3>
         <ol>
-          <li>Проверить новые заявки.</li>
-          <li>Назначить ответственных.</li>
-          <li>Обновить приоритеты и статусы.</li>
+          <li>Откройте "Заявки" и обработайте очередь новых лидов.</li>
+          <li>Назначьте исполнителя и зафиксируйте задачу/комментарии.</li>
+          <li>Проверьте "Важные события" и запланируйте контакт.</li>
+          <li>Обновите блок "Обучение" по итогам контроля разговоров.</li>
         </ol>
       </article>
       <article class="workspace-panel">
-        <h3>Стандарт команды</h3>
+        <h3>Стандарт качества</h3>
         <ul>
-          <li>Высокий приоритет: реакция до 30 минут.</li>
-          <li>Любое изменение сразу фиксируется.</li>
-          <li>Незавершенные задачи остаются в состоянии in_progress.</li>
+          <li>Каждое действие по лиду фиксируется в карточке и комментариях.</li>
+          <li>Комментарии сохраняют автора (@логин), дату и время.</li>
+          <li>Незавершенные задачи остаются в статусе "В работе".</li>
+        </ul>
+      </article>
+      <article class="workspace-panel">
+        <h3>Роли и доступ</h3>
+        <ul>
+          <li>Владелец: полный доступ ко всем разделам и сотрудникам.</li>
+          <li>Продакт: управление командой, назначениями и обучением.</li>
+          <li>Менеджер: работа с заявками, CRM и личной статистикой.</li>
         </ul>
       </article>
     </section>
@@ -816,6 +867,13 @@ function ensureWorkspaceShell() {
   `;
 
   main.prepend(shell);
+
+  const workspaceExitBtn = shell.querySelector("#workspaceExitBtn");
+  if (workspaceExitBtn) {
+    workspaceExitBtn.addEventListener("click", () => {
+      exitWorkspaceMode();
+    });
+  }
 
   return shell;
 }
@@ -972,6 +1030,7 @@ function initSecretAdminTrigger() {
       setHiddenAccessState(true, false);
       void syncUnlockedAccessLinks();
       setWorkspaceState(true, { persist: false });
+      showSecretToast("Workspace включен. Откройте нужный раздел команды.");
     }
   });
 }
@@ -1379,6 +1438,13 @@ function activateSecretMode(message, secretId = "") {
     document.body.classList.remove("secret-mode");
   }, 3600);
   showSecretToast(message);
+  const dialogMessage =
+    typeof message === "string"
+      ? message
+      : message && typeof message === "object" && typeof message.text === "string"
+        ? message.text
+        : "Приятного просмотра.";
+  showEasterEggDialog(dialogMessage);
   trackSecretDiscovery(secretId);
 }
 

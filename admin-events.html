@@ -12,9 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css?v=20260218z14" />
+  <link rel="stylesheet" href="admin-ui.css?v=20260219ux2" />
   <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260218z14"></script>
-  <script defer src="admin-events.js?v=20260219crm1"></script>
+  <script defer src="script.js?v=20260219ux2"></script>
+  <script defer src="admin-events.js?v=20260219ux2"></script>
 </head>
 <body data-page="admin">
   <div class="preloader" id="preloader" aria-hidden="true">
@@ -41,7 +42,7 @@
     <section class="page-hero reveal">
       <p class="label">CRM</p>
       <h1>Важные события клиентов</h1>
-      <p>Реестр ключевых дат по клиентам: дни рождения и другие маркеры, найденные в заявках и комментариях команды.</p>
+      <p>Единый список важных дат и маркеров по клиентам, найденных в заявках и комментариях.</p>
     </section>
 
     <section class="admin-auth reveal" id="eventsAuth" hidden>
@@ -59,9 +60,15 @@
       <p class="admin-status" id="eventsActorMeta"></p>
       <p class="admin-status" id="eventsStatus">Загрузка событий...</p>
 
+      <nav class="admin-subnav" aria-label="Разделы событий">
+        <a href="#eventsSummary">Сводка</a>
+        <a href="#eventsFilters">Фильтры</a>
+        <a href="#eventsList">Список</a>
+      </nav>
+
       <div class="events-summary" id="eventsSummary"></div>
 
-      <div class="events-filters">
+      <div class="events-filters" id="eventsFilters">
         <label class="leads-filters__field leads-filters__field--grow" for="eventSearch">
           <span>Текстовый поиск</span>
           <input id="eventSearch" type="text" placeholder="Клиент, контакт, заметка..." autocomplete="off" />
@@ -71,6 +78,7 @@
           <span>Период</span>
           <select id="eventScopeFilter">
             <option value="all">Все события</option>
+            <option value="today">Сегодня</option>
             <option value="upcoming">Ближайшие</option>
             <option value="soon">В течение 7 дней</option>
             <option value="overdue">Просроченные</option>

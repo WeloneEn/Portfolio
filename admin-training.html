@@ -12,9 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css?v=20260218z14" />
+  <link rel="stylesheet" href="admin-ui.css?v=20260219ux2" />
   <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260218z14"></script>
-  <script defer src="admin-training.js?v=20260219train1"></script>
+  <script defer src="script.js?v=20260219ux2"></script>
+  <script defer src="admin-training.js?v=20260219ux2"></script>
 </head>
 <body data-page="admin">
   <div class="preloader" id="preloader" aria-hidden="true">
@@ -59,10 +60,17 @@
       <p class="admin-status" id="trainingActorMeta"></p>
       <p class="admin-status" id="trainingStatus">Загрузка обучения...</p>
 
+      <nav class="admin-subnav" aria-label="Разделы обучения">
+        <a href="#trainingProfileSection">Профиль</a>
+        <a href="#trainingReviewSection">Разбор</a>
+        <a href="#trainingBoardsSection">Рейтинг</a>
+        <a href="#trainingMaterialsSection">Материалы</a>
+      </nav>
+
       <div class="training-summary" id="trainingSummary"></div>
 
       <div class="training-layout">
-        <article class="card training-card">
+        <article class="card training-card" id="trainingProfileSection">
           <h2>Профиль сотрудника</h2>
           <label class="leads-filters__field" for="trainingUserSelect">
             <span>Сотрудник</span>
@@ -122,7 +130,7 @@
           <div class="training-profile-meta" id="trainingProfileMeta"></div>
         </article>
 
-        <article class="card training-card">
+        <article class="card training-card" id="trainingReviewSection">
           <h2>Разбор разговора (чек-лист 100)</h2>
           <form class="training-review-form" id="trainingReviewForm">
             <label class="leads-filters__field" for="trainingReviewChannel">
@@ -197,7 +205,7 @@
         </article>
       </div>
 
-      <div class="training-boards">
+      <div class="training-boards" id="trainingBoardsSection">
         <article class="card training-card">
           <h2>Рейтинг и мотивация</h2>
           <div class="training-leaderboard" id="trainingLeaderboard"></div>
@@ -208,7 +216,7 @@
         </article>
       </div>
 
-      <div class="training-materials">
+      <div class="training-materials" id="trainingMaterialsSection">
         <article class="card training-material">
           <h2>Программа обучения 30 дней</h2>
           <ol>

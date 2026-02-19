@@ -44,10 +44,17 @@ const apiAllowed = window.location.protocol === "http:" || window.location.proto
 
 const roleLabels = {
   owner: "Владелец",
-  help: "Help",
-  manager: "Руководитель",
-  worker: "Сотрудник"
+  product: "Продакт",
+  manager: "Менеджер"
 };
+
+function resolveRoleLabel(roleValue) {
+  const role = String(roleValue || "").trim().toLowerCase();
+  if (role === "help" || role === "worker") {
+    return roleLabels.manager;
+  }
+  return roleLabels[role] || roleLabels.manager;
+}
 
 const stageLabels = {
   foundation: "1. Фундамент",
@@ -174,6 +181,69 @@ function setControlsDisabled(disabled) {
   }
 }
 
+function applyRoleRestrictions() {
+  const canManageTraining = Boolean(permissions.canManageTraining);
+  const canReviewCalls = Boolean(permissions.canReviewCalls);
+
+  const profileControls = [
+    trainingPlanStartDate,
+    trainingCurrentDay,
+    trainingStage,
+    trainingStatusSelect,
+    trainingConfidence,
+    trainingEnergy,
+    trainingControl,
+    trainingNotes,
+    saveTrainingProfile
+  ];
+
+  profileControls.forEach((control) => {
+    if (control) {
+      control.disabled = !canManageTraining;
+    }
+  });
+
+  if (saveTrainingProfile) {
+    saveTrainingProfile.hidden = !canManageTraining;
+  }
+
+  const reviewControls = [
+    trainingReviewChannel,
+    reviewStart,
+    reviewDiagnostics,
+    reviewPresentation,
+    reviewObjections,
+    reviewClosing,
+    reviewCrm,
+    reviewConfidence,
+    reviewEnergy,
+    reviewControl,
+    reviewComment
+  ];
+
+  reviewControls.forEach((control) => {
+    if (control) {
+      control.disabled = !canReviewCalls;
+    }
+  });
+
+  if (trainingReviewForm) {
+    const submit = trainingReviewForm.querySelector("button[type='submit']");
+    if (submit) {
+      submit.disabled = !canReviewCalls;
+      submit.hidden = !canReviewCalls;
+    }
+  }
+
+  if (!canManageTraining) {
+    setText(trainingProfileStatus, "Для вашей роли профиль доступен только для просмотра.", "var(--tone-info)");
+  }
+
+  if (!canReviewCalls) {
+    setText(trainingReviewStatus, "Для вашей роли доступен просмотр разборов без редактирования.", "var(--tone-info)");
+  }
+}
+
 function formatNumber(value) {
   return new Intl.NumberFormat("ru-RU").format(Number(value) || 0);
 }
@@ -292,7 +362,7 @@ function renderActorMeta() {
     return;
   }
 
-  const role = roleLabels[actor.role] || actor.role || "Сотрудник";
+  const role = resolveRoleLabel(actor.role);
   const name = actor.name || actor.username || actor.id || "Пользователь";
   const policy = permissions.canManageTraining
     ? "может обновлять обучение и разборы"
@@ -358,7 +428,7 @@ function fillUserSelect() {
   users.forEach((user) => {
     const option = document.createElement("option");
     option.value = user.id;
-    option.textContent = `${user.name || user.username} (${roleLabels[user.role] || user.role || "роль"})`;
+    option.textContent = `${user.name || user.username} (${resolveRoleLabel(user.role)})`;
     trainingUserSelect.appendChild(option);
   });
 
@@ -534,6 +604,9 @@ function setReviewBusy(isBusy) {
   if (submit) {
     submit.disabled = isBusy;
   }
+  if (!isBusy) {
+    applyRoleRestrictions();
+  }
 }
 
 function resolveTrainingError(error, fallback) {
@@ -606,6 +679,7 @@ async function loadTrainingData(options = {}) {
     setText(trainingStatus, resolveTrainingError(error, "Не удалось загрузить модуль обучения."), "var(--tone-error)");
   } finally {
     setControlsDisabled(false);
+    applyRoleRestrictions();
   }
 }
 
@@ -714,6 +788,7 @@ function onUserChange() {
   renderReviews();
   setText(trainingProfileStatus, "", "");
   setText(trainingReviewStatus, "", "");
+  applyRoleRestrictions();
 }
 
 if (!apiAllowed) {

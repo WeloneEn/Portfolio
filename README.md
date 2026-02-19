@@ -1,16 +1,20 @@
 # Welone Digital Atelier Portfolio
 
-Многостраничное портфолио с анимациями, пасхалками и встроенной админ-панелью.
+Многостраничный сайт с клиентской зоной (visitor) и рабочим пространством команды (admin/workspace).
 
-## Что добавлено
+## Разделы
 
-- Метрики админки: уникальные посетители за сегодня, повторные посещения, среднее время просмотра, найденные пасхалки
-- Подсчет среднего времени просмотра страниц
-- Аналитика по найденным пасхалкам
-- Сохранение заявок из формы `contact.html`
-- Админ-панель `admin.html` для ключевой статистики
-- Отдельная страница заявок `admin-leads.html` с подробным списком и сменой статусов
-- API и раздача статики через `server.js` (без внешних зависимостей)
+- `index.html`, `about.html`, `projects.html`, `contact.html` — клиентская часть.
+- `admin.html` — аналитика и управление командой.
+- `admin-leads.html` — очередь заявок и CRM-действия.
+- `admin-events.html` — важные события клиентов.
+- `admin-training.html` — обучение и контроль менеджеров.
+
+## Роли
+
+- `owner` — полный доступ.
+- `product` — управление процессом и менеджерами.
+- `manager` — работа с заявками и личной статистикой.
 
 ## Запуск
 
@@ -18,8 +22,8 @@
 2. Установите переменные окружения:
 
 ```powershell
-$env:ADMIN_PASSWORD="СЛОЖНЫЙ_ПАРОЛЬ"
-$env:TOKEN_SECRET="ДЛИННЫЙ_СЕКРЕТ_ДЛЯ_ТОКЕНОВ"
+$env:ADMIN_PASSWORD="CHANGE_ME_STRONG_PASSWORD"
+$env:TOKEN_SECRET="CHANGE_ME_LONG_RANDOM_SECRET"
 ```
 
 3. Запустите сервер:
@@ -28,55 +32,50 @@ $env:TOKEN_SECRET="ДЛИННЫЙ_СЕКРЕТ_ДЛЯ_ТОКЕНОВ"
 node server.js
 ```
 
-4. Откройте сайт:
+4. Откройте:
 
-- Основной сайт: `http://localhost:3000/`
-- Админ-панель: `http://localhost:3000/admin.html`
-- Все заявки: `http://localhost:3000/admin-leads.html`
+- `http://localhost:3000/`
+- `http://localhost:3000/admin.html`
 
-## Как работает
+## API
 
-- Визиты отправляются из `script.js` в `POST /api/visit`.
-- Время просмотра отправляется в `POST /api/engagement`.
-- Найденные пасхалки отправляются в `POST /api/secret`.
-- Форма в `contact.html` отправляет заявку в `POST /api/leads`.
-- В админке:
-  - логин: `POST /api/admin/login`
-  - статистика: `GET /api/admin/stats`
-  - заявки: `GET /api/admin/leads`
-  - смена статуса: `PATCH /api/admin/leads/:id`
+- `POST /api/visit`
+- `POST /api/engagement`
+- `POST /api/secret`
+- `POST /api/leads`
+- `POST /api/admin/login`
+- `GET /api/admin/stats`
+- `GET /api/admin/team`
+- `GET/PATCH/DELETE /api/admin/leads/:id`
 
-## Хранилище данных
+## Данные
 
-Данные сохраняются в `data/site-data.json`.
+- `data/site-data.json`
+- `data/admin-users.json`
 
 ## Локальные ассеты пасхалок
 
-Модели для анимаций пасхалок сохранены локально:
-
-- `assets/models/rocket.svg`
+- `assets/models/command-jet.svg`
 - `assets/models/mario.svg`
 
-## Важно
+## Проверки качества
 
-Если открыть HTML-файлы напрямую (`file://`), API недоступен. Используйте запуск через `node server.js`.
-
-## Автопроверка качества (одна команда)
-
-Для полной smoke-проверки сайта (страницы + API + админ-поток):
+Быстрая backend+API+flow проверка:
 
 ```powershell
 node qa-smoke.js
 ```
 
-Что проверяет:
+UI/верстка/связки HTML↔JS (themes + mobile правила):
 
-- доступность всех HTML-страниц
-- `/api/health`, `/api/visit`, `/api/engagement`, `/api/secret`, `/api/leads`
-- защиту админ-роутов без токена
-- логин администратора, загрузку статистики и заявок
-- обновление статуса заявки через `PATCH /api/admin/leads/:id`
+```powershell
+node qa-ui-smoke.js
+```
 
-Скрипт запускает временный сервер на порту `3199` и автоматически восстанавливает `data/site-data.json` после теста, чтобы не оставлять тестовые данные.
+Для запуска в Windows двойным кликом:
 
-Для запуска двойным кликом в Windows можно использовать `qa-smoke.bat`.
+- `qa-smoke.bat`
+
+## Важно
+
+Не открывайте проект через `file://`. Используйте локальный сервер (`node server.js`), иначе API-запросы будут недоступны.
