@@ -1,6 +1,6 @@
 {
   "visits": {
-    "totalHits": 216,
+    "totalHits": 221,
     "uniqueVisitors": 1,
     "knownVisitors": {
       "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
@@ -8,7 +8,7 @@
         "sourcePage": "/index.html",
         "referrer": "http://localhost:3000/admin.html",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
-        "lastSeen": "2026-02-18T12:09:19.817Z",
+        "lastSeen": "2026-02-19T13:30:47.428Z",
         "lastSecretPage": "/index.html"
       }
     },
@@ -26,16 +26,23 @@
         "visitors": {
           "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
         }
+      },
+      "2026-02-19": {
+        "hits": 5,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
       }
     }
   },
   "engagement": {
-    "totalDurationMs": 1605671,
-    "samplesCount": 76,
+    "totalDurationMs": 1632496,
+    "samplesCount": 79,
     "byPage": {
       "/index.html": {
-        "durationMs": 1458123,
-        "samples": 50
+        "durationMs": 1479950,
+        "samples": 52
       },
       "/contact.html": {
         "durationMs": 48909,
@@ -50,8 +57,8 @@
         "samples": 5
       },
       "/": {
-        "durationMs": 5509,
-        "samples": 1
+        "durationMs": 10507,
+        "samples": 2
       }
     }
   },
@@ -106,7 +113,132 @@
     "importantEvents": []
   },
   "training": {
-    "profiles": [],
+    "profiles": [
+      {
+        "userId": "manager_main",
+        "planStartDate": "",
+        "currentDay": 1,
+        "stage": "foundation",
+        "status": "onboarding",
+        "confidence": 3,
+        "energy": 3,
+        "control": 3,
+        "notes": "",
+        "workflow": {
+          "modules": [
+            {
+              "id": "foundation",
+              "title": "Блок 1: База продукта и сценарий разговора",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            },
+            {
+              "id": "diagnostics",
+              "title": "Блок 2: Диагностика клиента и выявление потребностей",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            },
+            {
+              "id": "dialog_control",
+              "title": "Блок 3: Работа с возражениями и контроль диалога",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            },
+            {
+              "id": "closing",
+              "title": "Блок 4: Закрытие и фиксация в CRM",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            }
+          ],
+          "practice": {
+            "maxContacts": 3,
+            "contacts": [],
+            "overallReview": {
+              "intro": 0,
+              "needs": 0,
+              "offer": 0,
+              "objections": 0,
+              "closing": 0,
+              "crm": 0,
+              "totalScore": 0,
+              "comment": "",
+              "reviewedAt": "",
+              "reviewedById": "",
+              "reviewedByName": ""
+            },
+            "decision": {
+              "status": "pending",
+              "note": "",
+              "decidedAt": "",
+              "decidedById": "",
+              "decidedByName": ""
+            }
+          },
+          "survey": {
+            "submitted": false,
+            "submittedAt": "",
+            "missingTopics": "",
+            "mentorScore": 0,
+            "mentorFeedback": "",
+            "companyScore": 0,
+            "companyFeedback": ""
+          }
+        },
+        "createdAt": "2026-02-19T13:30:27.146Z",
+        "updatedAt": "2026-02-19T13:30:27.146Z",
+        "updatedById": "",
+        "updatedByName": ""
+      }
+    ],
     "callReviews": []
   },
   "performance": {
