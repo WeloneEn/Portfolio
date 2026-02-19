@@ -35,6 +35,7 @@ const DYNAMIC_ID_ALLOWLIST = new Set([
   "marioCameo",
   "secretToast",
   "workspaceShell",
+  "workspaceAuthStatus",
   "workspaceStatus"
 ]);
 
@@ -137,6 +138,17 @@ async function run() {
     assertIncludes(html, "admin-ui.css", `Missing admin-ui.css include in ${file}`);
     assertIncludes(html, marker, `Missing admin page script in ${file}`);
   });
+  const adminMainHtml = htmlByFile.get("admin.html") || "";
+  [
+    'id="trafficFolder"',
+    'id="leadsFolder"',
+    'id="conversionFolder"',
+    'id="adminUserCreateForm"',
+    'id="adminCreateUsername"',
+    'id="adminCreatePassword"'
+  ].forEach((marker) => {
+    assertIncludes(adminMainHtml, marker, `Missing admin main marker: ${marker}`);
+  });
   console.log("+: admin pages includes");
 
   for (const [fileName, html] of htmlByFile.entries()) {
@@ -213,6 +225,11 @@ async function run() {
   assertIncludes(coreScript, 'getElementById("easterEgg")', "Missing easterEgg binding in script.js");
   assertIncludes(coreScript, 'getElementById("closeEgg")', "Missing closeEgg binding in script.js");
   assertIncludes(coreScript, "showEasterEggDialog", "Missing easterEgg dialog handlers in script.js");
+  assertIncludes(
+    coreScript,
+    "if (isAdminPage && logoTapCount >= WORKSPACE_EXIT_TAP_TARGET)",
+    "Missing admin logo triple-tap exit logic in script.js"
+  );
   assert(!allJsText.includes("ownerAdminLink"), "Legacy ownerAdminLink token still exists");
   assert(!allJsText.includes("leadsAdminNavLink"), "Legacy leadsAdminNavLink token still exists");
   console.log("+: legacy cleanup checks");

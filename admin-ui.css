@@ -311,6 +311,58 @@ body[data-page="admin"] .training-summary {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+body[data-page="admin"] .admin-stats--folders {
+  grid-template-columns: 1fr;
+}
+
+body[data-page="admin"] .admin-folder {
+  padding: 0.8rem 0.9rem;
+}
+
+body[data-page="admin"] .admin-folder summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  color: var(--admin-text);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+body[data-page="admin"] .admin-folder summary::-webkit-details-marker {
+  display: none;
+}
+
+body[data-page="admin"] .admin-folder summary::after {
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-muted);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+body[data-page="admin"] .admin-folder[open] summary::after {
+  content: "−";
+}
+
+body[data-page="admin"] .admin-folder__content {
+  margin-top: 0.7rem;
+}
+
+body[data-page="admin"] .admin-stats-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 body[data-page="admin"] .stat-card,
 body[data-page="admin"] .lead-summary,
 body[data-page="admin"] .event-summary,
@@ -350,6 +402,26 @@ body[data-page="admin"] .training-review-form {
 body[data-page="admin"] .admin-role-panel {
   display: grid;
   gap: 0.75rem;
+}
+
+body[data-page="admin"] .admin-folder--role {
+  padding: 0.78rem 0.86rem;
+}
+
+body[data-page="admin"] .admin-folder--role .admin-folder__content {
+  display: grid;
+  gap: 0.7rem;
+}
+
+body[data-page="admin"] .admin-actions--compact {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+body[data-page="admin"] .admin-actions--compact .btn {
+  width: 100%;
+  justify-content: center;
 }
 
 body[data-page="admin"] .admin-plan-form {
@@ -657,6 +729,66 @@ body[data-page="admin"] .training-material {
   box-shadow: 0 8px 20px var(--admin-shadow);
 }
 
+body[data-page="admin"] .training-workflow {
+  display: grid;
+  gap: 0.75rem;
+}
+
+body[data-page="admin"] .training-workflow__modules,
+body[data-page="admin"] .training-workflow__practice,
+body[data-page="admin"] .training-workflow__decision,
+body[data-page="admin"] .training-workflow__survey {
+  display: grid;
+  gap: 0.6rem;
+}
+
+body[data-page="admin"] .training-workflow__block {
+  border-radius: var(--admin-radius-sm);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-soft);
+  padding: 0.72rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+body[data-page="admin"] .training-workflow__block h3 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 1rem;
+}
+
+body[data-page="admin"] .training-workflow__meta {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 0.86rem;
+}
+
+body[data-page="admin"] .training-workflow__grid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-page="admin"] .training-workflow__grid--score {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+body[data-page="admin"] .training-workflow__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+body[data-page="admin"] .training-workflow__actions .btn {
+  min-height: 40px;
+}
+
+body[data-page="admin"] .training-workflow__empty {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 0.9rem;
+}
+
 body[data-page="admin"] .training-profile-grid,
 body[data-page="admin"] .training-score-grid,
 body[data-page="admin"] .training-metric-grid {
@@ -713,6 +845,8 @@ body[data-page="admin"] .site-footer {
   body[data-page="admin"] .training-layout,
   body[data-page="admin"] .training-boards,
   body[data-page="admin"] .training-materials,
+  body[data-page="admin"] .training-workflow__grid,
+  body[data-page="admin"] .training-workflow__grid--score,
   body[data-page="admin"] .lead-editor__grid,
   body[data-page="admin"] .admin-plan-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -750,6 +884,8 @@ body[data-page="admin"] .site-footer {
   body[data-page="admin"] .training-layout,
   body[data-page="admin"] .training-boards,
   body[data-page="admin"] .training-materials,
+  body[data-page="admin"] .training-workflow__grid,
+  body[data-page="admin"] .training-workflow__grid--score,
   body[data-page="admin"] .training-profile-grid,
   body[data-page="admin"] .training-score-grid,
   body[data-page="admin"] .training-metric-grid,

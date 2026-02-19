@@ -7,15 +7,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Welone Digital Atelier | Статистика</title>
-  <meta name="description" content="Центр управления ролями владелец/продакт/менеджер: статистика, планы и контроль заявок." />
+  <meta
+    name="description"
+    content="Админ-панель ролей owner/product/manager: общая статистика, заявки и команда."
+  />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <link rel="stylesheet" href="admin-ui.css?v=20260219ux2" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
-  <script defer src="admin.js?v=20260219ux3"></script>
+  <script defer src="admin.js?v=20260220ux4"></script>
 </head>
 <body data-page="admin">
   <div class="preloader" id="preloader" aria-hidden="true">
@@ -27,7 +33,12 @@
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier <span class="brand-initial">C</span>ommand</a>
+    <a href="index.html" class="brand" id="brandTrigger">
+      <span class="brand-initial">W</span>elone
+      <span class="brand-initial">D</span>igital
+      <span class="brand-initial">A</span>telier
+      <span class="brand-initial">C</span>ommand
+    </a>
     <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
     <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
@@ -41,8 +52,8 @@
   <main>
     <section class="page-hero reveal">
       <p class="label">Ops Center</p>
-      <h1>Управление продажами и качеством обработки заявок</h1>
-      <p>Единая панель владелец/продакт/менеджер: воронка заявок, планы по сделкам, очки и контроль команды.</p>
+      <h1>Панель управления продажами</h1>
+      <p>Сводка по сайту и воронке заявок без перегрузки лишними деталями.</p>
     </section>
 
     <section class="admin-auth reveal" id="adminAuth" hidden></section>
@@ -50,117 +61,152 @@
     <section class="admin-panel reveal" id="adminPanel" hidden>
       <div class="admin-actions">
         <button class="btn btn--ghost" id="refreshAdmin" type="button">Обновить</button>
-        <a class="btn btn--ghost" href="admin-leads.html">К заявкам</a>
-        <a class="btn btn--ghost" href="admin-events.html">События клиентов</a>
-        <a class="btn btn--ghost" href="admin-training.html">Обучение</a>
+        <a class="btn btn--ghost" data-action-link data-roles="owner,manager" href="admin-leads.html">К заявкам</a>
+        <a class="btn btn--ghost" data-action-link data-roles="owner,manager" href="admin-events.html">События клиентов</a>
+        <a class="btn btn--ghost" data-action-link data-roles="manager" href="admin-training.html">Обучение</a>
       </div>
       <p class="admin-status" id="adminStatus">Загрузка статистики...</p>
       <p class="admin-status" id="adminUserMeta"></p>
       <p class="admin-status" id="adminStatsHint" hidden></p>
 
       <nav class="admin-subnav" aria-label="Разделы статистики">
-        <a href="#adminStats">Общая сводка</a>
-        <a href="#ownerPanel">План владельца</a>
-        <a href="#productPanel">Контроль продакта</a>
-        <a href="#managerPanel">Панель менеджера</a>
-        <a href="#trainingAssignSection">Назначения обучения</a>
-        <a href="#adminTeamSection">Сотрудники</a>
+        <a data-subnav-link data-roles="owner,product,manager" href="#trafficFolder">Трафик</a>
+        <a data-subnav-link data-roles="owner,product,manager" href="#leadsFolder">Заявки</a>
+        <a data-subnav-link data-roles="owner,product,manager" href="#conversionFolder">Конверсия</a>
+        <a data-subnav-link data-roles="owner" href="#ownerPlanPanel">План владельца</a>
+        <a data-subnav-link data-roles="owner" href="#ownerLeaderboardPanel">Leaderboard</a>
+        <a data-subnav-link data-roles="product" href="#productPanel">Продакт</a>
+        <a data-subnav-link data-roles="manager" href="#managerPanel">Менеджер</a>
+        <a data-subnav-link data-roles="owner" href="#adminTeamSection">Сотрудники</a>
       </nav>
 
-      <div class="admin-stats" id="adminStats">
-        <article class="card stat-card">
-          <p>Уникальные посетители сегодня</p>
-          <h2 data-stat="todayUniqueVisitors">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Уникальные за 7 дней</p>
-          <h2 data-stat="uniqueVisitors7d">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Уникальные за 30 дней</p>
-          <h2 data-stat="uniqueVisitors30d">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Клиенты, нашедшие пасхалку</p>
-          <h2 data-stat="secretHuntersPercent">0%</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Новые заявки (день)</p>
-          <h2 data-stat="leadsDay">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Новые заявки (7 дней)</p>
-          <h2 data-stat="leadsWeek">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Новые заявки (30 дней)</p>
-          <h2 data-stat="leadsMonth">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Обработано (день)</p>
-          <h2 data-stat="dealsDay">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Обработано (7 дней)</p>
-          <h2 data-stat="dealsWeek">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Обработано (30 дней)</p>
-          <h2 data-stat="dealsMonth">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Всего обработано</p>
-          <h2 data-stat="leadsProcessed">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Успешные сделки</p>
-          <h2 data-stat="leadsSuccess">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Отказы</p>
-          <h2 data-stat="leadsFailure">0</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Процент успеха</p>
-          <h2 data-stat="leadSuccessRatePercent">0%</h2>
-        </article>
-        <article class="card stat-card">
-          <p>Личные очки (30 дней)</p>
-          <h2 data-stat="pointsThisMonth">0</h2>
-        </article>
-      </div>
-
-      <article class="card admin-role-panel" id="ownerPanel" hidden>
-        <h2>План владельца по заключенным сделкам</h2>
-        <p class="admin-status">Учитываются только успешные сделки, закрытые менеджерами.</p>
-        <form class="admin-plan-form" id="ownerPlanForm" autocomplete="off">
-          <label class="leads-filters__field" for="planDayTarget">
-            <span>План на день</span>
-            <input id="planDayTarget" type="number" min="0" step="1" placeholder="Например: 3" />
-          </label>
-          <label class="leads-filters__field" for="planWeekTarget">
-            <span>План на неделю</span>
-            <input id="planWeekTarget" type="number" min="0" step="1" placeholder="Например: 20" />
-          </label>
-          <label class="leads-filters__field" for="planMonthTarget">
-            <span>План на месяц</span>
-            <input id="planMonthTarget" type="number" min="0" step="1" placeholder="Например: 80" />
-          </label>
-          <div class="leads-filters__actions">
-            <button class="btn btn--primary" id="saveOwnerPlan" type="submit">Сохранить план</button>
+      <section class="admin-stats admin-stats--folders" id="adminStats">
+        <details class="card admin-folder" id="trafficFolder" open>
+          <summary>Посетители и трафик</summary>
+          <div class="admin-folder__content admin-stats-grid">
+            <article class="stat-card">
+              <p>Уникальные сегодня</p>
+              <h2 data-stat="todayUniqueVisitors">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Уникальные за 7 дней</p>
+              <h2 data-stat="uniqueVisitors7d">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Уникальные за 30 дней</p>
+              <h2 data-stat="uniqueVisitors30d">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Нашли пасхалку</p>
+              <h2 data-stat="secretHuntersPercent">0%</h2>
+            </article>
           </div>
+        </details>
+
+        <details class="card admin-folder" id="leadsFolder">
+          <summary>Заявки и обработка</summary>
+          <div class="admin-folder__content admin-stats-grid">
+            <article class="stat-card">
+              <p>Новые (день)</p>
+              <h2 data-stat="leadsDay">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Новые (7 дней)</p>
+              <h2 data-stat="leadsWeek">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Новые (30 дней)</p>
+              <h2 data-stat="leadsMonth">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Обработано (день)</p>
+              <h2 data-stat="dealsDay">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Обработано (7 дней)</p>
+              <h2 data-stat="dealsWeek">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Обработано (30 дней)</p>
+              <h2 data-stat="dealsMonth">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Всего обработано</p>
+              <h2 data-stat="leadsProcessed">0</h2>
+            </article>
+          </div>
+        </details>
+
+        <details class="card admin-folder" id="conversionFolder">
+          <summary>Сделки и конверсия</summary>
+          <div class="admin-folder__content admin-stats-grid">
+            <article class="stat-card">
+              <p>Успешные сделки</p>
+              <h2 data-stat="leadsSuccess">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Отказы</p>
+              <h2 data-stat="leadsFailure">0</h2>
+            </article>
+            <article class="stat-card">
+              <p>Процент успеха</p>
+              <h2 data-stat="leadSuccessRatePercent">0%</h2>
+            </article>
+          </div>
+        </details>
+      </section>
+
+      <article class="card admin-role-panel" id="ownerPlanPanel" hidden>
+        <h2>План владельца по заключенным сделкам</h2>
+        <p class="admin-status" id="ownerPlanStatus">План учитывает только заявки со статусом успешной сделки.</p>
+        <div class="admin-kpi-grid" id="ownerPlanGrid"></div>
+        <form class="admin-team__form" id="ownerPlanForm" autocomplete="off">
+          <label>
+            План на день
+            <input id="ownerPlanDay" name="dayTarget" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <label>
+            План на неделю
+            <input id="ownerPlanWeek" name="weekTarget" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <label>
+            План на месяц
+            <input id="ownerPlanMonth" name="monthTarget" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <button class="btn btn--primary" type="submit">Сохранить план</button>
         </form>
-        <p class="admin-status" id="ownerPlanStatus"></p>
-        <div class="admin-kpi-grid" id="ownerPlanProgress"></div>
       </article>
 
-      <article class="card admin-role-panel" id="productPanel" hidden>
-        <h2>Контроль менеджеров и leaderboard</h2>
-        <p class="admin-status" id="productPanelStatus"></p>
-        <div class="admin-kpi-grid" id="productTopStats"></div>
-        <div class="admin-performance-list" id="productManagerStats"></div>
-        <div class="admin-performance-list" id="productLeaderboard"></div>
+      <article class="card admin-role-panel" id="ownerLeaderboardPanel" hidden>
+        <h2>Leaderboard менеджеров</h2>
+        <p class="admin-status" id="ownerLeaderboardStatus"></p>
+        <div class="admin-performance-list" id="ownerLeaderboardList"></div>
       </article>
+
+      <details class="card admin-folder admin-folder--role admin-role-panel" id="productPanel" hidden open>
+        <summary>Центр управления продакта</summary>
+        <div class="admin-folder__content">
+          <p class="admin-status" id="productPanelStatus"></p>
+          <div class="admin-actions admin-actions--compact" id="productQuickActions">
+            <a class="btn btn--ghost" href="admin-leads.html">Открыть заявки</a>
+            <a class="btn btn--ghost" href="admin-events.html">Важные события</a>
+            <a class="btn btn--ghost" href="admin-training.html">Обучение</a>
+          </div>
+          <details class="admin-folder admin-folder--role" id="productTeamFolder" open>
+            <summary>Команда и выполнение</summary>
+            <div class="admin-folder__content">
+              <div class="admin-kpi-grid" id="productTopStats"></div>
+              <div class="admin-performance-list" id="productManagerStats"></div>
+            </div>
+          </details>
+          <details class="admin-folder admin-folder--role" id="productLeaderboardFolder">
+            <summary>Leaderboard</summary>
+            <div class="admin-folder__content">
+              <div class="admin-performance-list" id="productLeaderboard"></div>
+            </div>
+          </details>
+        </div>
+      </details>
 
       <article class="card admin-role-panel" id="managerPanel" hidden>
         <h2>Личная статистика менеджера</h2>
@@ -169,26 +215,26 @@
         <div class="admin-performance-list" id="managerLeaderboardSnippet"></div>
       </article>
 
-      <article class="card admin-role-panel" id="trainingAssignSection" hidden>
-        <h2>Назначение обучения менеджерам</h2>
-        <p class="admin-status" id="trainingAssignStatus">Продакт и владелец могут управлять назначениями обучения.</p>
-        <div class="admin-team__list" id="trainingAssignList"></div>
-      </article>
+      <details class="card admin-folder admin-folder--role admin-role-panel" id="trainingAssignSection" hidden>
+        <summary>Назначение обучения менеджерам</summary>
+        <div class="admin-folder__content">
+          <p class="admin-status" id="trainingAssignStatus">
+            Продакт может управлять назначениями обучения.
+          </p>
+          <div class="admin-team__list" id="trainingAssignList"></div>
+        </div>
+      </details>
 
       <article class="card admin-team" id="adminTeamSection" hidden>
-        <h2>Управление сотрудниками</h2>
+        <h2>Новые сотрудники</h2>
         <form class="admin-team__form" id="adminUserCreateForm" autocomplete="off">
           <label>
             Логин
-            <input id="adminCreateUsername" name="username" type="text" required placeholder="Например: manager_sales_2" />
+            <input id="adminCreateUsername" name="username" type="text" required placeholder="manager_sales_2" />
           </label>
           <label>
             Пароль
             <input id="adminCreatePassword" name="password" type="text" required placeholder="Временный пароль" />
-          </label>
-          <label>
-            Имя
-            <input id="adminCreateName" name="name" type="text" required placeholder="Имя сотрудника" />
           </label>
           <label>
             Роль
@@ -196,10 +242,6 @@
               <option value="manager">Менеджер</option>
               <option value="product">Продакт</option>
             </select>
-          </label>
-          <label>
-            Отдел
-            <input id="adminCreateDepartment" name="department" type="text" required placeholder="sales / production" />
           </label>
           <button class="btn btn--primary" type="submit">Добавить сотрудника</button>
         </form>

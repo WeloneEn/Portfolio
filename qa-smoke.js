@@ -784,6 +784,251 @@ async function run() {
     );
     console.log("OK: POST /api/admin/training/reviews");
 
+    const workflowManagerUsername = `qa_workflow_${Date.now()}`;
+    const workflowManagerPassword = "qa_workflow_password";
+    const workflowUserCreate = await request({
+      method: "POST",
+      pathname: "/api/admin/users",
+      token: ownerToken,
+      body: {
+        username: workflowManagerUsername,
+        password: workflowManagerPassword,
+        name: "QA Workflow Manager",
+        role: "manager",
+        department: "sales"
+      },
+      expectedStatus: 201
+    });
+    const workflowUserId = String(workflowUserCreate.json?.user?.id || "");
+    assert(workflowUserId.length > 0, "Failed: create workflow manager user.");
+
+    await request({
+      method: "PATCH",
+      pathname: `/api/admin/training/assignments/${encodeURIComponent(workflowUserId)}`,
+      token: ownerToken,
+      body: { assigned: true, note: "QA workflow assignment" },
+      expectedStatus: 200
+    });
+
+    const workflowManagerLogin = await request({
+      method: "POST",
+      pathname: "/api/admin/login",
+      body: {
+        username: workflowManagerUsername,
+        password: workflowManagerPassword
+      },
+      expectedStatus: 200
+    });
+    const workflowManagerToken = String(workflowManagerLogin.json?.token || "");
+    assert(workflowManagerToken.length > 20, "Failed: workflow manager login token.");
+
+    const workflowModules = ["foundation", "diagnostics", "dialog_control", "closing"];
+    for (const moduleId of workflowModules) {
+      const managerModuleDone = await request({
+        method: "PATCH",
+        pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+        token: workflowManagerToken,
+        body: {
+          action: "manager_complete_module",
+          moduleId,
+          note: `QA manager module ${moduleId}`
+        },
+        expectedStatus: 200
+      });
+      assert(
+        managerModuleDone.json &&
+          managerModuleDone.json.ok === true &&
+          managerModuleDone.json.profile &&
+          managerModuleDone.json.profile.userId === workflowUserId,
+        `Failed: manager_complete_module for ${moduleId}`
+      );
+
+      const productModuleReview = await request({
+        method: "PATCH",
+        pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+        token: ownerToken,
+        body: {
+          action: "product_review_module",
+          moduleId,
+          knowledge: 8,
+          communication: 8,
+          process: 8,
+          approved: true,
+          comment: `QA product review ${moduleId}`
+        },
+        expectedStatus: 200
+      });
+      assert(
+        productModuleReview.json &&
+          productModuleReview.json.ok === true &&
+          productModuleReview.json.profile &&
+          productModuleReview.json.profile.userId === workflowUserId,
+        `Failed: product_review_module for ${moduleId}`
+      );
+    }
+
+    await request({
+      method: "PATCH",
+      pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+      token: ownerToken,
+      body: {
+        action: "set_practice_limit",
+        maxContacts: 5
+      },
+      expectedStatus: 200
+    });
+
+    const workflowContactIds = [];
+    for (let index = 1; index <= 3; index += 1) {
+      const addContact = await request({
+        method: "PATCH",
+        pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+        token: ownerToken,
+        body: {
+          action: "add_practice_contact",
+          name: `QA Contact ${index}`,
+          contact: `+7000000000${index}`,
+          source: "QA"
+        },
+        expectedStatus: 200
+      });
+      const contacts = Array.isArray(addContact.json?.profile?.workflow?.practice?.contacts)
+        ? addContact.json.profile.workflow.practice.contacts
+        : [];
+      const lastContact = contacts[contacts.length - 1];
+      assert(Boolean(lastContact && lastContact.id), `Failed: add_practice_contact #${index}`);
+      workflowContactIds.push(String(lastContact.id));
+    }
+
+    for (const contactId of workflowContactIds) {
+      const managerCall = await request({
+        method: "PATCH",
+        pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+        token: workflowManagerToken,
+        body: {
+          action: "manager_submit_contact_call",
+          contactId,
+          summary: `QA call summary ${contactId}`,
+          outcome: "follow_up",
+          company: "QA Corp",
+          need: "Нужен сайт под рекламу",
+          budget: "1500",
+          nextStep: "Созвон завтра",
+          notes: "Клиент заинтересован"
+        },
+        expectedStatus: 200
+      });
+      assert(
+        managerCall.json &&
+          managerCall.json.ok === true &&
+          managerCall.json.profile &&
+          managerCall.json.profile.userId === workflowUserId,
+        `Failed: manager_submit_contact_call for ${contactId}`
+      );
+
+      const productCallReview = await request({
+        method: "PATCH",
+        pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+        token: ownerToken,
+        body: {
+          action: "product_review_contact_call",
+          contactId,
+          intro: 8,
+          needs: 8,
+          offer: 8,
+          objections: 7,
+          closing: 8,
+          crm: 9,
+          comment: "QA reviewed"
+        },
+        expectedStatus: 200
+      });
+      assert(
+        productCallReview.json &&
+          productCallReview.json.ok === true &&
+          productCallReview.json.profile &&
+          productCallReview.json.profile.userId === workflowUserId,
+        `Failed: product_review_contact_call for ${contactId}`
+      );
+    }
+
+    await request({
+      method: "PATCH",
+      pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+      token: ownerToken,
+      body: {
+        action: "set_overall_review",
+        intro: 8,
+        needs: 8,
+        offer: 8,
+        objections: 8,
+        closing: 8,
+        crm: 8,
+        comment: "QA overall review"
+      },
+      expectedStatus: 200
+    });
+
+    const workflowDecision = await request({
+      method: "PATCH",
+      pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+      token: ownerToken,
+      body: {
+        action: "decide_candidate",
+        decision: "accepted",
+        note: "QA candidate accepted"
+      },
+      expectedStatus: 200
+    });
+    const decisionStatus = String(workflowDecision.json?.profile?.workflow?.practice?.decision?.status || "");
+    assert(decisionStatus === "accepted", "Failed: decide_candidate accepted status.");
+
+    const workflowSurvey = await request({
+      method: "PATCH",
+      pathname: `/api/admin/training/workflow/${encodeURIComponent(workflowUserId)}`,
+      token: workflowManagerToken,
+      body: {
+        action: "manager_submit_survey",
+        missingTopics: "больше живых разборов",
+        mentorScore: 9,
+        mentorFeedback: "Наставник хорошо помог",
+        companyScore: 8,
+        companyFeedback: "Команда открытая"
+      },
+      expectedStatus: 200
+    });
+    assert(
+      workflowSurvey.json &&
+        workflowSurvey.json.ok === true &&
+        workflowSurvey.json.profile &&
+        workflowSurvey.json.profile.workflow &&
+        workflowSurvey.json.profile.workflow.survey &&
+        workflowSurvey.json.profile.workflow.survey.submitted === true,
+      "Failed: manager_submit_survey"
+    );
+
+    const ownerStatsAfterWorkflow = await request({
+      method: "GET",
+      pathname: "/api/admin/stats",
+      token: ownerToken,
+      expectedStatus: 200
+    });
+    assert(
+      ownerStatsAfterWorkflow.json &&
+        ownerStatsAfterWorkflow.json.trainingHiring &&
+        Number(ownerStatsAfterWorkflow.json.trainingHiring.acceptedCount) >= 1 &&
+        Number(ownerStatsAfterWorkflow.json.trainingHiring.surveysSubmitted) >= 1,
+      "Failed: owner trainingHiring stats after workflow."
+    );
+    console.log("OK: training workflow pipeline");
+
+    await request({
+      method: "DELETE",
+      pathname: `/api/admin/users/${encodeURIComponent(workflowUserId)}`,
+      token: ownerToken,
+      expectedStatus: 200
+    });
+
     await request({
       method: "GET",
       pathname: "/api/admin/users",

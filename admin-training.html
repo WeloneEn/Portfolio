@@ -61,6 +61,7 @@
       <p class="admin-status" id="trainingStatus">Загрузка обучения...</p>
 
       <nav class="admin-subnav" aria-label="Разделы обучения">
+        <a href="#trainingWorkflowSection">Пошагово</a>
         <a href="#trainingProfileSection">Профиль</a>
         <a href="#trainingReviewSection">Разбор</a>
         <a href="#trainingBoardsSection">Рейтинг</a>
@@ -68,6 +69,17 @@
       </nav>
 
       <div class="training-summary" id="trainingSummary"></div>
+
+      <article class="card training-card training-workflow" id="trainingWorkflowSection">
+        <h2>Пошаговое обучение менеджера</h2>
+        <p class="admin-status" id="trainingWorkflowStatus">
+          Логика: блоки обучения -> практика на контактах -> итоговое решение -> опрос менеджера.
+        </p>
+        <div class="training-workflow__modules" id="trainingModules"></div>
+        <div class="training-workflow__practice" id="trainingPractice"></div>
+        <div class="training-workflow__decision" id="trainingDecision"></div>
+        <div class="training-workflow__survey" id="trainingSurvey"></div>
+      </article>
 
       <div class="training-layout">
         <article class="card training-card" id="trainingProfileSection">

@@ -43,6 +43,11 @@ const VISITOR_STORAGE_KEY = "neon_visitor_id";
 const ADMIN_UNLOCK_KEY = "neon_admin_unlocked";
 const WORKSPACE_KEY = "neon_workspace_mode";
 const ADMIN_TOKEN_KEY = "neon_admin_token";
+const WORKSPACE_LOGIN_ALIASES = Object.freeze({
+  owner: "admin",
+  product: "product_lead",
+  manager: "manager_main"
+});
 const FUTURE_THEME_KEY = "neon_future_mode";
 const THEME_MODE_KEY = "neon_theme_mode";
 const FUTURE_SHIP_MODEL_URL = "assets/models/command-jet.svg?v=20260218z13";
@@ -366,8 +371,17 @@ function closeEasterEggDialog() {
   easterEggDialog.close();
 }
 
-function showEasterEggDialog(message) {
+function canShowEasterEggDialog() {
   if (!easterEggDialog || typeof easterEggDialog.showModal !== "function") {
+    return false;
+  }
+
+  const styles = window.getComputedStyle(easterEggDialog);
+  return styles.display !== "none" && styles.visibility !== "hidden";
+}
+
+function showEasterEggDialog(message) {
+  if (!canShowEasterEggDialog()) {
     return;
   }
 
@@ -772,7 +786,24 @@ function syncBrandVariant() {
 }
 
 function setWorkspaceNavigationState(isEnabled) {
-  if (!siteNav) {
+  const nextEnabled = Boolean(isEnabled);
+  const isAdminPage = document.body?.dataset?.page === "admin";
+  const hideTopNav = nextEnabled && !isAdminPage;
+
+  if (siteNav) {
+    siteNav.classList.toggle("workspace-nav-hidden", hideTopNav);
+  }
+  if (menuToggle) {
+    menuToggle.classList.toggle("workspace-nav-hidden", hideTopNav);
+  }
+  if (themeToggle) {
+    themeToggle.classList.toggle("workspace-nav-hidden", hideTopNav);
+  }
+  if (brandTrigger) {
+    brandTrigger.classList.toggle("workspace-brand-wide", hideTopNav);
+  }
+
+  if (!siteNav || hideTopNav) {
     return;
   }
 
@@ -784,12 +815,8 @@ function setWorkspaceNavigationState(isEnabled) {
       href.endsWith("admin-leads.html") ||
       href.endsWith("admin-events.html") ||
       href.endsWith("admin-training.html");
-    link.classList.toggle("workspace-nav-hidden", Boolean(isEnabled) && !isWorkspaceLink);
+    link.classList.toggle("workspace-nav-hidden", nextEnabled && !isWorkspaceLink);
   });
-
-  if (themeToggle) {
-    themeToggle.classList.toggle("workspace-nav-hidden", Boolean(isEnabled));
-  }
 }
 
 function ensureWorkspaceShell() {
@@ -809,64 +836,56 @@ function ensureWorkspaceShell() {
   shell.hidden = true;
   shell.innerHTML = `
     <header class="workspace-shell__head">
-      <div>
-        <p class="workspace-shell__kicker">Workspace</p>
-        <h1>Админ-панель команды</h1>
-        <p class="workspace-shell__lead">Единое рабочее пространство: заявки, CRM-события, обучение сотрудников и аналитика.</p>
-      </div>
-      <div class="workspace-shell__head-actions">
+      <p class="workspace-shell__kicker">Welone Digital Atelier Command</p>
+      <h1 class="workspace-shell__title">Добро пожаловать в рабочее пространство команды</h1>
+      <p class="workspace-shell__lead" id="workspaceGreeting">Введите логин и пароль, чтобы открыть разделы по вашей роли.</p>
+    </header>
+    <form class="workspace-auth-form" id="workspaceAuthForm" autocomplete="on">
+      <label class="workspace-auth-form__field" for="workspaceLogin">
+        <span>Логин</span>
+        <input data-workspace-auth-control id="workspaceLogin" name="username" type="text" autocomplete="username" inputmode="text" placeholder="owner / product / manager или ваш логин" required />
+      </label>
+      <label class="workspace-auth-form__field" for="workspacePassword">
+        <span>Пароль</span>
+        <input data-workspace-auth-control id="workspacePassword" name="password" type="password" autocomplete="current-password" placeholder="Введите пароль" required />
+      </label>
+      <div class="workspace-auth-form__actions">
+        <button class="btn btn--primary" data-workspace-auth-control id="workspaceLoginBtn" type="submit">Войти</button>
         <button class="btn btn--ghost" id="workspaceExitBtn" type="button">Клиентский режим</button>
       </div>
-    </header>
-    <section class="workspace-shell__quick">
-      <a class="workspace-tile workspace-tile--primary" href="admin-leads.html">
+      <p class="workspace-auth-form__hint">Роль вводится как <strong>owner</strong>, <strong>product</strong> или <strong>manager</strong>, либо ваш персональный логин.</p>
+      <p class="workspace-auth-form__status" id="workspaceAuthStatus" aria-live="polite"></p>
+    </form>
+    <section class="workspace-shell__quick" id="workspaceQuickActions" hidden aria-hidden="true">
+      <a class="workspace-tile workspace-tile--primary" data-workspace-tile="leads" data-roles="owner,product,manager" href="admin-leads.html">
         <h2>Заявки</h2>
-        <p>Единый список заявок, статусы, приоритеты, исполнители, CRM-карточка и комментарии.</p>
+        <p>Очередь заявок, комментарии и работа по клиентам.</p>
       </a>
-      <a class="workspace-tile" href="admin.html">
+      <a class="workspace-tile" data-workspace-tile="stats" data-roles="owner,product,manager" href="admin.html">
         <h2>Статистика</h2>
-        <p>Трафик, вовлеченность, повторные визиты и сводка по воронке лидов.</p>
+        <p>Показатели по сайту и выполнению заявок.</p>
       </a>
-      <a class="workspace-tile" href="admin-events.html">
+      <a class="workspace-tile" data-workspace-tile="events" data-roles="owner,product,manager" href="admin-events.html">
         <h2>Важные события</h2>
-        <p>Дни рождения клиентов и ключевые даты, найденные в заявках и комментариях.</p>
+        <p>Дни рождения клиентов и их близких из комментариев.</p>
       </a>
-      <a class="workspace-tile" href="admin-training.html">
+      <a class="workspace-tile" data-workspace-tile="training" data-roles="owner,product,manager" href="admin-training.html">
         <h2>Обучение</h2>
-        <p>30-дневная программа, чек-лист разбора, рейтинг и мотивация сотрудников.</p>
+        <p>Показывается только при доступе к обучению.</p>
       </a>
-    </section>
-    <section class="workspace-shell__board">
-      <article class="workspace-panel">
-        <h3>Рабочий цикл</h3>
-        <ol>
-          <li>Откройте "Заявки" и обработайте очередь новых лидов.</li>
-          <li>Назначьте исполнителя и зафиксируйте задачу/комментарии.</li>
-          <li>Проверьте "Важные события" и запланируйте контакт.</li>
-          <li>Обновите блок "Обучение" по итогам контроля разговоров.</li>
-        </ol>
-      </article>
-      <article class="workspace-panel">
-        <h3>Стандарт качества</h3>
-        <ul>
-          <li>Каждое действие по лиду фиксируется в карточке и комментариях.</li>
-          <li>Комментарии сохраняют автора (@логин), дату и время.</li>
-          <li>Незавершенные задачи остаются в статусе "В работе".</li>
-        </ul>
-      </article>
-      <article class="workspace-panel">
-        <h3>Роли и доступ</h3>
-        <ul>
-          <li>Владелец: полный доступ ко всем разделам и сотрудникам.</li>
-          <li>Продакт: управление командой, назначениями и обучением.</li>
-          <li>Менеджер: работа с заявками, CRM и личной статистикой.</li>
-        </ul>
-      </article>
     </section>
     <p class="workspace-shell__status" id="workspaceStatus" aria-live="polite">Выход: нажмите логотип 3 раза.</p>
   `;
 
   main.prepend(shell);
+
+  const authForm = shell.querySelector("#workspaceAuthForm");
+  if (authForm) {
+    authForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void submitWorkspaceLogin(shell);
+    });
+  }
 
   const workspaceExitBtn = shell.querySelector("#workspaceExitBtn");
   if (workspaceExitBtn) {
@@ -876,6 +895,284 @@ function ensureWorkspaceShell() {
   }
 
   return shell;
+}
+
+function normalizeWorkspaceRole(roleValue) {
+  const role = String(roleValue || "").trim().toLowerCase();
+  if (role === "owner" || role === "product" || role === "manager") {
+    return role;
+  }
+  if (role === "help" || role === "worker") {
+    return "manager";
+  }
+  return "manager";
+}
+
+function resolveWorkspaceRoleLabel(roleValue) {
+  const role = normalizeWorkspaceRole(roleValue);
+  if (role === "owner") {
+    return "Владелец";
+  }
+  if (role === "product") {
+    return "Продакт";
+  }
+  return "Менеджер";
+}
+
+function setWorkspaceAuthStatus(message, color = "") {
+  const node = document.getElementById("workspaceAuthStatus");
+  if (!node) {
+    return;
+  }
+  node.textContent = String(message || "");
+  if (color) {
+    node.style.color = color;
+  } else {
+    node.style.removeProperty("color");
+  }
+}
+
+function setWorkspaceAuthBusy(shell, isBusy) {
+  if (!shell) {
+    return;
+  }
+  const controls = Array.from(shell.querySelectorAll("[data-workspace-auth-control]"));
+  controls.forEach((node) => {
+    if ("disabled" in node) {
+      node.disabled = Boolean(isBusy);
+    }
+  });
+}
+
+function resolveWorkspaceLogin(rawValue) {
+  const value = String(rawValue || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
+  return WORKSPACE_LOGIN_ALIASES[value] || value;
+}
+
+async function fetchWorkspaceActor(token) {
+  const response = await fetch(apiUrl("/api/admin/me"), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    cache: "no-store"
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  return {
+    ok: response.ok,
+    status: response.status,
+    payload
+  };
+}
+
+async function fetchWorkspaceTeam(token) {
+  const response = await fetch(apiUrl("/api/admin/team"), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+  return response.json().catch(() => null);
+}
+
+function applyWorkspaceQuickTiles(shell, actorRole, teamPayload) {
+  const quick = shell?.querySelector("#workspaceQuickActions");
+  if (!quick) {
+    return;
+  }
+
+  const role = normalizeWorkspaceRole(actorRole);
+  const trainingAccess = role === "owner" || role === "product" || Boolean(teamPayload?.trainingAccess);
+  const tiles = Array.from(quick.querySelectorAll("[data-workspace-tile]"));
+
+  let visibleCount = 0;
+  tiles.forEach((tile) => {
+    const roles = String(tile.dataset.roles || "")
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean);
+    let visible = roles.includes(role);
+    if (tile.dataset.workspaceTile === "training" && !trainingAccess) {
+      visible = false;
+    }
+    tile.hidden = !visible;
+    tile.setAttribute("aria-hidden", String(!visible));
+    if (visible) {
+      visibleCount += 1;
+    }
+  });
+
+  quick.hidden = visibleCount === 0;
+  quick.setAttribute("aria-hidden", String(visibleCount === 0));
+}
+
+function setWorkspaceLoggedOut(shell) {
+  if (!shell) {
+    return;
+  }
+
+  document.body.classList.remove("workspace-authenticated");
+
+  const authForm = shell.querySelector("#workspaceAuthForm");
+  const quick = shell.querySelector("#workspaceQuickActions");
+  const greeting = shell.querySelector("#workspaceGreeting");
+  if (authForm) {
+    authForm.hidden = false;
+    authForm.setAttribute("aria-hidden", "false");
+  }
+  if (quick) {
+    quick.hidden = true;
+    quick.setAttribute("aria-hidden", "true");
+  }
+  if (greeting) {
+    greeting.textContent = "Введите логин и пароль, чтобы открыть разделы по вашей роли.";
+  }
+
+  setWorkspaceAuthStatus("", "");
+  setWorkspaceStatus("Выход: нажмите логотип 3 раза.");
+}
+
+function setWorkspaceLoggedIn(shell, actor, teamPayload) {
+  if (!shell || !actor) {
+    return;
+  }
+
+  document.body.classList.add("workspace-authenticated");
+
+  const authForm = shell.querySelector("#workspaceAuthForm");
+  const quick = shell.querySelector("#workspaceQuickActions");
+  const greeting = shell.querySelector("#workspaceGreeting");
+  const actorName = actor.name || actor.username || actor.id || "Сотрудник";
+  const roleLabel = resolveWorkspaceRoleLabel(actor.role);
+
+  if (authForm) {
+    authForm.hidden = true;
+    authForm.setAttribute("aria-hidden", "true");
+  }
+  if (quick) {
+    quick.hidden = false;
+    quick.setAttribute("aria-hidden", "false");
+  }
+  if (greeting) {
+    greeting.textContent = `Здравствуйте, ${actorName}. Роль: ${roleLabel}. Выберите раздел снизу.`;
+  }
+
+  applyWorkspaceQuickTiles(shell, actor.role, teamPayload);
+  setWorkspaceAuthStatus(`Вход выполнен: ${roleLabel}.`, "var(--tone-ok)");
+  setWorkspaceStatus("Выход: нажмите логотип 3 раза.");
+}
+
+async function syncWorkspaceWelcomeSession(shell) {
+  if (!shell) {
+    return;
+  }
+
+  if (!API_IS_AVAILABLE) {
+    setWorkspaceLoggedOut(shell);
+    setWorkspaceAuthStatus("Откройте сайт через сервер (http/https), чтобы войти.", "var(--tone-error)");
+    return;
+  }
+
+  const token = readAdminToken();
+  if (!token) {
+    setWorkspaceLoggedOut(shell);
+    return;
+  }
+
+  setWorkspaceAuthStatus("Проверяю сессию...", "var(--tone-info)");
+  try {
+    const me = await fetchWorkspaceActor(token);
+    if (!me.ok) {
+      if (me.status === 401) {
+        clearAdminToken();
+      }
+      setWorkspaceLoggedOut(shell);
+      setWorkspaceAuthStatus("Сессия недействительна. Войдите снова.", "var(--tone-error)");
+      return;
+    }
+
+    const actor = me.payload?.actor || null;
+    if (!actor) {
+      clearAdminToken();
+      setWorkspaceLoggedOut(shell);
+      setWorkspaceAuthStatus("Не удалось определить роль. Войдите снова.", "var(--tone-error)");
+      return;
+    }
+
+    const teamPayload = await fetchWorkspaceTeam(token).catch(() => null);
+    setWorkspaceLoggedIn(shell, actor, teamPayload);
+  } catch {
+    setWorkspaceLoggedOut(shell);
+    setWorkspaceAuthStatus("Ошибка сети при проверке входа.", "var(--tone-error)");
+  }
+}
+
+async function submitWorkspaceLogin(shell) {
+  if (!shell) {
+    return;
+  }
+
+  if (!API_IS_AVAILABLE) {
+    setWorkspaceAuthStatus("Откройте сайт через сервер (http/https), чтобы войти.", "var(--tone-error)");
+    return;
+  }
+
+  const loginInput = shell.querySelector("#workspaceLogin");
+  const passwordInput = shell.querySelector("#workspacePassword");
+  const username = resolveWorkspaceLogin(loginInput?.value || "");
+  const password = String(passwordInput?.value || "").trim();
+
+  if (!username || !password) {
+    setWorkspaceAuthStatus("Введите логин и пароль.", "var(--tone-error)");
+    return;
+  }
+
+  setWorkspaceAuthBusy(shell, true);
+  setWorkspaceAuthStatus("Выполняю вход...", "var(--tone-info)");
+
+  try {
+    const response = await fetch(apiUrl("/api/admin/login"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || "LOGIN_FAILED");
+    }
+
+    const token = String(payload.token || "");
+    const actor = payload.actor || null;
+    if (!token || !actor) {
+      throw new Error("LOGIN_FAILED");
+    }
+
+    saveAdminToken(token);
+    const teamPayload = await fetchWorkspaceTeam(token).catch(() => null);
+    setWorkspaceLoggedIn(shell, actor, teamPayload);
+    void syncUnlockedAccessLinks();
+  } catch {
+    clearAdminToken();
+    setWorkspaceLoggedOut(shell);
+    setWorkspaceAuthStatus("Неверный логин или пароль.", "var(--tone-error)");
+  } finally {
+    if (passwordInput) {
+      passwordInput.value = "";
+    }
+    setWorkspaceAuthBusy(shell, false);
+  }
 }
 
 function setWorkspaceStatus(message) {
@@ -904,10 +1201,14 @@ function setWorkspaceState(isEnabled, options = {}) {
   }
 
   setWorkspaceNavigationState(nextState);
+  if (nextState && shell && !isAdminPage) {
+    void syncWorkspaceWelcomeSession(shell);
+  }
 
   if (nextState) {
     setHiddenAccessState(true, false);
   } else {
+    document.body.classList.remove("workspace-authenticated");
     const unlocked = readAdminUnlockState();
     if (unlocked) {
       void syncUnlockedAccessLinks();
@@ -950,6 +1251,19 @@ function readAdminToken() {
   }
 }
 
+function saveAdminToken(token) {
+  try {
+    const nextToken = String(token || "").trim();
+    if (nextToken) {
+      localStorage.setItem(ADMIN_TOKEN_KEY, nextToken);
+    } else {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+    }
+  } catch {
+    // Ignore storage restrictions.
+  }
+}
+
 function clearAdminToken() {
   try {
     localStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -969,23 +1283,15 @@ async function resolveOwnerRoleFromSession() {
   }
 
   try {
-    const response = await fetch(apiUrl("/api/admin/me"), {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      cache: "no-store"
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
+    const me = await fetchWorkspaceActor(token);
+    if (!me.ok) {
+      if (me.status === 401) {
         clearAdminToken();
       }
       return false;
     }
 
-    const payload = await response.json().catch(() => ({}));
-    return payload?.actor?.role === "owner";
+    return normalizeWorkspaceRole(me.payload?.actor?.role) === "owner";
   } catch {
     return false;
   }
@@ -1407,11 +1713,7 @@ function trackSecretDiscovery(secretId) {
     return;
   }
 
-  if (document.body?.dataset?.page === "admin") {
-    return;
-  }
-
-  if (isWorkspaceMode()) {
+  if (!canUseClientEasterEggs()) {
     return;
   }
 
@@ -1428,7 +1730,7 @@ function trackSecretDiscovery(secretId) {
 }
 
 function activateSecretMode(message, secretId = "") {
-  if (isWorkspaceMode()) {
+  if (!canUseClientEasterEggs()) {
     return;
   }
 
@@ -1446,6 +1748,22 @@ function activateSecretMode(message, secretId = "") {
         : "Приятного просмотра.";
   showEasterEggDialog(dialogMessage);
   trackSecretDiscovery(secretId);
+}
+
+function isWorkspaceAuthenticated() {
+  return document.body.classList.contains("workspace-authenticated");
+}
+
+function canUseClientEasterEggs() {
+  if (document.body?.dataset?.page === "admin") {
+    return false;
+  }
+
+  if (isWorkspaceMode() && isWorkspaceAuthenticated()) {
+    return false;
+  }
+
+  return true;
 }
 
 function isTypingContext(target) {
@@ -1479,7 +1797,7 @@ function processMarioSequenceToken(keyCodeToken) {
 }
 
 function triggerMarioSecret(secretId) {
-  if (isWorkspaceMode()) {
+  if (!canUseClientEasterEggs()) {
     return;
   }
 
@@ -1492,7 +1810,7 @@ function triggerMarioSecret(secretId) {
 }
 
 window.addEventListener("keydown", (event) => {
-  if (isWorkspaceMode()) {
+  if (!canUseClientEasterEggs()) {
     return;
   }
 
@@ -1531,7 +1849,7 @@ if (brandTrigger) {
     brandTrigger.addEventListener(
       "touchstart",
       (event) => {
-        if (isWorkspaceMode() || event.touches.length !== 1 || isTypingContext(event.target)) {
+        if (!canUseClientEasterEggs() || event.touches.length !== 1 || isTypingContext(event.target)) {
           clearBrandTouchState();
           return;
         }
@@ -1593,8 +1911,11 @@ if (brandTrigger) {
 
   brandTrigger.addEventListener("click", (event) => {
     event.preventDefault();
+    const isAdminPage = document.body?.dataset?.page === "admin";
+    const workspaceActive = isWorkspaceMode();
+    const workspaceAuthenticated = isWorkspaceAuthenticated();
 
-    if (isWorkspaceMode()) {
+    if (workspaceActive && workspaceAuthenticated) {
       workspaceTapCount += 1;
       window.clearTimeout(workspaceTapTimer);
       workspaceTapTimer = window.setTimeout(() => {
@@ -1625,7 +1946,15 @@ if (brandTrigger) {
       logoTapCount = 0;
     }, LOGO_TAP_RESET_MS);
 
-    if (logoTapCount >= LOGO_SECRET_TAP_TARGET) {
+    if (isAdminPage && logoTapCount >= WORKSPACE_EXIT_TAP_TARGET) {
+      logoTapCount = 0;
+      writeWorkspaceState(false);
+      writeAdminUnlockState(false);
+      window.location.href = "index.html";
+      return;
+    }
+
+    if (!isAdminPage && logoTapCount >= LOGO_SECRET_TAP_TARGET) {
       activateSecretMode(
         {
           text: "Логотип разработан в дизайнерской студии Александры Николаевой.",
@@ -1640,6 +1969,9 @@ if (brandTrigger) {
 
     const isHome = window.location.pathname.endsWith("index.html") || window.location.pathname.endsWith("/");
     if (!isHome) {
+      if (workspaceActive) {
+        return;
+      }
       logoNavigateTimer = window.setTimeout(() => {
         window.location.href = "index.html";
       }, LOGO_NAVIGATE_DELAY_MS);

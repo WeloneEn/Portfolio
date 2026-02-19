@@ -2192,6 +2192,13 @@ export async function onRequest(context) {
         state.data.visits.uniqueVisitors > 0
           ? Math.round((secretHunters / state.data.visits.uniqueVisitors) * 1000) / 10
           : 0;
+      const trainingProfilesMap = new Map(
+        normTrainingData(state.data.training).profiles.map((profile) => [profile.userId, profile])
+      );
+      const certifiedManagerIds = rowsByScope
+        .map((row) => String(row?.userId || ""))
+        .filter((userId) => trainingProfilesMap.get(userId)?.status === "certified");
+      const actorTrainingProfile = trainingProfilesMap.get(actor.id) || null;
       return json(200, {
         totalHits: state.data.visits.totalHits,
         uniqueVisitors: state.data.visits.uniqueVisitors,
@@ -2225,7 +2232,11 @@ export async function onRequest(context) {
         actor,
         permissions,
         training: {
-          canAccess: permissions.canAccessTraining
+          canAccess: permissions.canAccessTraining,
+          actorCertified: Boolean(actorTrainingProfile && actorTrainingProfile.status === "certified"),
+          actorTrainingStatus: actorTrainingProfile?.status || "",
+          certifiedManagers: certifiedManagerIds.length,
+          certifiedManagerIds
         }
       });
     }

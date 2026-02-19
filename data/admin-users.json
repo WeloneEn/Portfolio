@@ -5,21 +5,13 @@
     "password": "change-product",
     "name": "Product Lead",
     "role": "product",
-    "department": "sales"
+    "department": "management"
   },
   {
     "id": "manager_main",
     "username": "manager_main",
     "password": "change-manager",
     "name": "Manager Main",
-    "role": "manager",
-    "department": "sales"
-  },
-  {
-    "id": "help_helpteam1",
-    "username": "helpteam1",
-    "password": "sashylya",
-    "name": "Сашуля",
     "role": "manager",
     "department": "sales"
   }

@@ -37,8 +37,18 @@ const reviewControl = document.getElementById("reviewControl");
 const reviewComment = document.getElementById("reviewComment");
 const trainingReviewStatus = document.getElementById("trainingReviewStatus");
 
+const trainingBoardsSection = document.getElementById("trainingBoardsSection");
 const trainingLeaderboard = document.getElementById("trainingLeaderboard");
 const trainingReviews = document.getElementById("trainingReviews");
+const trainingProfileSection = document.getElementById("trainingProfileSection");
+const trainingReviewSection = document.getElementById("trainingReviewSection");
+
+const trainingWorkflowSection = document.getElementById("trainingWorkflowSection");
+const trainingWorkflowStatus = document.getElementById("trainingWorkflowStatus");
+const trainingModules = document.getElementById("trainingModules");
+const trainingPractice = document.getElementById("trainingPractice");
+const trainingDecision = document.getElementById("trainingDecision");
+const trainingSurvey = document.getElementById("trainingSurvey");
 
 const apiAllowed = window.location.protocol === "http:" || window.location.protocol === "https:";
 
@@ -184,6 +194,7 @@ function setControlsDisabled(disabled) {
 function applyRoleRestrictions() {
   const canManageTraining = Boolean(permissions.canManageTraining);
   const canReviewCalls = Boolean(permissions.canReviewCalls);
+  const flags = getWorkflowRoleFlags();
 
   const profileControls = [
     trainingPlanStartDate,
@@ -235,12 +246,33 @@ function applyRoleRestrictions() {
     }
   }
 
+  if (trainingProfileSection) {
+    trainingProfileSection.hidden = flags.isManager;
+    trainingProfileSection.setAttribute("aria-hidden", String(flags.isManager));
+  }
+  if (trainingReviewSection) {
+    trainingReviewSection.hidden = flags.isManager;
+    trainingReviewSection.setAttribute("aria-hidden", String(flags.isManager));
+  }
+
   if (!canManageTraining) {
-    setText(trainingProfileStatus, "Для вашей роли профиль доступен только для просмотра.", "var(--tone-info)");
+    setText(
+      trainingProfileStatus,
+      flags.isManager
+        ? "Блок обучения и практика доступны в секции «Пошагово»."
+        : "Для вашей роли профиль доступен только для просмотра.",
+      "var(--tone-info)"
+    );
   }
 
   if (!canReviewCalls) {
-    setText(trainingReviewStatus, "Для вашей роли доступен просмотр разборов без редактирования.", "var(--tone-info)");
+    setText(
+      trainingReviewStatus,
+      flags.isManager
+        ? "Оценку звонков выполняет продакт после отправки вашей CRM-карточки."
+        : "Для вашей роли доступен просмотр разборов без редактирования.",
+      "var(--tone-info)"
+    );
   }
 }
 
@@ -318,6 +350,92 @@ function getCurrentProfile() {
   };
 }
 
+function getCurrentWorkflow() {
+  const profile = getCurrentProfile();
+  const workflow = profile?.workflow && typeof profile.workflow === "object" ? profile.workflow : {};
+  const modules = Array.isArray(workflow.modules) ? workflow.modules : [];
+  const practice = workflow.practice && typeof workflow.practice === "object" ? workflow.practice : {};
+  const contacts = Array.isArray(practice.contacts) ? practice.contacts : [];
+  const survey = workflow.survey && typeof workflow.survey === "object" ? workflow.survey : {};
+
+  return {
+    modules,
+    practice: {
+      maxContacts: Math.max(3, Math.min(5, Number(practice.maxContacts) || 3)),
+      contacts,
+      overallReview: practice.overallReview && typeof practice.overallReview === "object" ? practice.overallReview : {},
+      decision: practice.decision && typeof practice.decision === "object" ? practice.decision : { status: "pending" }
+    },
+    survey
+  };
+}
+
+function getWorkflowRoleFlags() {
+  const role = String(actor?.role || "").toLowerCase();
+  return {
+    isManager: role === "manager",
+    canManageWorkflow: Boolean(permissions.canManageTrainingWorkflow || permissions.canManageTraining),
+    canSubmitWorkflow: Boolean(permissions.canSubmitTrainingWorkflow),
+    canFinalizeCandidate: Boolean(permissions.canFinalizeTrainingCandidate),
+    canSubmitSurvey: Boolean(permissions.canSubmitTrainingSurvey)
+  };
+}
+
+function setWorkflowStatus(message, color) {
+  setText(trainingWorkflowStatus, message, color);
+}
+
+function createWorkflowBlock(title) {
+  const block = document.createElement("article");
+  block.className = "training-workflow__block";
+  const head = document.createElement("h3");
+  head.textContent = title;
+  block.appendChild(head);
+  return block;
+}
+
+function clampScore10(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+  const rounded = Math.round(numeric);
+  if (rounded < 0) {
+    return 0;
+  }
+  if (rounded > 10) {
+    return 10;
+  }
+  return rounded;
+}
+
+async function patchTrainingWorkflow(action, payload = {}, successMessage = "Изменения сохранены.") {
+  if (!selectedUserId) {
+    setWorkflowStatus("Выберите сотрудника.", "var(--tone-error)");
+    return;
+  }
+
+  setWorkflowStatus("Сохраняю изменения...", "var(--tone-warn)");
+  try {
+    const response = await apiRequest(`/api/admin/training/workflow/${encodeURIComponent(selectedUserId)}`, {
+      method: "PATCH",
+      body: {
+        action,
+        ...payload
+      }
+    });
+
+    if (response?.profile?.userId) {
+      profilesByUserId.set(response.profile.userId, response.profile);
+    }
+
+    await loadTrainingData({ silent: true });
+    setWorkflowStatus(successMessage, "var(--tone-ok)");
+  } catch (error) {
+    setWorkflowStatus(resolveTrainingError(error, "Не удалось обновить этап обучения."), "var(--tone-error)");
+  }
+}
+
 function renderRedFlagInputs() {
   if (!trainingRedFlags) {
     return;
@@ -366,6 +484,8 @@ function renderActorMeta() {
   const name = actor.name || actor.username || actor.id || "Пользователь";
   const policy = permissions.canManageTraining
     ? "может обновлять обучение и разборы"
+    : permissions.canSubmitTrainingWorkflow
+      ? "проходит обучение и сдает звонки на проверку продакту"
     : "только просмотр";
   trainingActorMeta.textContent = `${name} • ${role} • ${policy}`;
 }
@@ -495,6 +615,14 @@ function renderProfileForm() {
 }
 
 function renderLeaderboard() {
+  const profile = getCurrentProfile();
+  if (!profile || profile.status !== "certified") {
+    if (trainingLeaderboard) {
+      trainingLeaderboard.innerHTML = "";
+    }
+    return;
+  }
+
   if (!trainingLeaderboard) {
     return;
   }
@@ -528,6 +656,14 @@ function renderLeaderboard() {
 }
 
 function renderReviews() {
+  const profile = getCurrentProfile();
+  if (!profile || profile.status !== "certified") {
+    if (trainingReviews) {
+      trainingReviews.innerHTML = "";
+    }
+    return;
+  }
+
   if (!trainingReviews) {
     return;
   }
@@ -579,11 +715,706 @@ function renderReviews() {
   });
 }
 
+function renderWorkflowModules() {
+  if (!trainingModules) {
+    return;
+  }
+
+  const workflow = getCurrentWorkflow();
+  const flags = getWorkflowRoleFlags();
+  trainingModules.innerHTML = "";
+
+  if (!workflow.modules.length) {
+    const empty = document.createElement("p");
+    empty.className = "training-workflow__empty";
+    empty.textContent = "Блоки обучения пока не инициализированы.";
+    trainingModules.appendChild(empty);
+    return;
+  }
+
+  workflow.modules.forEach((module, index) => {
+    const block = createWorkflowBlock(module.title || `Блок ${index + 1}`);
+    const state = module.productApproved
+      ? `Статус: + проверено продактом (${module.productReviewedAt ? formatDate(module.productReviewedAt, true) : "дата не указана"})`
+      : module.managerCompleted
+        ? "Статус: ожидает оценки продакта"
+        : "Статус: не завершен менеджером";
+    const meta = document.createElement("p");
+    meta.className = "training-workflow__meta";
+    meta.textContent = state;
+    block.appendChild(meta);
+
+    if (flags.canSubmitWorkflow) {
+      const noteLabel = document.createElement("label");
+      noteLabel.className = "leads-filters__field";
+      const noteTitle = document.createElement("span");
+      noteTitle.textContent = "Комментарий менеджера по блоку";
+      const noteInput = document.createElement("textarea");
+      noteInput.rows = 2;
+      noteInput.value = String(module.managerNote || "");
+      noteLabel.append(noteTitle, noteInput);
+      block.appendChild(noteLabel);
+
+      const actions = document.createElement("div");
+      actions.className = "training-workflow__actions";
+      const submit = document.createElement("button");
+      submit.className = "btn btn--primary";
+      submit.type = "button";
+      submit.textContent = module.managerCompleted ? "Обновить и отправить на оценку" : "Отметить блок как пройденный";
+      submit.addEventListener("click", () => {
+        patchTrainingWorkflow(
+          "manager_complete_module",
+          {
+            moduleId: module.id,
+            note: String(noteInput.value || "").trim()
+          },
+          "Блок отправлен продакту на оценку."
+        );
+      });
+      actions.appendChild(submit);
+      block.appendChild(actions);
+    }
+
+    if (flags.canManageWorkflow) {
+      const managerMeta = document.createElement("p");
+      managerMeta.className = "training-workflow__meta";
+      const managerDoneAt = module.managerCompletedAt ? formatDate(module.managerCompletedAt, true) : "не отправлен";
+      managerMeta.textContent = `Менеджер: ${managerDoneAt}. Комментарий: ${module.managerNote || "—"}`;
+      block.appendChild(managerMeta);
+
+      const scoreGrid = document.createElement("div");
+      scoreGrid.className = "training-workflow__grid";
+      const buildScoreField = (title, value) => {
+        const label = document.createElement("label");
+        label.className = "leads-filters__field";
+        const span = document.createElement("span");
+        span.textContent = `${title} (0-10)`;
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.max = "10";
+        input.step = "1";
+        input.value = String(clampScore10(value));
+        label.append(span, input);
+        scoreGrid.appendChild(label);
+        return input;
+      };
+      const knowledge = buildScoreField("Знание", module.productScores?.knowledge);
+      const communication = buildScoreField("Коммуникация", module.productScores?.communication);
+      const process = buildScoreField("Процесс", module.productScores?.process);
+      block.appendChild(scoreGrid);
+
+      const approvedLabel = document.createElement("label");
+      approvedLabel.className = "training-workflow__meta";
+      const approvedCheck = document.createElement("input");
+      approvedCheck.type = "checkbox";
+      approvedCheck.checked = Boolean(module.productApproved);
+      approvedLabel.append(approvedCheck, document.createTextNode(" Блок принят продактом"));
+      block.appendChild(approvedLabel);
+
+      const commentLabel = document.createElement("label");
+      commentLabel.className = "leads-filters__field";
+      const commentTitle = document.createElement("span");
+      commentTitle.textContent = "Комментарий продакта";
+      const commentInput = document.createElement("textarea");
+      commentInput.rows = 2;
+      commentInput.value = String(module.productComment || "");
+      commentLabel.append(commentTitle, commentInput);
+      block.appendChild(commentLabel);
+
+      const actions = document.createElement("div");
+      actions.className = "training-workflow__actions";
+      const save = document.createElement("button");
+      save.className = "btn btn--ghost";
+      save.type = "button";
+      save.textContent = "Сохранить оценку блока";
+      save.addEventListener("click", () => {
+        patchTrainingWorkflow(
+          "product_review_module",
+          {
+            moduleId: module.id,
+            knowledge: clampScore10(knowledge.value),
+            communication: clampScore10(communication.value),
+            process: clampScore10(process.value),
+            approved: Boolean(approvedCheck.checked),
+            comment: String(commentInput.value || "").trim()
+          },
+          "Оценка блока сохранена."
+        );
+      });
+      actions.appendChild(save);
+      block.appendChild(actions);
+    }
+
+    trainingModules.appendChild(block);
+  });
+}
+
+function renderWorkflowPractice() {
+  if (!trainingPractice) {
+    return;
+  }
+
+  const workflow = getCurrentWorkflow();
+  const flags = getWorkflowRoleFlags();
+  const modulesApproved = workflow.modules.length > 0 && workflow.modules.every((item) => item.productApproved);
+  const contacts = workflow.practice.contacts || [];
+  const reviewedCount = contacts.filter((item) => item.callStatus === "reviewed").length;
+  const calledCount = contacts.filter((item) => item.callStatus === "called" || item.callStatus === "reviewed").length;
+
+  trainingPractice.innerHTML = "";
+  const head = createWorkflowBlock("Практика: контакты и CRM");
+  const meta = document.createElement("p");
+  meta.className = "training-workflow__meta";
+  meta.textContent =
+    `Контактов: ${contacts.length}/${workflow.practice.maxContacts} • Прозвонено: ${calledCount} • Проверено продактом: ${reviewedCount}`;
+  head.appendChild(meta);
+
+  if (flags.canManageWorkflow) {
+    const limitGrid = document.createElement("div");
+    limitGrid.className = "training-workflow__grid";
+    const limitLabel = document.createElement("label");
+    limitLabel.className = "leads-filters__field";
+    const limitTitle = document.createElement("span");
+    limitTitle.textContent = "Лимит контактов на практике";
+    const limitSelect = document.createElement("select");
+    ["3", "4", "5"].forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      if (Number(value) === Number(workflow.practice.maxContacts)) {
+        option.selected = true;
+      }
+      limitSelect.appendChild(option);
+    });
+    limitLabel.append(limitTitle, limitSelect);
+    limitGrid.appendChild(limitLabel);
+
+    const saveLimitWrap = document.createElement("div");
+    saveLimitWrap.className = "training-workflow__actions";
+    const saveLimit = document.createElement("button");
+    saveLimit.className = "btn btn--ghost";
+    saveLimit.type = "button";
+    saveLimit.textContent = "Сохранить лимит";
+    saveLimit.addEventListener("click", () => {
+      patchTrainingWorkflow(
+        "set_practice_limit",
+        { maxContacts: Number(limitSelect.value) || 3 },
+        "Лимит практики обновлен."
+      );
+    });
+    saveLimitWrap.appendChild(saveLimit);
+    limitGrid.appendChild(saveLimitWrap);
+    head.appendChild(limitGrid);
+
+    if (modulesApproved && contacts.length < workflow.practice.maxContacts) {
+      const addGrid = document.createElement("div");
+      addGrid.className = "training-workflow__grid";
+      const createInput = (labelText, placeholder) => {
+        const label = document.createElement("label");
+        label.className = "leads-filters__field";
+        const span = document.createElement("span");
+        span.textContent = labelText;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = placeholder;
+        label.append(span, input);
+        addGrid.appendChild(label);
+        return input;
+      };
+      const nameInput = createInput("Имя клиента", "Иван Петров");
+      const contactInput = createInput("Контакт", "+7...");
+      const sourceInput = createInput("Источник", "CRM / база / входящий");
+      head.appendChild(addGrid);
+
+      const actions = document.createElement("div");
+      actions.className = "training-workflow__actions";
+      const addButton = document.createElement("button");
+      addButton.className = "btn btn--primary";
+      addButton.type = "button";
+      addButton.textContent = "Добавить контакт";
+      addButton.addEventListener("click", () => {
+        patchTrainingWorkflow(
+          "add_practice_contact",
+          {
+            name: String(nameInput.value || "").trim(),
+            contact: String(contactInput.value || "").trim(),
+            source: String(sourceInput.value || "").trim()
+          },
+          "Контакт добавлен в практику."
+        );
+      });
+      actions.appendChild(addButton);
+      head.appendChild(actions);
+    } else if (!modulesApproved) {
+      const note = document.createElement("p");
+      note.className = "training-workflow__empty";
+      note.textContent = "Контакты для практики можно назначить после того, как продакт примет все 4 блока обучения.";
+      head.appendChild(note);
+    }
+  }
+
+  trainingPractice.appendChild(head);
+
+  if (!contacts.length) {
+    const empty = document.createElement("p");
+    empty.className = "training-workflow__empty";
+    empty.textContent = "Практические контакты пока не назначены.";
+    trainingPractice.appendChild(empty);
+    return;
+  }
+
+  contacts.forEach((contact, index) => {
+    const card = createWorkflowBlock(`Контакт ${index + 1}: ${contact.name || "Без имени"}`);
+    const statusLine = document.createElement("p");
+    statusLine.className = "training-workflow__meta";
+    statusLine.textContent =
+      `Контакт: ${contact.contact || "—"} • Статус: ${contact.callStatus || "assigned"} • Источник: ${contact.source || "—"}`;
+    card.appendChild(statusLine);
+
+    if (flags.canManageWorkflow && !(contact.managerCall && contact.managerCall.calledAt)) {
+      const removeActions = document.createElement("div");
+      removeActions.className = "training-workflow__actions";
+      const removeButton = document.createElement("button");
+      removeButton.className = "btn btn--ghost";
+      removeButton.type = "button";
+      removeButton.textContent = "Удалить контакт";
+      removeButton.addEventListener("click", () => {
+        patchTrainingWorkflow(
+          "remove_practice_contact",
+          { contactId: contact.id },
+          "Контакт удален."
+        );
+      });
+      removeActions.appendChild(removeButton);
+      card.appendChild(removeActions);
+    }
+
+    if (contact.managerCall && contact.managerCall.calledAt) {
+      const managerMeta = document.createElement("p");
+      managerMeta.className = "training-workflow__meta";
+      managerMeta.textContent =
+        `Звонок: ${formatDate(contact.managerCall.calledAt, true)} • Результат: ${contact.managerCall.outcome || "—"}`;
+      card.appendChild(managerMeta);
+      const managerSummary = document.createElement("p");
+      managerSummary.className = "training-workflow__meta";
+      managerSummary.textContent = `Комментарий менеджера: ${contact.managerCall.summary || "—"}`;
+      card.appendChild(managerSummary);
+    }
+
+    if (flags.canSubmitWorkflow) {
+      const callForm = document.createElement("div");
+      callForm.className = "training-workflow__grid";
+      const createManagerField = (title, key, placeholder = "") => {
+        const label = document.createElement("label");
+        label.className = "leads-filters__field";
+        const span = document.createElement("span");
+        span.textContent = title;
+        const input = document.createElement("textarea");
+        input.rows = 2;
+        input.placeholder = placeholder;
+        input.value = String(contact.managerCall?.[key] || contact.managerCall?.crmCard?.[key] || "");
+        label.append(span, input);
+        callForm.appendChild(label);
+        return input;
+      };
+      const summaryInput = createManagerField("Итог звонка", "summary", "Кратко опишите разговор");
+      const outcomeInput = createManagerField("Результат", "outcome", "Договорились / Перезвон / Отказ");
+      const companyInput = createManagerField("Компания клиента", "company", "Название компании");
+      const needInput = createManagerField("Потребность", "need", "Что важно клиенту");
+      const budgetInput = createManagerField("Бюджет", "budget", "Ориентир бюджета");
+      const nextStepInput = createManagerField("Следующий шаг", "nextStep", "Дата, формат, задача");
+      const notesInput = createManagerField("Заметки CRM", "notes", "Детали для CRM");
+      card.appendChild(callForm);
+
+      const actions = document.createElement("div");
+      actions.className = "training-workflow__actions";
+      const submitCall = document.createElement("button");
+      submitCall.className = "btn btn--primary";
+      submitCall.type = "button";
+      submitCall.textContent = "Сдать звонок и CRM";
+      submitCall.addEventListener("click", () => {
+        patchTrainingWorkflow(
+          "manager_submit_contact_call",
+          {
+            contactId: contact.id,
+            summary: String(summaryInput.value || "").trim(),
+            outcome: String(outcomeInput.value || "").trim(),
+            company: String(companyInput.value || "").trim(),
+            need: String(needInput.value || "").trim(),
+            budget: String(budgetInput.value || "").trim(),
+            nextStep: String(nextStepInput.value || "").trim(),
+            notes: String(notesInput.value || "").trim()
+          },
+          "Звонок и CRM-карточка отправлены продакту."
+        );
+      });
+      actions.appendChild(submitCall);
+      card.appendChild(actions);
+    }
+
+    if (flags.canManageWorkflow && contact.managerCall && contact.managerCall.calledAt) {
+      const scoreGrid = document.createElement("div");
+      scoreGrid.className = "training-workflow__grid training-workflow__grid--score";
+      const buildScoreField = (title, key) => {
+        const label = document.createElement("label");
+        label.className = "leads-filters__field";
+        const span = document.createElement("span");
+        span.textContent = `${title} (0-10)`;
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.max = "10";
+        input.step = "1";
+        input.value = String(clampScore10(contact.productReview?.[key]));
+        label.append(span, input);
+        scoreGrid.appendChild(label);
+        return input;
+      };
+      const intro = buildScoreField("Старт", "intro");
+      const needs = buildScoreField("Диагностика", "needs");
+      const offer = buildScoreField("Решение", "offer");
+      const objections = buildScoreField("Возражения", "objections");
+      const closing = buildScoreField("Закрытие", "closing");
+      const crm = buildScoreField("CRM", "crm");
+      card.appendChild(scoreGrid);
+
+      const commentLabel = document.createElement("label");
+      commentLabel.className = "leads-filters__field";
+      const commentTitle = document.createElement("span");
+      commentTitle.textContent = "Комментарий продакта по звонку";
+      const commentInput = document.createElement("textarea");
+      commentInput.rows = 2;
+      commentInput.value = String(contact.productReview?.comment || "");
+      commentLabel.append(commentTitle, commentInput);
+      card.appendChild(commentLabel);
+
+      const actions = document.createElement("div");
+      actions.className = "training-workflow__actions";
+      const save = document.createElement("button");
+      save.className = "btn btn--ghost";
+      save.type = "button";
+      save.textContent = "Оценить звонок";
+      save.addEventListener("click", () => {
+        patchTrainingWorkflow(
+          "product_review_contact_call",
+          {
+            contactId: contact.id,
+            intro: clampScore10(intro.value),
+            needs: clampScore10(needs.value),
+            offer: clampScore10(offer.value),
+            objections: clampScore10(objections.value),
+            closing: clampScore10(closing.value),
+            crm: clampScore10(crm.value),
+            comment: String(commentInput.value || "").trim()
+          },
+          "Оценка звонка сохранена."
+        );
+      });
+      actions.appendChild(save);
+      card.appendChild(actions);
+    }
+
+    if (contact.productReview && contact.productReview.reviewedAt) {
+      const reviewMeta = document.createElement("p");
+      reviewMeta.className = "training-workflow__meta";
+      reviewMeta.textContent =
+        `Оценено: ${formatDate(contact.productReview.reviewedAt, true)} • Балл: ${formatNumber(contact.productReview.totalScore)} / 60`;
+      card.appendChild(reviewMeta);
+    }
+
+    trainingPractice.appendChild(card);
+  });
+}
+
+function renderWorkflowDecision() {
+  if (!trainingDecision) {
+    return;
+  }
+
+  const workflow = getCurrentWorkflow();
+  const flags = getWorkflowRoleFlags();
+  const contacts = workflow.practice.contacts || [];
+  const reviewedCount = contacts.filter((item) => item.callStatus === "reviewed").length;
+  const canFinalize = contacts.length > 0 && reviewedCount === contacts.length;
+
+  trainingDecision.innerHTML = "";
+  const block = createWorkflowBlock("Итог по кандидату");
+  const decisionStatus = String(workflow.practice.decision?.status || "pending");
+  const statusText =
+    decisionStatus === "accepted"
+      ? "+ кандидат принят"
+      : decisionStatus === "rejected"
+        ? "- кандидат отклонен"
+        : "Ожидает решения продакта";
+  const status = document.createElement("p");
+  status.className = "training-workflow__meta";
+  status.textContent = `Статус: ${statusText}`;
+  block.appendChild(status);
+
+  if (flags.canManageWorkflow) {
+    const scoreGrid = document.createElement("div");
+    scoreGrid.className = "training-workflow__grid training-workflow__grid--score";
+    const buildScoreField = (title, key) => {
+      const label = document.createElement("label");
+      label.className = "leads-filters__field";
+      const span = document.createElement("span");
+      span.textContent = `${title} (0-10)`;
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.max = "10";
+      input.step = "1";
+      input.value = String(clampScore10(workflow.practice.overallReview?.[key]));
+      label.append(span, input);
+      scoreGrid.appendChild(label);
+      return input;
+    };
+    const intro = buildScoreField("Старт", "intro");
+    const needs = buildScoreField("Диагностика", "needs");
+    const offer = buildScoreField("Решение", "offer");
+    const objections = buildScoreField("Возражения", "objections");
+    const closing = buildScoreField("Закрытие", "closing");
+    const crm = buildScoreField("CRM", "crm");
+    block.appendChild(scoreGrid);
+
+    const commentLabel = document.createElement("label");
+    commentLabel.className = "leads-filters__field";
+    const commentTitle = document.createElement("span");
+    commentTitle.textContent = "Общая оценка продакта";
+    const commentInput = document.createElement("textarea");
+    commentInput.rows = 2;
+    commentInput.value = String(workflow.practice.overallReview?.comment || "");
+    commentLabel.append(commentTitle, commentInput);
+    block.appendChild(commentLabel);
+
+    const reviewActions = document.createElement("div");
+    reviewActions.className = "training-workflow__actions";
+    const saveReview = document.createElement("button");
+    saveReview.className = "btn btn--ghost";
+    saveReview.type = "button";
+    saveReview.textContent = "Сохранить общую оценку";
+    saveReview.addEventListener("click", () => {
+      patchTrainingWorkflow(
+        "set_overall_review",
+        {
+          intro: clampScore10(intro.value),
+          needs: clampScore10(needs.value),
+          offer: clampScore10(offer.value),
+          objections: clampScore10(objections.value),
+          closing: clampScore10(closing.value),
+          crm: clampScore10(crm.value),
+          comment: String(commentInput.value || "").trim()
+        },
+        "Общая оценка сохранена."
+      );
+    });
+    reviewActions.appendChild(saveReview);
+    block.appendChild(reviewActions);
+
+    const decisionNoteLabel = document.createElement("label");
+    decisionNoteLabel.className = "leads-filters__field";
+    const decisionTitle = document.createElement("span");
+    decisionTitle.textContent = "Комментарий к решению";
+    const decisionInput = document.createElement("textarea");
+    decisionInput.rows = 2;
+    decisionInput.value = String(workflow.practice.decision?.note || "");
+    decisionNoteLabel.append(decisionTitle, decisionInput);
+    block.appendChild(decisionNoteLabel);
+
+    const decisionActions = document.createElement("div");
+    decisionActions.className = "training-workflow__actions";
+    const accept = document.createElement("button");
+    accept.className = "btn btn--primary";
+    accept.type = "button";
+    accept.textContent = "Принять кандидата";
+    accept.disabled = !canFinalize || !flags.canFinalizeCandidate;
+    accept.addEventListener("click", () => {
+      patchTrainingWorkflow(
+        "decide_candidate",
+        {
+          decision: "accepted",
+          note: String(decisionInput.value || "").trim()
+        },
+        "Кандидат принят."
+      );
+    });
+    const reject = document.createElement("button");
+    reject.className = "btn btn--ghost";
+    reject.type = "button";
+    reject.textContent = "Отклонить кандидата";
+    reject.disabled = !canFinalize || !flags.canFinalizeCandidate;
+    reject.addEventListener("click", () => {
+      patchTrainingWorkflow(
+        "decide_candidate",
+        {
+          decision: "rejected",
+          note: String(decisionInput.value || "").trim()
+        },
+        "Кандидат отклонен."
+      );
+    });
+    decisionActions.append(accept, reject);
+    block.appendChild(decisionActions);
+
+    const rule = document.createElement("p");
+    rule.className = "training-workflow__meta";
+    rule.textContent = canFinalize
+      ? "Решение доступно: все назначенные контакты оценены."
+      : "Для решения нужно, чтобы все назначенные контакты были оценены продактом.";
+    block.appendChild(rule);
+  } else {
+    const info = document.createElement("p");
+    info.className = "training-workflow__meta";
+    info.textContent = "Итоговое решение принимает продакт.";
+    block.appendChild(info);
+  }
+
+  trainingDecision.appendChild(block);
+}
+
+function renderWorkflowSurvey() {
+  if (!trainingSurvey) {
+    return;
+  }
+
+  const workflow = getCurrentWorkflow();
+  const flags = getWorkflowRoleFlags();
+  const survey = workflow.survey || {};
+  const decisionStatus = String(workflow.practice.decision?.status || "pending");
+
+  trainingSurvey.innerHTML = "";
+  const block = createWorkflowBlock("Опрос менеджера после обучения");
+
+  if (flags.canSubmitSurvey) {
+    if (decisionStatus === "pending") {
+      const wait = document.createElement("p");
+      wait.className = "training-workflow__empty";
+      wait.textContent = "Опрос откроется после финального решения продакта по результатам практики.";
+      block.appendChild(wait);
+      trainingSurvey.appendChild(block);
+      return;
+    }
+
+    const formGrid = document.createElement("div");
+    formGrid.className = "training-workflow__grid";
+    const mentorScoreLabel = document.createElement("label");
+    mentorScoreLabel.className = "leads-filters__field";
+    mentorScoreLabel.innerHTML = "<span>Оценка наставника (1-10)</span>";
+    const mentorScoreInput = document.createElement("input");
+    mentorScoreInput.type = "number";
+    mentorScoreInput.min = "1";
+    mentorScoreInput.max = "10";
+    mentorScoreInput.step = "1";
+    mentorScoreInput.value = String(Math.max(1, Math.min(10, Number(survey.mentorScore) || 0)) || "");
+    mentorScoreLabel.appendChild(mentorScoreInput);
+
+    const companyScoreLabel = document.createElement("label");
+    companyScoreLabel.className = "leads-filters__field";
+    companyScoreLabel.innerHTML = "<span>Оценка отношения компании (1-10)</span>";
+    const companyScoreInput = document.createElement("input");
+    companyScoreInput.type = "number";
+    companyScoreInput.min = "1";
+    companyScoreInput.max = "10";
+    companyScoreInput.step = "1";
+    companyScoreInput.value = String(Math.max(1, Math.min(10, Number(survey.companyScore) || 0)) || "");
+    companyScoreLabel.appendChild(companyScoreInput);
+
+    formGrid.append(mentorScoreLabel, companyScoreLabel);
+    block.appendChild(formGrid);
+
+    const missingLabel = document.createElement("label");
+    missingLabel.className = "leads-filters__field";
+    missingLabel.innerHTML = "<span>Чего не хватило в обучении</span>";
+    const missingInput = document.createElement("textarea");
+    missingInput.rows = 2;
+    missingInput.value = String(survey.missingTopics || "");
+    missingLabel.appendChild(missingInput);
+    block.appendChild(missingLabel);
+
+    const mentorFeedbackLabel = document.createElement("label");
+    mentorFeedbackLabel.className = "leads-filters__field";
+    mentorFeedbackLabel.innerHTML = "<span>Комментарий по наставнику</span>";
+    const mentorFeedbackInput = document.createElement("textarea");
+    mentorFeedbackInput.rows = 2;
+    mentorFeedbackInput.value = String(survey.mentorFeedback || "");
+    mentorFeedbackLabel.appendChild(mentorFeedbackInput);
+    block.appendChild(mentorFeedbackLabel);
+
+    const companyFeedbackLabel = document.createElement("label");
+    companyFeedbackLabel.className = "leads-filters__field";
+    companyFeedbackLabel.innerHTML = "<span>Комментарий по компании</span>";
+    const companyFeedbackInput = document.createElement("textarea");
+    companyFeedbackInput.rows = 2;
+    companyFeedbackInput.value = String(survey.companyFeedback || "");
+    companyFeedbackLabel.appendChild(companyFeedbackInput);
+    block.appendChild(companyFeedbackLabel);
+
+    const actions = document.createElement("div");
+    actions.className = "training-workflow__actions";
+    const send = document.createElement("button");
+    send.className = "btn btn--primary";
+    send.type = "button";
+    send.textContent = survey.submitted ? "Обновить опрос" : "Отправить опрос";
+    send.addEventListener("click", () => {
+      patchTrainingWorkflow(
+        "manager_submit_survey",
+        {
+          mentorScore: clampScore10(mentorScoreInput.value),
+          companyScore: clampScore10(companyScoreInput.value),
+          missingTopics: String(missingInput.value || "").trim(),
+          mentorFeedback: String(mentorFeedbackInput.value || "").trim(),
+          companyFeedback: String(companyFeedbackInput.value || "").trim()
+        },
+        "Опрос отправлен."
+      );
+    });
+    actions.appendChild(send);
+    block.appendChild(actions);
+  } else if (survey.submitted) {
+    const info = document.createElement("p");
+    info.className = "training-workflow__meta";
+    info.textContent =
+      `Опрос получен: наставник ${formatNumber(survey.mentorScore)}/10, компания ${formatNumber(survey.companyScore)}/10.`;
+    block.appendChild(info);
+    if (survey.missingTopics) {
+      const missing = document.createElement("p");
+      missing.className = "training-workflow__meta";
+      missing.textContent = `Чего не хватило: ${survey.missingTopics}`;
+      block.appendChild(missing);
+    }
+  } else {
+    const empty = document.createElement("p");
+    empty.className = "training-workflow__empty";
+    empty.textContent = "Опрос менеджера пока не заполнен.";
+    block.appendChild(empty);
+  }
+
+  trainingSurvey.appendChild(block);
+}
+
+function renderWorkflow() {
+  if (!trainingWorkflowSection) {
+    return;
+  }
+  renderWorkflowModules();
+  renderWorkflowPractice();
+  renderWorkflowDecision();
+  renderWorkflowSurvey();
+}
+
 function renderAll() {
   fillUserSelect();
   renderSummary();
   renderActorMeta();
   renderProfileForm();
+  renderWorkflow();
+  const profile = getCurrentProfile();
+  const isCertified = Boolean(profile && profile.status === "certified");
+  if (trainingBoardsSection) {
+    trainingBoardsSection.hidden = !isCertified;
+    trainingBoardsSection.setAttribute("aria-hidden", String(!isCertified));
+  }
   renderLeaderboard();
   renderReviews();
 }
@@ -621,6 +1452,25 @@ function resolveTrainingError(error, fallback) {
     USER_NOT_FOUND: "Сотрудник не найден.",
     FORBIDDEN_TRAINING_PROFILE: "Недостаточно прав для изменения профиля обучения.",
     FORBIDDEN_TRAINING_REVIEW: "Недостаточно прав для сохранения разбора.",
+    FORBIDDEN_TRAINING_WORKFLOW: "Недостаточно прав для действия в обучении.",
+    TRAINING_NOT_ASSIGNED: "Обучение еще не назначено продактом.",
+    TRAINING_MODULE_NOT_FOUND: "Блок обучения не найден.",
+    TRAINING_MODULE_NOT_COMPLETED: "Сначала менеджер должен завершить блок.",
+    TRAINING_MODULES_NOT_APPROVED: "Продакт должен принять все блоки перед практикой.",
+    TRAINING_PRACTICE_LIMIT_TOO_LOW: "Нельзя установить лимит меньше уже назначенных контактов.",
+    TRAINING_CONTACT_NAME_CONTACT_REQUIRED: "Для контакта нужны имя и контакт.",
+    TRAINING_PRACTICE_LIMIT_REACHED: "Достигнут лимит контактов на практику.",
+    TRAINING_CONTACT_NOT_FOUND: "Практический контакт не найден.",
+    TRAINING_CONTACT_ALREADY_IN_PROGRESS: "Контакт уже в работе, удалить нельзя.",
+    TRAINING_CALL_SUMMARY_REQUIRED: "Опишите итог звонка перед отправкой.",
+    TRAINING_CONTACT_CALL_NOT_SUBMITTED: "Менеджер еще не отправил результат звонка.",
+    TRAINING_NO_REVIEWED_CONTACTS: "Сначала оцените хотя бы один звонок.",
+    TRAINING_DECISION_INVALID: "Выберите корректное решение: принять или отклонить.",
+    TRAINING_NO_PRACTICE_CONTACTS: "Нельзя вынести решение без назначенных контактов.",
+    TRAINING_CONTACTS_NOT_REVIEWED: "Все назначенные контакты должны быть оценены продактом.",
+    TRAINING_SURVEY_NOT_AVAILABLE: "Опрос доступен только после финального решения по кандидату.",
+    TRAINING_SURVEY_SCORES_REQUIRED: "Поставьте оценки наставнику и компании.",
+    TRAINING_WORKFLOW_ACTION_UNKNOWN: "Неизвестное действие в workflow обучения.",
     NO_UPDATABLE_FIELDS: "Нет полей для обновления."
   };
   return map[error.message] || fallback;
@@ -675,8 +1525,10 @@ async function loadTrainingData(options = {}) {
     setAuthState(false);
     renderAll();
     setText(trainingStatus, `Данные обновлены. Разборов: ${formatNumber(stats.reviewsTotal)}.`, "var(--tone-info)");
+    setWorkflowStatus("Пошаговый режим обучения обновлен.", "var(--tone-info)");
   } catch (error) {
     setText(trainingStatus, resolveTrainingError(error, "Не удалось загрузить модуль обучения."), "var(--tone-error)");
+    setWorkflowStatus(resolveTrainingError(error, "Не удалось загрузить пошаговое обучение."), "var(--tone-error)");
   } finally {
     setControlsDisabled(false);
     applyRoleRestrictions();
@@ -785,9 +1637,11 @@ async function submitReview(event) {
 function onUserChange() {
   selectedUserId = normalizeUserId(trainingUserSelect?.value || "");
   renderProfileForm();
+  renderWorkflow();
   renderReviews();
   setText(trainingProfileStatus, "", "");
   setText(trainingReviewStatus, "", "");
+  setWorkflowStatus("", "");
   applyRoleRestrictions();
 }
 

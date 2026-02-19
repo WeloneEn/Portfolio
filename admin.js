@@ -5,19 +5,31 @@ const adminAuth = document.getElementById("adminAuth");
 const adminPanel = document.getElementById("adminPanel");
 const adminStatus = document.getElementById("adminStatus");
 const adminUserMeta = document.getElementById("adminUserMeta");
+const adminStatsHint = document.getElementById("adminStatsHint");
 const refreshAdmin = document.getElementById("refreshAdmin");
 const trainingNavLinks = Array.from(document.querySelectorAll('a[href="admin-training.html"]'));
+const roleBoundSubnavLinks = Array.from(document.querySelectorAll("[data-subnav-link]"));
+const roleBoundActionLinks = Array.from(document.querySelectorAll("[data-action-link]"));
+const trafficFolder = document.getElementById("trafficFolder");
+const leadsFolder = document.getElementById("leadsFolder");
+const conversionFolder = document.getElementById("conversionFolder");
 
-const ownerPanel = document.getElementById("ownerPanel");
-const ownerPlanForm = document.getElementById("ownerPlanForm");
-const planDayTarget = document.getElementById("planDayTarget");
-const planWeekTarget = document.getElementById("planWeekTarget");
-const planMonthTarget = document.getElementById("planMonthTarget");
+const ownerPlanPanel = document.getElementById("ownerPlanPanel");
 const ownerPlanStatus = document.getElementById("ownerPlanStatus");
-const ownerPlanProgress = document.getElementById("ownerPlanProgress");
+const ownerPlanGrid = document.getElementById("ownerPlanGrid");
+const ownerPlanForm = document.getElementById("ownerPlanForm");
+const ownerPlanDay = document.getElementById("ownerPlanDay");
+const ownerPlanWeek = document.getElementById("ownerPlanWeek");
+const ownerPlanMonth = document.getElementById("ownerPlanMonth");
+
+const ownerLeaderboardPanel = document.getElementById("ownerLeaderboardPanel");
+const ownerLeaderboardStatus = document.getElementById("ownerLeaderboardStatus");
+const ownerLeaderboardList = document.getElementById("ownerLeaderboardList");
 
 const productPanel = document.getElementById("productPanel");
 const productPanelStatus = document.getElementById("productPanelStatus");
+const productTeamFolder = document.getElementById("productTeamFolder");
+const productLeaderboardFolder = document.getElementById("productLeaderboardFolder");
 const productTopStats = document.getElementById("productTopStats");
 const productManagerStats = document.getElementById("productManagerStats");
 const productLeaderboard = document.getElementById("productLeaderboard");
@@ -35,9 +47,7 @@ const adminTeamSection = document.getElementById("adminTeamSection");
 const adminUserCreateForm = document.getElementById("adminUserCreateForm");
 const adminCreateUsername = document.getElementById("adminCreateUsername");
 const adminCreatePassword = document.getElementById("adminCreatePassword");
-const adminCreateName = document.getElementById("adminCreateName");
 const adminCreateRole = document.getElementById("adminCreateRole");
-const adminCreateDepartment = document.getElementById("adminCreateDepartment");
 const adminUserStatus = document.getElementById("adminUserStatus");
 const adminUserList = document.getElementById("adminUserList");
 
@@ -100,12 +110,100 @@ function setRolePanelVisible(node, visible) {
   node.setAttribute("aria-hidden", String(!visible));
 }
 
+function setStatsHint(message) {
+  if (!adminStatsHint) {
+    return;
+  }
+  const text = String(message || "").trim();
+  adminStatsHint.hidden = !text;
+  adminStatsHint.setAttribute("aria-hidden", String(!text));
+  adminStatsHint.textContent = text;
+}
+
 function setTrainingNavVisible(isVisible) {
   trainingNavLinks.forEach((link) => {
     link.classList.toggle("is-hidden-link", !isVisible);
     link.setAttribute("aria-hidden", String(!isVisible));
     link.tabIndex = isVisible ? 0 : -1;
   });
+}
+
+function parseAccessRoles(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function setRoleBoundLinksVisibility(links, role) {
+  links.forEach((link) => {
+    const allowedRoles = parseAccessRoles(link?.dataset?.roles);
+    const isVisible = !allowedRoles.length || allowedRoles.includes(String(role || "").toLowerCase());
+    link.hidden = !isVisible;
+    link.classList.toggle("is-hidden-link", !isVisible);
+    link.setAttribute("aria-hidden", String(!isVisible));
+    link.tabIndex = isVisible ? 0 : -1;
+  });
+}
+
+function syncRoleBoundNavigation(role) {
+  setRoleBoundLinksVisibility(roleBoundSubnavLinks, role);
+  setRoleBoundLinksVisibility(roleBoundActionLinks, role);
+
+  const trainingAllowed = permissions.canAccessTraining !== false;
+  [...roleBoundSubnavLinks, ...roleBoundActionLinks].forEach((link) => {
+    const href = String(link?.getAttribute?.("href") || "").toLowerCase();
+    if (!href.endsWith("admin-training.html")) {
+      return;
+    }
+    if (trainingAllowed) {
+      return;
+    }
+    link.hidden = true;
+    link.classList.add("is-hidden-link");
+    link.setAttribute("aria-hidden", "true");
+    link.tabIndex = -1;
+  });
+}
+
+function setDetailsOpen(node, shouldOpen) {
+  if (!(node instanceof HTMLDetailsElement)) {
+    return;
+  }
+  node.open = Boolean(shouldOpen);
+}
+
+function applyRoleDensity(role) {
+  const normalizedRole = String(role || "").trim().toLowerCase();
+  if (normalizedRole === "owner") {
+    setDetailsOpen(trafficFolder, true);
+    setDetailsOpen(leadsFolder, false);
+    setDetailsOpen(conversionFolder, false);
+    setDetailsOpen(productTeamFolder, false);
+    setDetailsOpen(productLeaderboardFolder, false);
+    setDetailsOpen(trainingAssignSection, false);
+    return;
+  }
+
+  if (normalizedRole === "product") {
+    setDetailsOpen(trafficFolder, false);
+    setDetailsOpen(leadsFolder, true);
+    setDetailsOpen(conversionFolder, true);
+    setDetailsOpen(productPanel, true);
+    setDetailsOpen(productTeamFolder, true);
+    setDetailsOpen(productLeaderboardFolder, false);
+    setDetailsOpen(trainingAssignSection, false);
+    return;
+  }
+
+  if (normalizedRole === "manager") {
+    setDetailsOpen(trafficFolder, false);
+    setDetailsOpen(leadsFolder, true);
+    setDetailsOpen(conversionFolder, false);
+    setDetailsOpen(productTeamFolder, false);
+    setDetailsOpen(productLeaderboardFolder, false);
+    setDetailsOpen(trainingAssignSection, false);
+  }
 }
 
 function formatNumber(value) {
@@ -137,6 +235,19 @@ function setStatValue(statKey, value) {
   if (element) {
     element.textContent = value;
   }
+}
+
+function parsePlanBucket(period) {
+  const target = Math.max(0, Math.floor(Number(period?.target) || 0));
+  const achieved = Math.max(0, Math.floor(Number(period?.achieved) || 0));
+  const remaining = Math.max(0, Math.floor(Number(period?.remaining) || 0));
+  const completionPercent = Number(period?.completionPercent);
+  return {
+    target,
+    achieved,
+    remaining,
+    completionPercent: Number.isFinite(completionPercent) ? completionPercent : 0
+  };
 }
 
 function createKpiCard(label, value, hint) {
@@ -238,36 +349,20 @@ function renderGeneralStats(stats) {
   setStatValue("leadsSuccess", formatNumber(stats.leadsSuccess));
   setStatValue("leadsFailure", formatNumber(stats.leadsFailure));
   setStatValue("leadSuccessRatePercent", formatPercent(stats.leadSuccessRatePercent));
-  setStatValue("pointsThisMonth", formatNumber(stats.pointsThisMonth));
 }
 
-function renderOwnerPanel(stats) {
-  if (!ownerPanel || !ownerPlanProgress) {
-    return;
-  }
-
-  const plans = stats?.plans || {};
-  const day = plans.day || {};
-  const week = plans.week || {};
-  const month = plans.month || {};
-
-  if (planDayTarget) {
-    planDayTarget.value = String(day.target || 0);
-  }
-  if (planWeekTarget) {
-    planWeekTarget.value = String(week.target || 0);
-  }
-  if (planMonthTarget) {
-    planMonthTarget.value = String(month.target || 0);
-  }
-
-  ownerPlanProgress.innerHTML = "";
-  ownerPlanProgress.append(
-    createKpiCard("День", `${formatNumber(day.achieved)} / ${formatNumber(day.target)}`, `Выполнение: ${formatPercent(day.completionPercent)}`),
-    createKpiCard("Неделя", `${formatNumber(week.achieved)} / ${formatNumber(week.target)}`, `Выполнение: ${formatPercent(week.completionPercent)}`),
-    createKpiCard("Месяц", `${formatNumber(month.achieved)} / ${formatNumber(month.target)}`, `Выполнение: ${formatPercent(month.completionPercent)}`)
+function getTrainingGate(stats) {
+  const training = stats?.training || {};
+  const certifiedManagers = Math.max(0, Number(training.certifiedManagers) || 0);
+  const actorCertified = Boolean(training.actorCertified);
+  const certifiedManagerIds = new Set(
+    Array.isArray(training.certifiedManagerIds) ? training.certifiedManagerIds.map((item) => String(item || "")) : []
   );
-  setText(ownerPlanStatus, "План считается только по успешным сделкам менеджеров.", "var(--tone-info)");
+  return {
+    certifiedManagers,
+    actorCertified,
+    certifiedManagerIds
+  };
 }
 
 function renderProductPanel(stats) {
@@ -276,21 +371,28 @@ function renderProductPanel(stats) {
   }
 
   const perf = stats?.managerPerformance || {};
-  const managers = Array.isArray(perf.managers) ? perf.managers : [];
-  const leaderboard = Array.isArray(perf.leaderboard) ? perf.leaderboard : [];
+  const managersRaw = Array.isArray(perf.managers)
+    ? perf.managers
+    : Array.isArray(perf.rows)
+      ? perf.rows
+      : [];
+  const leaderboardRaw = Array.isArray(perf.leaderboard) ? perf.leaderboard : [];
+  const gate = getTrainingGate(stats);
+  const managers = managersRaw.filter((row) => gate.certifiedManagerIds.has(String(row?.userId || "")));
+  const leaderboard = leaderboardRaw.filter((row) => gate.certifiedManagerIds.has(String(row?.userId || "")));
 
   productTopStats.innerHTML = "";
   productTopStats.append(
-    createKpiCard("Менеджеров", formatNumber(perf.managerCount || managers.length), "Роль менеджер"),
-    createKpiCard("Сделки за месяц", formatNumber(managers.reduce((acc, row) => acc + (Number(row.periods?.month?.success) || 0), 0)), "Успешные"),
-    createKpiCard("Очки команды", formatNumber(managers.reduce((acc, row) => acc + (Number(row.periods?.month?.points) || 0), 0)), "За 30 дней")
+    createKpiCard("Сертифицировано", formatNumber(gate.certifiedManagers), "Менеджеры после обучения"),
+    createKpiCard("Сделки за месяц", formatNumber(managers.reduce((acc, row) => acc + (Number(row.periods?.month?.success) || 0), 0)), "Только сертифицированные"),
+    createKpiCard("Выполнение плана", formatPercent(managers.length ? managers.reduce((acc, row) => acc + (Number(row.periods?.month?.planCompletionPercent) || 0), 0) / managers.length : 0), "Среднее по команде")
   );
 
   productManagerStats.innerHTML = "";
   if (!managers.length) {
     const empty = document.createElement("p");
     empty.className = "admin-status";
-    empty.textContent = "Менеджеры не найдены.";
+    empty.textContent = "Панель появится после завершения обучения хотя бы одним менеджером.";
     productManagerStats.appendChild(empty);
   } else {
     managers.forEach((row) => {
@@ -298,8 +400,7 @@ function renderProductPanel(stats) {
       const meta =
         `День ${formatNumber(row.periods?.day?.success)}/${formatNumber(row.periods?.day?.planTarget)} • ` +
         `Неделя ${formatNumber(row.periods?.week?.success)}/${formatNumber(row.periods?.week?.planTarget)} • ` +
-        `Месяц ${formatNumber(row.periods?.month?.success)}/${formatNumber(row.periods?.month?.planTarget)} • ` +
-        `Очки ${formatNumber(row.periods?.month?.points)}`;
+        `Месяц ${formatNumber(row.periods?.month?.success)}/${formatNumber(row.periods?.month?.planTarget)}`;
       productManagerStats.appendChild(createSimpleRow(userName, meta));
     });
   }
@@ -308,17 +409,119 @@ function renderProductPanel(stats) {
   if (!leaderboard.length) {
     const empty = document.createElement("p");
     empty.className = "admin-status";
-    empty.textContent = "Leaderboard пока пуст.";
+    empty.textContent = "Рейтинг появится после сертификации менеджеров.";
     productLeaderboard.appendChild(empty);
   } else {
     leaderboard.slice(0, 10).forEach((entry) => {
       const userName = entry.user?.name || entry.user?.username || entry.userId;
-      const meta = `Очки ${formatNumber(entry.periods?.month?.points)} • Сделки ${formatNumber(entry.periods?.month?.success)}`;
+      const meta = `Сделки ${formatNumber(entry.periods?.month?.success)} • Выполнение ${formatPercent(entry.periods?.month?.planCompletionPercent)}`;
       productLeaderboard.appendChild(createSimpleRow(`#${entry.rank} ${userName}`, meta));
     });
   }
 
-  setText(productPanelStatus, "Подробная статистика по менеджерам за день, неделю и месяц.", "var(--tone-info)");
+  setText(productPanelStatus, "Подробная статистика показывается только для менеджеров, завершивших обучение.", "var(--tone-info)");
+}
+
+function renderOwnerPlanPanel(stats) {
+  if (!ownerPlanPanel || !ownerPlanGrid) {
+    return;
+  }
+
+  const plans = stats?.plans || {};
+  const day = parsePlanBucket(plans.day);
+  const week = parsePlanBucket(plans.week);
+  const month = parsePlanBucket(plans.month);
+  const hiring = stats?.trainingHiring || {};
+  const acceptedCount = Math.max(0, Number(hiring.acceptedCount) || 0);
+  const rejectedCount = Math.max(0, Number(hiring.rejectedCount) || 0);
+  const pendingCount = Math.max(0, Number(hiring.pendingCount) || 0);
+  const surveysSubmitted = Math.max(0, Number(hiring.surveysSubmitted) || 0);
+  const mentorAvgScore = Number(hiring.mentorAvgScore) || 0;
+  const companyAvgScore = Number(hiring.companyAvgScore) || 0;
+  const missingTopics = Array.isArray(hiring.missingTopics) ? hiring.missingTopics : [];
+
+  ownerPlanGrid.innerHTML = "";
+  ownerPlanGrid.append(
+    createKpiCard(
+      "День",
+      `${formatNumber(day.achieved)} / ${formatNumber(day.target)}`,
+      `Выполнение: ${formatPercent(day.completionPercent)} • Осталось: ${formatNumber(day.remaining)}`
+    ),
+    createKpiCard(
+      "Неделя",
+      `${formatNumber(week.achieved)} / ${formatNumber(week.target)}`,
+      `Выполнение: ${formatPercent(week.completionPercent)} • Осталось: ${formatNumber(week.remaining)}`
+    ),
+    createKpiCard(
+      "Месяц",
+      `${formatNumber(month.achieved)} / ${formatNumber(month.target)}`,
+      `Выполнение: ${formatPercent(month.completionPercent)} • Осталось: ${formatNumber(month.remaining)}`
+    ),
+    createKpiCard(
+      "Кандидаты",
+      `+ ${formatNumber(acceptedCount)} / - ${formatNumber(rejectedCount)}`,
+      `В ожидании: ${formatNumber(pendingCount)}`
+    ),
+    createKpiCard(
+      "Опросы менеджеров",
+      `${formatNumber(surveysSubmitted)}`,
+      `Наставник: ${Math.round(mentorAvgScore * 10) / 10}/10 • Компания: ${Math.round(companyAvgScore * 10) / 10}/10`
+    )
+  );
+
+  if (ownerPlanDay) {
+    ownerPlanDay.value = String(day.target);
+  }
+  if (ownerPlanWeek) {
+    ownerPlanWeek.value = String(week.target);
+  }
+  if (ownerPlanMonth) {
+    ownerPlanMonth.value = String(month.target);
+  }
+
+  const missingTopicsText = missingTopics.length
+    ? `Недостатки по опросам: ${missingTopics
+        .map((item) => `${item.topic} (${formatNumber(item.count)})`)
+        .join(", ")}.`
+    : "Опросы: критичных повторяющихся замечаний пока нет.";
+  setText(
+    ownerPlanStatus,
+    `Заключено сделок: день ${formatNumber(day.achieved)} • неделя ${formatNumber(week.achieved)} • месяц ${formatNumber(month.achieved)}. ${missingTopicsText}`,
+    "var(--tone-info)"
+  );
+}
+
+function renderOwnerLeaderboard(stats) {
+  if (!ownerLeaderboardPanel || !ownerLeaderboardList) {
+    return;
+  }
+
+  const perf = stats?.managerPerformance || {};
+  const leaderboard = Array.isArray(perf.leaderboard) ? perf.leaderboard : [];
+
+  ownerLeaderboardList.innerHTML = "";
+  if (!leaderboard.length) {
+    setText(ownerLeaderboardStatus, "Рейтинг появится после первых закрытых сделок.", "var(--tone-info)");
+    const empty = document.createElement("p");
+    empty.className = "admin-status";
+    empty.textContent = "Пока нет данных для leaderboard.";
+    ownerLeaderboardList.appendChild(empty);
+    return;
+  }
+
+  setText(ownerLeaderboardStatus, "Рейтинг за месяц: очки, закрытые сделки и выполнение плана.", "var(--tone-info)");
+  leaderboard.slice(0, 12).forEach((entry) => {
+    const userName = entry.user?.name || entry.user?.username || entry.userId;
+    const points = Number(entry.periods?.month?.points) || 0;
+    const success = Number(entry.periods?.month?.success) || 0;
+    const completion = Number(entry.periods?.month?.planCompletionPercent) || 0;
+    ownerLeaderboardList.appendChild(
+      createSimpleRow(
+        `#${entry.rank} ${userName}`,
+        `Очки ${formatNumber(points)} • Сделки ${formatNumber(success)} • Выполнение ${formatPercent(completion)}`
+      )
+    );
+  });
 }
 
 function renderManagerPanel(stats) {
@@ -340,9 +543,7 @@ function renderManagerPanel(stats) {
     managerStatsGrid.append(
       createKpiCard("День", `${formatNumber(self.periods?.day?.success)} / ${formatNumber(self.periods?.day?.planTarget)}`, `Выполнение: ${formatPercent(self.periods?.day?.planCompletionPercent)}`),
       createKpiCard("Неделя", `${formatNumber(self.periods?.week?.success)} / ${formatNumber(self.periods?.week?.planTarget)}`, `Выполнение: ${formatPercent(self.periods?.week?.planCompletionPercent)}`),
-      createKpiCard("Месяц", `${formatNumber(self.periods?.month?.success)} / ${formatNumber(self.periods?.month?.planTarget)}`, `Выполнение: ${formatPercent(self.periods?.month?.planCompletionPercent)}`),
-      createKpiCard("Очки за месяц", formatNumber(self.periods?.month?.points), "Система очков"),
-      createKpiCard("Очки всего", formatNumber(self.totals?.points), "Накопительно")
+      createKpiCard("Месяц", `${formatNumber(self.periods?.month?.success)} / ${formatNumber(self.periods?.month?.planTarget)}`, `Выполнение: ${formatPercent(self.periods?.month?.planCompletionPercent)}`)
     );
   }
 
@@ -351,7 +552,7 @@ function renderManagerPanel(stats) {
     leaderboard.slice(0, 5).forEach((entry) => {
       const userName = entry.user?.name || entry.user?.username || entry.userId;
       managerLeaderboardSnippet.appendChild(
-        createSimpleRow(`#${entry.rank} ${userName}`, `Очки ${formatNumber(entry.periods?.month?.points)} • Сделки ${formatNumber(entry.periods?.month?.success)}`)
+        createSimpleRow(`#${entry.rank} ${userName}`, `Сделки ${formatNumber(entry.periods?.month?.success)} • Выполнение ${formatPercent(entry.periods?.month?.planCompletionPercent)}`)
       );
     });
   }
@@ -516,23 +717,50 @@ async function loadAdminUsers() {
 
 function renderRolePanels(stats) {
   const role = actor?.role || "";
-  setRolePanelVisible(ownerPanel, role === "owner");
-  setRolePanelVisible(productPanel, role === "product");
-  setRolePanelVisible(managerPanel, role === "manager");
-  setRolePanelVisible(trainingAssignSection, Boolean(permissions.canManageTrainingAssignments));
+  const gate = getTrainingGate(stats);
+  const showOwnerPlan = role === "owner";
+  const showOwnerLeaderboard = role === "owner";
+  const showProductPanel = role === "product";
+  const showManagerPanel = role === "manager" && gate.actorCertified;
+  const showTrainingAssign = role === "product" && Boolean(permissions.canManageTrainingAssignments);
 
-  if (role === "owner") {
-    renderOwnerPanel(stats);
+  syncRoleBoundNavigation(role);
+  applyRoleDensity(role);
+  setRolePanelVisible(ownerPlanPanel, showOwnerPlan);
+  setRolePanelVisible(ownerLeaderboardPanel, showOwnerLeaderboard);
+  setRolePanelVisible(productPanel, showProductPanel);
+  setRolePanelVisible(managerPanel, showManagerPanel);
+  setRolePanelVisible(trainingAssignSection, showTrainingAssign);
+
+  if (showOwnerPlan) {
+    renderOwnerPlanPanel(stats);
   }
-  if (role === "product") {
+  if (showOwnerLeaderboard) {
+    renderOwnerLeaderboard(stats);
+  }
+  if (showProductPanel) {
     renderProductPanel(stats);
   }
-  if (role === "manager") {
+  if (showManagerPanel) {
     renderManagerPanel(stats);
   }
-  if (permissions.canManageTrainingAssignments) {
+  if (showTrainingAssign) {
     renderTrainingAssignments();
   }
+
+  if (role === "owner") {
+    setStatsHint("Режим владельца: статистика, план по сделкам, leaderboard, сотрудники и доступ к важным событиям.");
+    return;
+  }
+  if (role === "product") {
+    setStatsHint("Режим продакта: управление заявками, событиями, обучением и контролем менеджеров в компактных секциях.");
+    return;
+  }
+  if (role === "manager" && !showManagerPanel) {
+    setStatsHint("Личная панель менеджера появится после завершения обучения.");
+    return;
+  }
+  setStatsHint("");
 }
 
 async function createUser(event) {
@@ -543,12 +771,12 @@ async function createUser(event) {
 
   const username = String(adminCreateUsername?.value || "").trim();
   const password = String(adminCreatePassword?.value || "").trim();
-  const name = String(adminCreateName?.value || "").trim();
   const role = String(adminCreateRole?.value || "manager").trim();
-  const department = String(adminCreateDepartment?.value || "").trim();
+  const name = username;
+  const department = role === "product" ? "management" : "sales";
 
-  if (!username || !password || !name || !department) {
-    setAdminUserStatus("Заполните все поля.", "var(--tone-error)");
+  if (!username || !password) {
+    setAdminUserStatus("Введите логин и пароль.", "var(--tone-error)");
     return;
   }
 
@@ -568,26 +796,38 @@ async function createUser(event) {
   }
 }
 
+function readPlanTarget(node) {
+  const value = Number(node?.value);
+  if (!Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+  return Math.floor(value);
+}
+
 async function saveOwnerPlan(event) {
   event.preventDefault();
   if (actor?.role !== "owner") {
     return;
   }
 
-  const dayTarget = Math.max(0, Math.round(Number(planDayTarget?.value) || 0));
-  const weekTarget = Math.max(0, Math.round(Number(planWeekTarget?.value) || 0));
-  const monthTarget = Math.max(0, Math.round(Number(planMonthTarget?.value) || 0));
+  const dayTarget = readPlanTarget(ownerPlanDay);
+  const weekTarget = readPlanTarget(ownerPlanWeek);
+  const monthTarget = readPlanTarget(ownerPlanMonth);
 
-  setText(ownerPlanStatus, "Сохраняю план...", "var(--tone-warn)");
+  setText(ownerPlanStatus, "Сохраняю план владельца...", "var(--tone-warn)");
   try {
     await apiRequest("/api/admin/plans", {
       method: "PATCH",
-      body: { dayTarget, weekTarget, monthTarget }
+      body: {
+        dayTarget,
+        weekTarget,
+        monthTarget
+      }
     });
     await loadDashboard({ silent: true });
-    setText(ownerPlanStatus, "План обновлен.", "var(--tone-ok)");
+    setText(ownerPlanStatus, "План владельца обновлен.", "var(--tone-ok)");
   } catch {
-    setText(ownerPlanStatus, "Не удалось обновить план.", "var(--tone-error)");
+    setText(ownerPlanStatus, "Не удалось сохранить план владельца.", "var(--tone-error)");
   }
 }
 
@@ -626,14 +866,15 @@ async function loadDashboard(options = {}) {
     actor = stats.actor || team.actor || null;
     permissions = stats.permissions || team.permissions || {};
 
-    setTrainingNavVisible(permissions.canAccessTraining !== false);
+    const showTrainingNav = actor?.role === "product" || actor?.role === "manager";
+    setTrainingNavVisible(showTrainingNav && permissions.canAccessTraining !== false);
     renderActorMeta();
     renderGeneralStats(stats);
     renderRolePanels(stats);
 
     if (actor?.role === "owner") {
       await loadAdminUsers();
-      setAdminUserStatus("Только владелец управляет сотрудниками.", "var(--tone-info)");
+      setAdminUserStatus("Владелец добавляет сотрудников по логину и паролю.", "var(--tone-info)");
     } else {
       setRolePanelVisible(adminTeamSection, false);
       if (adminUserList) {
@@ -678,11 +919,10 @@ if (!apiAllowed) {
     });
   }
 
-  if (ownerPlanForm) {
-    ownerPlanForm.addEventListener("submit", saveOwnerPlan);
-  }
-
   if (adminUserCreateForm) {
     adminUserCreateForm.addEventListener("submit", createUser);
+  }
+  if (ownerPlanForm) {
+    ownerPlanForm.addEventListener("submit", saveOwnerPlan);
   }
 }

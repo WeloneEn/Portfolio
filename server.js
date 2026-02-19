@@ -46,6 +46,14 @@ const TRAINING_REVIEW_RED_FLAGS = new Set([
   "pressure",
   "reading_script"
 ]);
+const TRAINING_WORKFLOW_MODULES = Object.freeze([
+  { id: "foundation", title: "Блок 1: База продукта и сценарий разговора" },
+  { id: "diagnostics", title: "Блок 2: Диагностика клиента и выявление потребностей" },
+  { id: "dialog_control", title: "Блок 3: Работа с возражениями и контроль диалога" },
+  { id: "closing", title: "Блок 4: Закрытие и фиксация в CRM" }
+]);
+const TRAINING_PRACTICE_CONTACT_STATUSES = new Set(["assigned", "called", "reviewed"]);
+const TRAINING_CANDIDATE_DECISIONS = new Set(["pending", "accepted", "rejected"]);
 const SALES_PLAN_PERIODS = ["day", "week", "month"];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SECRET_LABELS = {
@@ -575,6 +583,219 @@ function normalizeTrainingReviewRedFlags(input) {
   return Array.from(dedup);
 }
 
+function normalizeTrainingScore10(value) {
+  return clampInt(value, 0, 10, 0);
+}
+
+function normalizeTrainingWorkflowScoreCard(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const intro = normalizeTrainingScore10(source.intro);
+  const needs = normalizeTrainingScore10(source.needs);
+  const offer = normalizeTrainingScore10(source.offer);
+  const objections = normalizeTrainingScore10(source.objections);
+  const closing = normalizeTrainingScore10(source.closing);
+  const crm = normalizeTrainingScore10(source.crm);
+  const totalScore = intro + needs + offer + objections + closing + crm;
+  return {
+    intro,
+    needs,
+    offer,
+    objections,
+    closing,
+    crm,
+    totalScore
+  };
+}
+
+function createDefaultTrainingWorkflowModules() {
+  return TRAINING_WORKFLOW_MODULES.map((item) => ({
+    id: item.id,
+    title: item.title,
+    managerCompleted: false,
+    managerCompletedAt: "",
+    managerNote: "",
+    productApproved: false,
+    productScores: {
+      knowledge: 0,
+      communication: 0,
+      process: 0,
+      totalScore: 0
+    },
+    productComment: "",
+    productReviewedAt: "",
+    productReviewedById: "",
+    productReviewedByName: ""
+  }));
+}
+
+function normalizeTrainingWorkflowModule(input, defaults) {
+  const source = input && typeof input === "object" ? input : {};
+  const knowledge = normalizeTrainingScore10(source?.productScores?.knowledge ?? source.knowledge);
+  const communication = normalizeTrainingScore10(source?.productScores?.communication ?? source.communication);
+  const process = normalizeTrainingScore10(source?.productScores?.process ?? source.process);
+
+  return {
+    id: defaults.id,
+    title: sanitizeText(source.title, 160) || defaults.title,
+    managerCompleted: Boolean(source.managerCompleted),
+    managerCompletedAt: sanitizeText(source.managerCompletedAt, 64),
+    managerNote: sanitizeText(source.managerNote, 2000),
+    productApproved: Boolean(source.productApproved),
+    productScores: {
+      knowledge,
+      communication,
+      process,
+      totalScore: knowledge + communication + process
+    },
+    productComment: sanitizeText(source.productComment, 2000),
+    productReviewedAt: sanitizeText(source.productReviewedAt, 64),
+    productReviewedById: normalizeUserId(source.productReviewedById, ""),
+    productReviewedByName: sanitizeText(source.productReviewedByName, 120)
+  };
+}
+
+function normalizeTrainingWorkflowModules(input) {
+  const list = Array.isArray(input) ? input : [];
+  const byId = new Map();
+  list.forEach((item) => {
+    const id = sanitizeText(item?.id, 60).toLowerCase();
+    if (id) {
+      byId.set(id, item);
+    }
+  });
+
+  return TRAINING_WORKFLOW_MODULES.map((defaults) =>
+    normalizeTrainingWorkflowModule(byId.get(defaults.id), defaults)
+  );
+}
+
+function normalizeTrainingPracticeManagerCall(input) {
+  const source = input && typeof input === "object" ? input : {};
+  return {
+    calledAt: sanitizeText(source.calledAt, 64),
+    summary: sanitizeText(source.summary, 3000),
+    outcome: sanitizeText(source.outcome, 80),
+    crmCard: {
+      company: sanitizeText(source.crmCard?.company ?? source.company, 200),
+      need: sanitizeText(source.crmCard?.need ?? source.need, 600),
+      budget: sanitizeText(source.crmCard?.budget ?? source.budget, 120),
+      nextStep: sanitizeText(source.crmCard?.nextStep ?? source.nextStep, 600),
+      notes: sanitizeText(source.crmCard?.notes ?? source.notes, 1600)
+    }
+  };
+}
+
+function normalizeTrainingPracticeContact(input, index = 0) {
+  const source = input && typeof input === "object" ? input : {};
+  const idSeed = sanitizeText(source.id, 120) || `${source.name || "contact"}_${index}`;
+  const id = sanitizeText(source.id, 120) || `tpc_${Buffer.from(idSeed).toString("base64url").slice(0, 16)}`;
+
+  const callStatusRaw = sanitizeText(source.callStatus, 20).toLowerCase();
+  const callStatus = TRAINING_PRACTICE_CONTACT_STATUSES.has(callStatusRaw)
+    ? callStatusRaw
+    : "assigned";
+  const managerCall = normalizeTrainingPracticeManagerCall(source.managerCall);
+  const reviewCard = normalizeTrainingWorkflowScoreCard(source.productReview);
+
+  return {
+    id,
+    name: sanitizeText(source.name, 160),
+    contact: sanitizeText(source.contact, 180),
+    source: sanitizeText(source.source, 160),
+    assignedAt: sanitizeText(source.assignedAt, 64),
+    assignedById: normalizeUserId(source.assignedById, ""),
+    assignedByName: sanitizeText(source.assignedByName, 120),
+    callStatus,
+    managerCall,
+    productReview: {
+      ...reviewCard,
+      comment: sanitizeText(source.productReview?.comment, 2000),
+      reviewedAt: sanitizeText(source.productReview?.reviewedAt, 64),
+      reviewedById: normalizeUserId(source.productReview?.reviewedById, ""),
+      reviewedByName: sanitizeText(source.productReview?.reviewedByName, 120)
+    },
+    legacyReviewId: sanitizeText(source.legacyReviewId, 120)
+  };
+}
+
+function normalizeTrainingPracticeDecision(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const statusRaw = sanitizeText(source.status, 30).toLowerCase();
+  const status = TRAINING_CANDIDATE_DECISIONS.has(statusRaw) ? statusRaw : "pending";
+  return {
+    status,
+    note: sanitizeText(source.note, 2000),
+    decidedAt: sanitizeText(source.decidedAt, 64),
+    decidedById: normalizeUserId(source.decidedById, ""),
+    decidedByName: sanitizeText(source.decidedByName, 120)
+  };
+}
+
+function normalizeTrainingSurvey(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const mentorScore = clampInt(source.mentorScore, 0, 10, 0);
+  const companyScore = clampInt(source.companyScore, 0, 10, 0);
+  const hasExplicitSubmitted = Object.prototype.hasOwnProperty.call(source, "submitted");
+  const submitted = hasExplicitSubmitted
+    ? Boolean(source.submitted)
+    : Boolean(mentorScore > 0 || companyScore > 0 || sanitizeText(source.missingTopics, 2000));
+  return {
+    submitted,
+    submittedAt: sanitizeText(source.submittedAt, 64),
+    missingTopics: sanitizeText(source.missingTopics, 2000),
+    mentorScore,
+    mentorFeedback: sanitizeText(source.mentorFeedback, 2000),
+    companyScore,
+    companyFeedback: sanitizeText(source.companyFeedback, 2000)
+  };
+}
+
+function normalizeTrainingWorkflow(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const contactsInput = Array.isArray(source.practice?.contacts) ? source.practice.contacts : [];
+  const maxContacts = clampInt(source.practice?.maxContacts, 3, 5, 3);
+  const contacts = contactsInput
+    .map((item, index) => normalizeTrainingPracticeContact(item, index))
+    .filter((item) => item.name || item.contact)
+    .slice(0, 5);
+  const overallReview = normalizeTrainingWorkflowScoreCard(source.practice?.overallReview);
+
+  return {
+    modules: normalizeTrainingWorkflowModules(source.modules),
+    practice: {
+      maxContacts: Math.max(maxContacts, Math.min(5, Math.max(3, contacts.length))),
+      contacts,
+      overallReview: {
+        ...overallReview,
+        comment: sanitizeText(source.practice?.overallReview?.comment, 2000),
+        reviewedAt: sanitizeText(source.practice?.overallReview?.reviewedAt, 64),
+        reviewedById: normalizeUserId(source.practice?.overallReview?.reviewedById, ""),
+        reviewedByName: sanitizeText(source.practice?.overallReview?.reviewedByName, 120)
+      },
+      decision: normalizeTrainingPracticeDecision(source.practice?.decision)
+    },
+    survey: normalizeTrainingSurvey(source.survey)
+  };
+}
+
+function mapTrainingWorkflowScoreCardToLegacyScores(cardInput) {
+  const card = normalizeTrainingWorkflowScoreCard(cardInput);
+  const mapPercentToMax = (value, max) => clampInt(Math.round((Math.max(0, value) / 10) * max), 0, max, 0);
+  return {
+    start: mapPercentToMax(card.intro, 15),
+    diagnostics: mapPercentToMax(card.needs, 25),
+    presentation: mapPercentToMax(card.offer, 20),
+    objections: mapPercentToMax(card.objections, 15),
+    closing: mapPercentToMax(card.closing, 15),
+    crm: mapPercentToMax(card.crm, 10)
+  };
+}
+
+function areTrainingWorkflowModulesApproved(profile) {
+  const workflow = normalizeTrainingWorkflow(profile?.workflow);
+  return workflow.modules.length > 0 && workflow.modules.every((module) => module.productApproved);
+}
+
 function resolveTrainingStageByDay(day) {
   if (day >= 24) {
     return "closing";
@@ -610,6 +831,7 @@ function normalizeTrainingProfile(input) {
     energy: clampInt(source.energy, 1, 5, 3),
     control: clampInt(source.control, 1, 5, 3),
     notes: sanitizeText(source.notes, 2400),
+    workflow: normalizeTrainingWorkflow(source.workflow),
     createdAt,
     updatedAt,
     updatedById: normalizeUserId(source.updatedById, ""),
@@ -643,6 +865,7 @@ function normalizeTrainingCallReview(input, index = 0) {
   return {
     id,
     userId,
+    workflowContactId: sanitizeText(source.workflowContactId, 120),
     reviewerId: normalizeUserId(source.reviewerId, ""),
     reviewerName: sanitizeText(source.reviewerName, 120) || "Руководитель",
     channel: normalizeTrainingReviewChannel(source.channel),
@@ -1360,15 +1583,33 @@ function buildTrainingProfileSummary(profile, reviews) {
     0
   );
   const progressPercent = Math.round((Math.max(1, Math.min(30, profile.currentDay || 1)) / 30) * 100);
+  const workflow = normalizeTrainingWorkflow(profile?.workflow);
+  const modulesCompletedCount = workflow.modules.filter((module) => module.managerCompleted).length;
+  const modulesApprovedCount = workflow.modules.filter((module) => module.productApproved).length;
+  const practiceAssignedCount = workflow.practice.contacts.length;
+  const practiceCalledCount = workflow.practice.contacts.filter((contact) =>
+    contact.callStatus === "called" || contact.callStatus === "reviewed"
+  ).length;
+  const practiceReviewedCount = workflow.practice.contacts.filter((contact) =>
+    contact.callStatus === "reviewed"
+  ).length;
 
   const out = {
     ...profile,
+    workflow,
     reviewCount,
     avgScore,
     lastScore: lastReview ? Number(lastReview.totalScore) || 0 : 0,
     lastReviewAt: lastReview ? lastReview.createdAt : "",
     redFlagsCount,
-    progressPercent
+    progressPercent,
+    modulesCompletedCount,
+    modulesApprovedCount,
+    practiceAssignedCount,
+    practiceCalledCount,
+    practiceReviewedCount,
+    candidateDecisionStatus: workflow.practice.decision.status,
+    surveySubmitted: Boolean(workflow.survey.submitted)
   };
 
   out.motivationLevel = resolveTrainingMotivationLevel(out);
@@ -1381,6 +1622,76 @@ function trainingProfileWithUser(profile, usersById, reviewsByUser) {
   return {
     ...summary,
     user
+  };
+}
+
+function splitTrainingSurveyTopics(value) {
+  const text = sanitizeText(value, 2000);
+  if (!text) {
+    return [];
+  }
+  return text
+    .split(/[\n,;]+/g)
+    .map((item) => item.trim().toLowerCase())
+    .filter((item) => item.length >= 2)
+    .slice(0, 20);
+}
+
+function summarizeTrainingHiring(profilesInput) {
+  const profiles = Array.isArray(profilesInput) ? profilesInput : [];
+  let acceptedCount = 0;
+  let rejectedCount = 0;
+  let pendingCount = 0;
+  let surveysSubmitted = 0;
+  let mentorScoreSum = 0;
+  let companyScoreSum = 0;
+  const missingTopicsMap = new Map();
+
+  profiles.forEach((profileInput) => {
+    const profile = normalizeTrainingProfile(profileInput);
+    if (!profile) {
+      return;
+    }
+    const workflow = normalizeTrainingWorkflow(profile.workflow);
+    const decision = workflow.practice.decision.status;
+    if (decision === "accepted") {
+      acceptedCount += 1;
+    } else if (decision === "rejected") {
+      rejectedCount += 1;
+    } else {
+      pendingCount += 1;
+    }
+
+    if (workflow.survey.submitted) {
+      surveysSubmitted += 1;
+      mentorScoreSum += clampInt(workflow.survey.mentorScore, 0, 10, 0);
+      companyScoreSum += clampInt(workflow.survey.companyScore, 0, 10, 0);
+
+      splitTrainingSurveyTopics(workflow.survey.missingTopics).forEach((topic) => {
+        missingTopicsMap.set(topic, (missingTopicsMap.get(topic) || 0) + 1);
+      });
+    }
+  });
+
+  const missingTopics = Array.from(missingTopicsMap.entries())
+    .sort((left, right) => {
+      if (left[1] !== right[1]) {
+        return right[1] - left[1];
+      }
+      return String(left[0]).localeCompare(String(right[0]), "ru");
+    })
+    .slice(0, 6)
+    .map(([topic, count]) => ({ topic, count }));
+
+  return {
+    totalCandidates: profiles.length,
+    acceptedCount,
+    rejectedCount,
+    pendingCount,
+    surveysSubmitted,
+    mentorAvgScore: surveysSubmitted > 0 ? roundPercent(mentorScoreSum / surveysSubmitted) : 0,
+    companyAvgScore: surveysSubmitted > 0 ? roundPercent(companyScoreSum / surveysSubmitted) : 0,
+    missingTopics
   };
 }
 
@@ -1412,7 +1723,12 @@ function getRolePermissions(role) {
     canViewTeamPerformance: isOwner || isProduct,
     canViewPersonalPerformance: isOwner || isProduct || isManager,
     canManageTrainingAssignments: isOwner || isProduct,
-    canAccessTraining: isOwner || isProduct
+    canAccessTraining: isOwner || isProduct,
+    canManageTrainingWorkflow: isOwner || isProduct,
+    canManagePracticeContacts: isOwner || isProduct,
+    canFinalizeTrainingCandidate: isOwner || isProduct,
+    canSubmitTrainingWorkflow: isManager,
+    canSubmitTrainingSurvey: isManager
   };
 }
 
@@ -2047,7 +2363,12 @@ function getDefaultPermissions() {
     canViewTeamPerformance: false,
     canViewPersonalPerformance: false,
     canManageTrainingAssignments: false,
-    canAccessTraining: false
+    canAccessTraining: false,
+    canManageTrainingWorkflow: false,
+    canManagePracticeContacts: false,
+    canFinalizeTrainingCandidate: false,
+    canSubmitTrainingWorkflow: false,
+    canSubmitTrainingSurvey: false
   };
 }
 
@@ -2061,9 +2382,13 @@ function getPermissionsForActor(actor, data = null) {
     return base;
   }
 
+  const canAccessTraining = canAccessTrainingPanel(actor, data);
+
   return {
     ...base,
-    canAccessTraining: canAccessTrainingPanel(actor, data)
+    canAccessTraining,
+    canSubmitTrainingWorkflow: Boolean(base.canSubmitTrainingWorkflow && canAccessTraining),
+    canSubmitTrainingSurvey: Boolean(base.canSubmitTrainingSurvey && canAccessTraining)
   };
 }
 
@@ -2675,29 +3000,6 @@ async function handleApi(req, res, urlObject) {
         };
       }
 
-      if (actor && actor.role === ROLE_MANAGER) {
-        return {
-          ok: true,
-          generatedAt: new Date().toISOString(),
-          actor,
-          permissions,
-          assignment,
-          trainingAssignments,
-          users: [],
-          profiles: [],
-          reviews: [],
-          leaderboard: [],
-          stats: {
-            profilesTotal: 0,
-            activeProfiles: 0,
-            certifiedProfiles: 0,
-            avgScore: 0,
-            reviewsTotal: 0,
-            reviewsThisWeek: 0
-          }
-        };
-      }
-
       const training = ensureTrainingStorage(data);
       const visibleUsers = actor
         ? getVisibleUsers(actor)
@@ -3100,6 +3402,412 @@ async function handleApi(req, res, urlObject) {
     }
 
     sendJson(res, 201, { ok: true, review: result.review, profile: result.profile });
+    return;
+  }
+
+  if (pathname.startsWith("/api/admin/training/workflow/") && req.method === "PATCH") {
+    const actor = getOptionalAdmin(req);
+    if (!actor) {
+      sendJson(res, 401, { error: "UNAUTHORIZED" });
+      return;
+    }
+
+    const userId = normalizeUserId(
+      decodeURIComponent(pathname.replace("/api/admin/training/workflow/", "")),
+      ""
+    );
+    if (!userId) {
+      sendJson(res, 400, { error: "USER_ID_REQUIRED" });
+      return;
+    }
+
+    const targetUser = ADMIN_USERS_BY_ID.get(userId);
+    if (!targetUser) {
+      sendJson(res, 404, { error: "USER_NOT_FOUND" });
+      return;
+    }
+    if (targetUser.role !== ROLE_MANAGER) {
+      sendJson(res, 400, { error: "TRAINING_TARGET_ROLE_INVALID" });
+      return;
+    }
+
+    const canManageTarget = canManageTrainingProfile(actor, targetUser);
+    const isManagerSelf = actor.role === ROLE_MANAGER && actor.id === targetUser.id;
+    if (!canManageTarget && !isManagerSelf) {
+      sendJson(res, 403, { error: "FORBIDDEN_TRAINING_WORKFLOW" });
+      return;
+    }
+
+    let body;
+    try {
+      body = await readJsonBody(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message || "INVALID_REQUEST" });
+      return;
+    }
+
+    const action = sanitizeText(body.action, 80).toLowerCase();
+    if (!action) {
+      sendJson(res, 400, { error: "ACTION_REQUIRED" });
+      return;
+    }
+
+    const result = await withDataLock((data) => {
+      if (!isTrainingAssignedForUser(data, targetUser.id)) {
+        return { error: "TRAINING_NOT_ASSIGNED" };
+      }
+
+      const training = ensureTrainingStorage(data);
+      const nowIso = new Date().toISOString();
+      const profile = ensureTrainingProfileForUser(training, targetUser.id, nowIso);
+      if (!profile) {
+        return { error: "PROFILE_NOT_FOUND" };
+      }
+
+      const workflow = normalizeTrainingWorkflow(profile.workflow);
+      let changed = false;
+
+      if (action === "manager_complete_module") {
+        if (!isManagerSelf) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        const moduleId = sanitizeText(body.moduleId, 60).toLowerCase();
+        const module = workflow.modules.find((item) => item.id === moduleId);
+        if (!module) {
+          return { error: "TRAINING_MODULE_NOT_FOUND" };
+        }
+        module.managerCompleted = true;
+        module.managerCompletedAt = nowIso;
+        module.managerNote = sanitizeText(body.note, 2000);
+        module.productApproved = false;
+        module.productScores = {
+          knowledge: 0,
+          communication: 0,
+          process: 0,
+          totalScore: 0
+        };
+        module.productComment = "";
+        module.productReviewedAt = "";
+        module.productReviewedById = "";
+        module.productReviewedByName = "";
+        if (profile.status === "onboarding") {
+          profile.status = "active";
+        }
+        changed = true;
+      } else if (action === "product_review_module") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        const moduleId = sanitizeText(body.moduleId, 60).toLowerCase();
+        const module = workflow.modules.find((item) => item.id === moduleId);
+        if (!module) {
+          return { error: "TRAINING_MODULE_NOT_FOUND" };
+        }
+        if (!module.managerCompleted) {
+          return { error: "TRAINING_MODULE_NOT_COMPLETED" };
+        }
+        const knowledge = normalizeTrainingScore10(body.knowledge);
+        const communication = normalizeTrainingScore10(body.communication);
+        const process = normalizeTrainingScore10(body.process);
+        module.productScores = {
+          knowledge,
+          communication,
+          process,
+          totalScore: knowledge + communication + process
+        };
+        module.productApproved = Boolean(body.approved);
+        module.productComment = sanitizeText(body.comment, 2000);
+        module.productReviewedAt = nowIso;
+        module.productReviewedById = actor.id;
+        module.productReviewedByName = actor.name;
+        changed = true;
+      } else if (action === "set_practice_limit") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        if (!areTrainingWorkflowModulesApproved({ workflow })) {
+          return { error: "TRAINING_MODULES_NOT_APPROVED" };
+        }
+        const nextLimit = clampInt(body.maxContacts, 3, 5, 3);
+        if (workflow.practice.contacts.length > nextLimit) {
+          return { error: "TRAINING_PRACTICE_LIMIT_TOO_LOW" };
+        }
+        if (workflow.practice.maxContacts !== nextLimit) {
+          workflow.practice.maxContacts = nextLimit;
+          changed = true;
+        }
+      } else if (action === "add_practice_contact") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        if (!areTrainingWorkflowModulesApproved({ workflow })) {
+          return { error: "TRAINING_MODULES_NOT_APPROVED" };
+        }
+        const name = sanitizeText(body.name, 160);
+        const contact = sanitizeText(body.contact, 180);
+        const source = sanitizeText(body.source, 160);
+        if (!name || !contact) {
+          return { error: "TRAINING_CONTACT_NAME_CONTACT_REQUIRED" };
+        }
+        if (workflow.practice.contacts.length >= workflow.practice.maxContacts) {
+          return { error: "TRAINING_PRACTICE_LIMIT_REACHED" };
+        }
+        const nextContact = normalizeTrainingPracticeContact(
+          {
+            name,
+            contact,
+            source,
+            assignedAt: nowIso,
+            assignedById: actor.id,
+            assignedByName: actor.name,
+            callStatus: "assigned",
+            managerCall: {},
+            productReview: {}
+          },
+          workflow.practice.contacts.length
+        );
+        workflow.practice.contacts.push(nextContact);
+        changed = true;
+      } else if (action === "remove_practice_contact") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        const contactId = sanitizeText(body.contactId, 120);
+        const index = workflow.practice.contacts.findIndex((item) => item.id === contactId);
+        if (index < 0) {
+          return { error: "TRAINING_CONTACT_NOT_FOUND" };
+        }
+        const targetContact = workflow.practice.contacts[index];
+        const hasCall = Boolean(targetContact.managerCall?.calledAt);
+        const hasReview = Boolean(targetContact.productReview?.reviewedAt);
+        if (hasCall || hasReview) {
+          return { error: "TRAINING_CONTACT_ALREADY_IN_PROGRESS" };
+        }
+        workflow.practice.contacts.splice(index, 1);
+        changed = true;
+      } else if (action === "manager_submit_contact_call") {
+        if (!isManagerSelf) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        if (!areTrainingWorkflowModulesApproved({ workflow })) {
+          return { error: "TRAINING_MODULES_NOT_APPROVED" };
+        }
+        const contactId = sanitizeText(body.contactId, 120);
+        const targetContact = workflow.practice.contacts.find((item) => item.id === contactId);
+        if (!targetContact) {
+          return { error: "TRAINING_CONTACT_NOT_FOUND" };
+        }
+        const summary = sanitizeText(body.summary, 3000);
+        if (!summary) {
+          return { error: "TRAINING_CALL_SUMMARY_REQUIRED" };
+        }
+        targetContact.managerCall = normalizeTrainingPracticeManagerCall({
+          calledAt: nowIso,
+          summary,
+          outcome: sanitizeText(body.outcome, 80),
+          crmCard: {
+            company: body.company,
+            need: body.need,
+            budget: body.budget,
+            nextStep: body.nextStep,
+            notes: body.notes
+          }
+        });
+        targetContact.callStatus = "called";
+        changed = true;
+      } else if (action === "product_review_contact_call") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        const contactId = sanitizeText(body.contactId, 120);
+        const targetContact = workflow.practice.contacts.find((item) => item.id === contactId);
+        if (!targetContact) {
+          return { error: "TRAINING_CONTACT_NOT_FOUND" };
+        }
+        if (!targetContact.managerCall?.calledAt) {
+          return { error: "TRAINING_CONTACT_CALL_NOT_SUBMITTED" };
+        }
+        const reviewCard = normalizeTrainingWorkflowScoreCard({
+          intro: body.intro,
+          needs: body.needs,
+          offer: body.offer,
+          objections: body.objections,
+          closing: body.closing,
+          crm: body.crm
+        });
+        targetContact.productReview = {
+          ...reviewCard,
+          comment: sanitizeText(body.comment, 2000),
+          reviewedAt: nowIso,
+          reviewedById: actor.id,
+          reviewedByName: actor.name
+        };
+        targetContact.callStatus = "reviewed";
+
+        const legacyScores = mapTrainingWorkflowScoreCardToLegacyScores(reviewCard);
+        const baseLegacyReviewInput = {
+          id: targetContact.legacyReviewId || "",
+          userId: targetUser.id,
+          workflowContactId: targetContact.id,
+          reviewerId: actor.id,
+          reviewerName: actor.name,
+          channel: "call",
+          start: legacyScores.start,
+          diagnostics: legacyScores.diagnostics,
+          presentation: legacyScores.presentation,
+          objections: legacyScores.objections,
+          closing: legacyScores.closing,
+          crm: legacyScores.crm,
+          redFlags: [],
+          confidence: profile.confidence,
+          energy: profile.energy,
+          control: profile.control,
+          comment: sanitizeText(
+            `Практический контакт: ${targetContact.name || targetContact.contact}. ${targetContact.productReview.comment || ""}`,
+            2000
+          ),
+          createdAt: nowIso
+        };
+
+        const existingReviewIndex = targetContact.legacyReviewId
+          ? training.callReviews.findIndex((item) => item.id === targetContact.legacyReviewId)
+          : -1;
+        if (existingReviewIndex >= 0) {
+          const existingReview = training.callReviews[existingReviewIndex];
+          const updatedReview = normalizeTrainingCallReview({
+            ...baseLegacyReviewInput,
+            id: existingReview.id,
+            createdAt: existingReview.createdAt || nowIso
+          });
+          if (updatedReview) {
+            training.callReviews[existingReviewIndex] = updatedReview;
+            targetContact.legacyReviewId = updatedReview.id;
+          }
+        } else {
+          const createdReview = normalizeTrainingCallReview(
+            {
+              ...baseLegacyReviewInput,
+              createdAt: nowIso
+            },
+            training.callReviews.length
+          );
+          if (createdReview) {
+            training.callReviews.push(createdReview);
+            if (training.callReviews.length > 6000) {
+              training.callReviews = training.callReviews.slice(-6000);
+            }
+            targetContact.legacyReviewId = createdReview.id;
+          }
+        }
+
+        changed = true;
+      } else if (action === "set_overall_review") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        const hasReviewedContacts = workflow.practice.contacts.some((item) => item.callStatus === "reviewed");
+        if (!hasReviewedContacts) {
+          return { error: "TRAINING_NO_REVIEWED_CONTACTS" };
+        }
+        const overallCard = normalizeTrainingWorkflowScoreCard({
+          intro: body.intro,
+          needs: body.needs,
+          offer: body.offer,
+          objections: body.objections,
+          closing: body.closing,
+          crm: body.crm
+        });
+        workflow.practice.overallReview = {
+          ...overallCard,
+          comment: sanitizeText(body.comment, 2000),
+          reviewedAt: nowIso,
+          reviewedById: actor.id,
+          reviewedByName: actor.name
+        };
+        changed = true;
+      } else if (action === "decide_candidate") {
+        if (!canManageTarget) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        const decision = sanitizeText(body.decision, 30).toLowerCase();
+        if (!TRAINING_CANDIDATE_DECISIONS.has(decision) || decision === "pending") {
+          return { error: "TRAINING_DECISION_INVALID" };
+        }
+        if (!workflow.practice.contacts.length) {
+          return { error: "TRAINING_NO_PRACTICE_CONTACTS" };
+        }
+        const allReviewed = workflow.practice.contacts.every((item) => item.callStatus === "reviewed");
+        if (!allReviewed) {
+          return { error: "TRAINING_CONTACTS_NOT_REVIEWED" };
+        }
+        workflow.practice.decision = {
+          status: decision,
+          note: sanitizeText(body.note, 2000),
+          decidedAt: nowIso,
+          decidedById: actor.id,
+          decidedByName: actor.name
+        };
+        profile.status = decision === "accepted" ? "certified" : "paused";
+        changed = true;
+      } else if (action === "manager_submit_survey") {
+        if (!isManagerSelf) {
+          return { error: "FORBIDDEN_TRAINING_WORKFLOW" };
+        }
+        if (workflow.practice.decision.status === "pending") {
+          return { error: "TRAINING_SURVEY_NOT_AVAILABLE" };
+        }
+        const mentorScore = clampInt(body.mentorScore, 1, 10, 0);
+        const companyScore = clampInt(body.companyScore, 1, 10, 0);
+        if (mentorScore < 1 || companyScore < 1) {
+          return { error: "TRAINING_SURVEY_SCORES_REQUIRED" };
+        }
+        workflow.survey = normalizeTrainingSurvey({
+          submitted: true,
+          submittedAt: nowIso,
+          missingTopics: body.missingTopics,
+          mentorScore,
+          mentorFeedback: body.mentorFeedback,
+          companyScore,
+          companyFeedback: body.companyFeedback
+        });
+        changed = true;
+      } else {
+        return { error: "TRAINING_WORKFLOW_ACTION_UNKNOWN" };
+      }
+
+      if (!changed) {
+        return { error: "NO_UPDATABLE_FIELDS" };
+      }
+
+      profile.workflow = workflow;
+      profile.updatedAt = nowIso;
+      profile.updatedById = actor.id;
+      profile.updatedByName = actor.name;
+
+      training.profiles = sortTrainingProfiles(training.profiles);
+      data.training = training;
+
+      const reviewsByUser = getTrainingReviewsByUser(training.callReviews, new Set([targetUser.id]));
+      const usersById = new Map([[targetUser.id, toPublicAdminUser(targetUser)]]);
+      return {
+        ok: true,
+        profile: trainingProfileWithUser(profile, usersById, reviewsByUser)
+      };
+    });
+
+    if (!result || !result.ok) {
+      const code = result?.error || "TRAINING_WORKFLOW_UPDATE_FAILED";
+      const status =
+        code === "USER_NOT_FOUND"
+          ? 404
+          : code === "TRAINING_NOT_ASSIGNED" || code.startsWith("FORBIDDEN_")
+            ? 403
+            : 400;
+      sendJson(res, status, { error: code });
+      return;
+    }
+
+    sendJson(res, 200, { ok: true, action, profile: result.profile });
     return;
   }
 
@@ -3684,10 +4392,21 @@ async function handleApi(req, res, urlObject) {
       const managerSelf = actor && actor.role === ROLE_MANAGER
         ? managerPerformance.rows.find((row) => row.userId === actor.id) || null
         : null;
+      const trainingProfilesMap = new Map(
+        normalizeTrainingData(data.training).profiles.map((profile) => [profile.userId, profile])
+      );
+      const certifiedManagerIds = visibleManagerRows
+        .map((row) => String(row.userId || ""))
+        .filter((userId) => trainingProfilesMap.get(userId)?.status === "certified");
+      const actorTrainingProfile = actor ? trainingProfilesMap.get(actor.id) || null : null;
       const assignedManagers = visibleManagerRows.filter((row) => {
         const assignment = getTrainingAssignmentEntry(performance, row.userId);
         return Boolean(assignment && assignment.assigned);
       }).length;
+      const visibleTrainingProfiles = Array.from(trainingProfilesMap.values()).filter((profile) =>
+        visibleManagerIds.has(String(profile.userId || ""))
+      );
+      const trainingHiring = summarizeTrainingHiring(visibleTrainingProfiles);
       const permissions = getPermissionsForActor(actor, data);
       const actorTrainingAssignment = actor
         ? toPublicTrainingAssignment(getTrainingAssignmentEntry(performance, actor.id))
@@ -3736,8 +4455,13 @@ async function handleApi(req, res, urlObject) {
         training: {
           canAccess: permissions.canAccessTraining,
           assignment: actorTrainingAssignment,
-          assignedManagers
+          assignedManagers,
+          actorCertified: Boolean(actorTrainingProfile && actorTrainingProfile.status === "certified"),
+          actorTrainingStatus: actorTrainingProfile?.status || "",
+          certifiedManagers: certifiedManagerIds.length,
+          certifiedManagerIds
         },
+        trainingHiring,
         pointsThisMonth: managerSelf ? managerSelf.periods.month.points : personalPoints.last30Days,
         pointsTotal: managerSelf ? managerSelf.totals.points : personalPoints.total
       };
