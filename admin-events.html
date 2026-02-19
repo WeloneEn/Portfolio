@@ -1,0 +1,96 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05080d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Важные события</title>
+  <meta name="description" content="Клиентские события CRM: дни рождения и важные даты." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z14" />
+  <script defer src="config.js?v=20260218z14"></script>
+  <script defer src="script.js?v=20260218z14"></script>
+  <script defer src="admin-events.js?v=20260219crm1"></script>
+</head>
+<body data-page="admin">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier <span class="brand-initial">C</span>ommand</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a href="admin.html">Статистика</a>
+      <a href="admin-leads.html">Заявки</a>
+      <a class="is-active" href="admin-events.html" aria-current="page">Важные события</a>
+      <a href="admin-training.html">Обучение</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">CRM</p>
+      <h1>Важные события клиентов</h1>
+      <p>Реестр ключевых дат по клиентам: дни рождения и другие маркеры, найденные в заявках и комментариях команды.</p>
+    </section>
+
+    <section class="admin-auth reveal" id="eventsAuth" hidden>
+      <p class="admin-status" id="eventsAuthStatus">Требуется авторизация.</p>
+    </section>
+
+    <section class="admin-panel reveal" id="eventsPanel">
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="admin.html">Статистика</a>
+        <a class="btn btn--ghost" href="admin-leads.html">К заявкам</a>
+        <a class="btn btn--ghost" href="admin-training.html">Обучение</a>
+        <button class="btn btn--ghost" id="refreshEvents" type="button">Обновить</button>
+      </div>
+
+      <p class="admin-status" id="eventsActorMeta"></p>
+      <p class="admin-status" id="eventsStatus">Загрузка событий...</p>
+
+      <div class="events-summary" id="eventsSummary"></div>
+
+      <div class="events-filters">
+        <label class="leads-filters__field leads-filters__field--grow" for="eventSearch">
+          <span>Текстовый поиск</span>
+          <input id="eventSearch" type="text" placeholder="Клиент, контакт, заметка..." autocomplete="off" />
+        </label>
+
+        <label class="leads-filters__field" for="eventScopeFilter">
+          <span>Период</span>
+          <select id="eventScopeFilter">
+            <option value="all">Все события</option>
+            <option value="upcoming">Ближайшие</option>
+            <option value="soon">В течение 7 дней</option>
+            <option value="overdue">Просроченные</option>
+            <option value="no_date">Без даты</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="events-list" id="eventsList"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+
+  <dialog class="easter-egg" id="easterEgg">
+    <h2>Спасибо!</h2>
+    <p>Приятного просмотра.</p>
+    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
+  </dialog>
+</body>
+</html>

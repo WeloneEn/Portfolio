@@ -32,6 +32,8 @@
     <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
       <a href="admin.html">Статистика</a>
       <a class="is-active" href="admin-leads.html" aria-current="page">Заявки</a>
+      <a href="admin-events.html">Важные события</a>
+      <a href="admin-training.html">Обучение</a>
     </nav>
   </header>
 
@@ -42,52 +44,78 @@
       <p>Назначайте заявки по отделам, распределяйте исполнителей и фиксируйте ход работы по каждому обращению.</p>
     </section>
 
-    <section class="admin-auth reveal" id="authRequired" hidden></section>
+    <section class="admin-auth reveal" id="authRequired" hidden>
+      <p class="admin-status" id="leadsAuthStatus">Требуется авторизация.</p>
+    </section>
 
     <section class="admin-panel reveal" id="leadsPanel">
       <div class="admin-actions">
         <a class="btn btn--ghost" href="admin.html">Статистика</a>
+        <a class="btn btn--ghost" href="admin-events.html">События клиентов</a>
+        <a class="btn btn--ghost" href="admin-training.html">Обучение</a>
         <button class="btn btn--ghost" id="refreshLeads" type="button">Обновить</button>
       </div>
 
       <p class="admin-status" id="leadsActorMeta"></p>
       <p class="admin-status" id="leadsStatus">Загрузка заявок...</p>
 
-      <div class="leads-filters">
-        <label class="leads-filters__field" for="leadSearch">
-          <span>Поиск</span>
-          <input id="leadSearch" type="text" placeholder="Имя, контакт, описание..." autocomplete="off" />
+      <section class="leads-ops" id="leadsOps">
+        <div class="leads-ops__meta">
+          <p class="leads-ops__title">Операционный режим</p>
+          <p class="leads-ops__hint" id="leadsOpsHint">Очередь новых и заявок без исполнителя.</p>
+        </div>
+        <div class="leads-ops__actions">
+          <button class="btn btn--primary" id="takeNextLead" type="button">Взять следующую</button>
+          <p class="admin-status leads-ops__status" id="leadsOpsStatus"></p>
+        </div>
+      </section>
+
+      <div class="leads-summary" id="leadsSummary"></div>
+
+      <div class="leads-toolbar">
+        <label class="leads-filters__field leads-filters__field--grow" for="leadSearch">
+          <span>Текстовый поиск</span>
+          <input id="leadSearch" type="text" placeholder="Имя, контакт, описание, заметка..." autocomplete="off" />
         </label>
 
-        <label class="leads-filters__field" for="leadStatusFilter">
-          <span>Статус</span>
-          <select id="leadStatusFilter">
-            <option value="">Все статусы</option>
-            <option value="new">Новая</option>
-            <option value="in_progress">В работе</option>
-            <option value="done">Завершена</option>
+        <label class="leads-filters__field" for="leadSortMode">
+          <span>Сортировка</span>
+          <select id="leadSortMode">
+            <option value="queue">По очереди (статус + приоритет)</option>
+            <option value="priority">По приоритету</option>
+            <option value="newest">Сначала новые</option>
+            <option value="oldest">Сначала старые</option>
+            <option value="updated">По последнему обновлению</option>
           </select>
         </label>
 
-        <label class="leads-filters__field" for="leadDepartmentFilter">
-          <span>Отдел</span>
-          <select id="leadDepartmentFilter">
-            <option value="">Все отделы</option>
-          </select>
-        </label>
-
-        <label class="leads-filters__field" for="leadAssigneeFilter">
-          <span>Исполнитель</span>
-          <select id="leadAssigneeFilter">
-            <option value="">Все исполнители</option>
-            <option value="__none__">Без исполнителя</option>
-          </select>
-        </label>
+        <button class="btn btn--ghost" id="resetLeadFilters" type="button">Сбросить</button>
       </div>
+
+      <details class="leads-filters-panel">
+        <summary>Расширенные фильтры</summary>
+        <div class="leads-filters">
+          <label class="leads-filters__field" for="leadDepartmentFilter">
+            <span>Отдел</span>
+            <select id="leadDepartmentFilter">
+              <option value="">Все отделы</option>
+            </select>
+          </label>
+
+          <label class="leads-filters__field" for="leadAssigneeFilter">
+            <span>Исполнитель</span>
+            <select id="leadAssigneeFilter">
+              <option value="">Все исполнители</option>
+            </select>
+          </label>
+        </div>
+      </details>
 
       <div class="leads-list" id="leadsList"></div>
     </section>
   </main>
+
+  <button class="lead-ops-fab" id="takeNextLeadFab" type="button" hidden>Взять следующую</button>
 
   <footer class="site-footer">
     <p>© 2026 Welone Digital Atelier. Все права защищены.</p>

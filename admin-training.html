@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05080d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Обучение команды</title>
+  <meta name="description" content="Система обучения менеджеров, контроль разговоров и мотивация команды." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z14" />
+  <script defer src="config.js?v=20260218z14"></script>
+  <script defer src="script.js?v=20260218z14"></script>
+  <script defer src="admin-training.js?v=20260219train1"></script>
+</head>
+<body data-page="admin">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier <span class="brand-initial">C</span>ommand</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a href="admin.html">Статистика</a>
+      <a href="admin-leads.html">Заявки</a>
+      <a href="admin-events.html">Важные события</a>
+      <a class="is-active" href="admin-training.html" aria-current="page">Обучение</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">Sales Enablement</p>
+      <h1>Обучение менеджеров и контроль качества</h1>
+      <p>Единая система Welone: 30-дневное обучение, чек-лист разговоров на 100 баллов и прозрачная мотивация по результату.</p>
+    </section>
+
+    <section class="admin-auth reveal" id="trainingAuth" hidden>
+      <p class="admin-status" id="trainingAuthStatus">Требуется авторизация.</p>
+    </section>
+
+    <section class="admin-panel reveal" id="trainingPanel">
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="admin.html">Статистика</a>
+        <a class="btn btn--ghost" href="admin-leads.html">Заявки</a>
+        <a class="btn btn--ghost" href="admin-events.html">События</a>
+        <button class="btn btn--ghost" id="refreshTraining" type="button">Обновить</button>
+      </div>
+
+      <p class="admin-status" id="trainingActorMeta"></p>
+      <p class="admin-status" id="trainingStatus">Загрузка обучения...</p>
+
+      <div class="training-summary" id="trainingSummary"></div>
+
+      <div class="training-layout">
+        <article class="card training-card">
+          <h2>Профиль сотрудника</h2>
+          <label class="leads-filters__field" for="trainingUserSelect">
+            <span>Сотрудник</span>
+            <select id="trainingUserSelect"></select>
+          </label>
+
+          <div class="training-profile-grid">
+            <label class="leads-filters__field" for="trainingPlanStartDate">
+              <span>Старт программы</span>
+              <input id="trainingPlanStartDate" type="date" />
+            </label>
+            <label class="leads-filters__field" for="trainingCurrentDay">
+              <span>День обучения (1-30)</span>
+              <input id="trainingCurrentDay" type="number" min="1" max="30" step="1" />
+            </label>
+            <label class="leads-filters__field" for="trainingStage">
+              <span>Этап</span>
+              <select id="trainingStage">
+                <option value="foundation">1. Фундамент</option>
+                <option value="diagnostics">2. Диагностика</option>
+                <option value="dialog_control">3. Управление диалогом</option>
+                <option value="closing">4. Закрытие сделок</option>
+              </select>
+            </label>
+            <label class="leads-filters__field" for="trainingStatusSelect">
+              <span>Статус</span>
+              <select id="trainingStatusSelect">
+                <option value="onboarding">Адаптация</option>
+                <option value="active">В обучении</option>
+                <option value="certified">Сертифицирован</option>
+                <option value="paused">Пауза</option>
+              </select>
+            </label>
+            <label class="leads-filters__field" for="trainingConfidence">
+              <span>Уверенность (1-5)</span>
+              <input id="trainingConfidence" type="number" min="1" max="5" step="1" />
+            </label>
+            <label class="leads-filters__field" for="trainingEnergy">
+              <span>Энергия (1-5)</span>
+              <input id="trainingEnergy" type="number" min="1" max="5" step="1" />
+            </label>
+            <label class="leads-filters__field" for="trainingControl">
+              <span>Контроль диалога (1-5)</span>
+              <input id="trainingControl" type="number" min="1" max="5" step="1" />
+            </label>
+          </div>
+
+          <label class="leads-filters__field" for="trainingNotes">
+            <span>Комментарий по развитию</span>
+            <textarea id="trainingNotes" rows="3" placeholder="Фокус недели, ошибки, задачи на рост..."></textarea>
+          </label>
+
+          <div class="training-actions">
+            <button class="btn btn--primary" id="saveTrainingProfile" type="button">Сохранить профиль</button>
+          </div>
+          <p class="admin-status" id="trainingProfileStatus"></p>
+          <div class="training-profile-meta" id="trainingProfileMeta"></div>
+        </article>
+
+        <article class="card training-card">
+          <h2>Разбор разговора (чек-лист 100)</h2>
+          <form class="training-review-form" id="trainingReviewForm">
+            <label class="leads-filters__field" for="trainingReviewChannel">
+              <span>Формат</span>
+              <select id="trainingReviewChannel">
+                <option value="call">Звонок</option>
+                <option value="zoom">Zoom/встреча</option>
+                <option value="chat">Переписка</option>
+                <option value="email">Email</option>
+              </select>
+            </label>
+
+            <div class="training-score-grid">
+              <label class="leads-filters__field" for="reviewStart">
+                <span>Первые 15 секунд (0-15)</span>
+                <input id="reviewStart" type="number" min="0" max="15" step="1" value="0" />
+              </label>
+              <label class="leads-filters__field" for="reviewDiagnostics">
+                <span>Диагностика (0-25)</span>
+                <input id="reviewDiagnostics" type="number" min="0" max="25" step="1" value="0" />
+              </label>
+              <label class="leads-filters__field" for="reviewPresentation">
+                <span>Презентация (0-20)</span>
+                <input id="reviewPresentation" type="number" min="0" max="20" step="1" value="0" />
+              </label>
+              <label class="leads-filters__field" for="reviewObjections">
+                <span>Возражения (0-15)</span>
+                <input id="reviewObjections" type="number" min="0" max="15" step="1" value="0" />
+              </label>
+              <label class="leads-filters__field" for="reviewClosing">
+                <span>Закрытие (0-15)</span>
+                <input id="reviewClosing" type="number" min="0" max="15" step="1" value="0" />
+              </label>
+              <label class="leads-filters__field" for="reviewCrm">
+                <span>CRM (0-10)</span>
+                <input id="reviewCrm" type="number" min="0" max="10" step="1" value="0" />
+              </label>
+            </div>
+
+            <p class="training-review-score">Итоговый балл: <strong id="trainingReviewScore">0</strong> / 100</p>
+
+            <fieldset class="training-flags">
+              <legend>Красные флаги</legend>
+              <div class="training-flags__list" id="trainingRedFlags"></div>
+            </fieldset>
+
+            <div class="training-metric-grid">
+              <label class="leads-filters__field" for="reviewConfidence">
+                <span>Уверенность (1-5)</span>
+                <input id="reviewConfidence" type="number" min="1" max="5" step="1" value="3" />
+              </label>
+              <label class="leads-filters__field" for="reviewEnergy">
+                <span>Энергия (1-5)</span>
+                <input id="reviewEnergy" type="number" min="1" max="5" step="1" value="3" />
+              </label>
+              <label class="leads-filters__field" for="reviewControl">
+                <span>Контроль диалога (1-5)</span>
+                <input id="reviewControl" type="number" min="1" max="5" step="1" value="3" />
+              </label>
+            </div>
+
+            <label class="leads-filters__field" for="reviewComment">
+              <span>Комментарий к разбору</span>
+              <textarea id="reviewComment" rows="3" placeholder="Сильные стороны, ошибки, следующие действия..."></textarea>
+            </label>
+
+            <div class="training-actions">
+              <button class="btn btn--primary" type="submit">Сохранить разбор</button>
+            </div>
+          </form>
+          <p class="admin-status" id="trainingReviewStatus"></p>
+        </article>
+      </div>
+
+      <div class="training-boards">
+        <article class="card training-card">
+          <h2>Рейтинг и мотивация</h2>
+          <div class="training-leaderboard" id="trainingLeaderboard"></div>
+        </article>
+        <article class="card training-card">
+          <h2>Последние разборы</h2>
+          <div class="training-reviews" id="trainingReviews"></div>
+        </article>
+      </div>
+
+      <div class="training-materials">
+        <article class="card training-material">
+          <h2>Программа обучения 30 дней</h2>
+          <ol>
+            <li><strong>1-7 день:</strong> фундамент продукта и структуры диалога.</li>
+            <li><strong>8-15 день:</strong> диагностика клиента и фиксация в CRM.</li>
+            <li><strong>16-23 день:</strong> управление диалогом и возражениями.</li>
+            <li><strong>24-30 день:</strong> презентация решения и закрытие на следующий шаг.</li>
+          </ol>
+          <p class="training-material__note">Цель: не читать скрипт, а держать контроль, понимать бизнес клиента и уверенно закрывать на встречу/разбор.</p>
+        </article>
+
+        <article class="card training-material">
+          <h2>Система мотивации</h2>
+          <ul>
+            <li>Доход: фикс + % с продаж + бонус за KPI + бонус за повторные продажи.</li>
+            <li>KPI: диалоги/день, конверсия в встречу, конверсия в сделку, средний чек, качество CRM.</li>
+            <li>Уровень 1: выполнение плана.</li>
+            <li>Уровень 2: перевыполнение на 20% = +5% к комиссии.</li>
+            <li>Уровень 3: лидер месяца = дополнительный денежный бонус.</li>
+          </ul>
+        </article>
+
+        <article class="card training-material">
+          <h2>Универсальная коммуникация Welone</h2>
+          <p><strong>Формула:</strong> Крючок → Вопрос → Боль → Решение → Следующий шаг.</p>
+          <ul>
+            <li>Холодный звонок: цель не продажа, а договорённость о следующем касании.</li>
+            <li>Переписка (Instagram/Telegram): коротко, предметно, 1-2 абзаца.</li>
+            <li>Встречи: сначала цель бизнеса, потом узкое место, затем решение.</li>
+            <li>Email: по делу, без воды, с чётким предложением 15-минутного аудита.</li>
+          </ul>
+        </article>
+
+        <article class="card training-material">
+          <h2>Контроль разговоров (100 баллов)</h2>
+          <ul>
+            <li>Первые 15 секунд — 15 баллов.</li>
+            <li>Диагностика — 25 баллов.</li>
+            <li>Презентация решения — 20 баллов.</li>
+            <li>Работа с возражениями — 15 баллов.</li>
+            <li>Закрытие — 15 баллов.</li>
+            <li>CRM-дисциплина — 10 баллов.</li>
+          </ul>
+          <p class="training-material__note">Режим контроля: новичок — 5 разговоров/нед, опытный — 2, лидер — 1. Чек-лист используется для роста, а не для наказаний.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+
+  <dialog class="easter-egg" id="easterEgg">
+    <h2>Спасибо!</h2>
+    <p>Приятного просмотра.</p>
+    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
+  </dialog>
+</body>
+</html>

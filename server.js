@@ -29,6 +29,18 @@ const LEAD_STATUSES = new Set(["new", "in_progress", "done"]);
 const LEAD_PRIORITIES = new Set(["low", "normal", "high"]);
 const DEFAULT_DEPARTMENT = "unassigned";
 const CORE_USER_IDS = new Set(["owner", "sales_help", "production_help"]);
+const BIRTHDAY_KEYWORD_RE = /(?:день\s*рожд(?:ения|енье)?|д\.?\s*р\.?|birthday|bday|🎂)/giu;
+const EVENT_DATE_TOKEN_RE = /\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?\b/g;
+const TRAINING_STATUSES = new Set(["onboarding", "active", "certified", "paused"]);
+const TRAINING_STAGES = new Set(["foundation", "diagnostics", "dialog_control", "closing"]);
+const TRAINING_REVIEW_CHANNELS = new Set(["call", "zoom", "chat", "email"]);
+const TRAINING_REVIEW_RED_FLAGS = new Set([
+  "interrupted_client",
+  "talked_too_much",
+  "complex_terms",
+  "pressure",
+  "reading_script"
+]);
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -67,7 +79,14 @@ function createInitialData() {
       bySecret: {},
       byVisitor: {}
     },
-    leads: []
+    leads: [],
+    crm: {
+      importantEvents: []
+    },
+    training: {
+      profiles: [],
+      callReviews: []
+    }
   };
 }
 
@@ -167,7 +186,9 @@ function normalizeData(raw) {
     },
     engagement: normalizeEngagementData(base.engagement),
     secrets: normalizeSecretsData(base.secrets),
-    leads: Array.isArray(base.leads) ? base.leads.map((lead) => normalizeLead(lead)) : []
+    leads: Array.isArray(base.leads) ? base.leads.map((lead) => normalizeLead(lead)) : [],
+    crm: normalizeCrmData(base.crm),
+    training: normalizeTrainingData(base.training)
   };
 }
 
@@ -286,11 +307,36 @@ function normalizeLeadPriority(value) {
   return LEAD_PRIORITIES.has(priority) ? priority : "normal";
 }
 
+function normalizeLeadComment(input, index = 0) {
+  const source = input && typeof input === "object" ? input : {};
+  const text = sanitizeText(source.text, 2000);
+  if (!text) {
+    return null;
+  }
+
+  const createdAt = sanitizeText(source.createdAt, 64) || new Date().toISOString();
+  const idSeed = sanitizeText(source.id, 120) || `${createdAt}_${index}_${text.slice(0, 24)}`;
+  const id = sanitizeText(source.id, 120) || `cmt_${Buffer.from(idSeed).toString("base64url").slice(0, 16)}`;
+
+  return {
+    id,
+    text,
+    authorId: normalizeUserId(source.authorId, ""),
+    authorName: sanitizeText(source.authorName, 120) || "Сотрудник",
+    createdAt
+  };
+}
+
 function normalizeLead(input) {
   const source = input && typeof input === "object" ? input : {};
   const fallbackSeed = sanitizeText(source.createdAt, 64) || sanitizeText(source.name, 40) || "legacy";
   const fallbackId = `lead_legacy_${Buffer.from(fallbackSeed).toString("base64url").slice(0, 12)}`;
   const id = sanitizeText(source.id, 120) || fallbackId;
+  const comments = Array.isArray(source.comments)
+    ? source.comments
+        .map((comment, index) => normalizeLeadComment(comment, index))
+        .filter(Boolean)
+    : [];
 
   return {
     id,
@@ -307,8 +353,637 @@ function normalizeLead(input) {
     internalNote: sanitizeText(source.internalNote, 2000),
     updatedById: normalizeUserId(source.updatedById, ""),
     updatedByName: sanitizeText(source.updatedByName, 120),
+    comments,
     createdAt: sanitizeText(source.createdAt, 64) || new Date().toISOString(),
     updatedAt: sanitizeText(source.updatedAt, 64) || new Date().toISOString()
+  };
+}
+
+function normalizeIsoDate(value) {
+  const raw = sanitizeText(value, 20);
+  if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return "";
+  }
+  return raw;
+}
+
+function normalizeMonthDay(value) {
+  const raw = sanitizeText(value, 10);
+  if (!raw || !/^\d{2}-\d{2}$/.test(raw)) {
+    return "";
+  }
+  return raw;
+}
+
+function clampInt(value, min, max, fallback) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return fallback;
+  }
+  const rounded = Math.round(numeric);
+  if (rounded < min) {
+    return min;
+  }
+  if (rounded > max) {
+    return max;
+  }
+  return rounded;
+}
+
+function normalizeTrainingStatus(value) {
+  const raw = sanitizeText(value, 30).toLowerCase();
+  return TRAINING_STATUSES.has(raw) ? raw : "onboarding";
+}
+
+function normalizeTrainingStage(value) {
+  const raw = sanitizeText(value, 40).toLowerCase();
+  return TRAINING_STAGES.has(raw) ? raw : "foundation";
+}
+
+function normalizeTrainingReviewChannel(value) {
+  const raw = sanitizeText(value, 20).toLowerCase();
+  return TRAINING_REVIEW_CHANNELS.has(raw) ? raw : "call";
+}
+
+function normalizeTrainingReviewRedFlags(input) {
+  const items = Array.isArray(input) ? input : [];
+  const dedup = new Set();
+  items.forEach((item) => {
+    const flag = sanitizeText(item, 40).toLowerCase();
+    if (flag && TRAINING_REVIEW_RED_FLAGS.has(flag)) {
+      dedup.add(flag);
+    }
+  });
+  return Array.from(dedup);
+}
+
+function resolveTrainingStageByDay(day) {
+  if (day >= 24) {
+    return "closing";
+  }
+  if (day >= 16) {
+    return "dialog_control";
+  }
+  if (day >= 8) {
+    return "diagnostics";
+  }
+  return "foundation";
+}
+
+function normalizeTrainingProfile(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const userId = normalizeUserId(source.userId, "");
+  if (!userId) {
+    return null;
+  }
+
+  const createdAt = sanitizeText(source.createdAt, 64) || new Date().toISOString();
+  const updatedAt = sanitizeText(source.updatedAt, 64) || createdAt;
+  const currentDay = clampInt(source.currentDay, 1, 30, 1);
+  const hasStage = Boolean(sanitizeText(source.stage, 40));
+
+  return {
+    userId,
+    planStartDate: normalizeIsoDate(source.planStartDate),
+    currentDay,
+    stage: hasStage ? normalizeTrainingStage(source.stage) : resolveTrainingStageByDay(currentDay),
+    status: normalizeTrainingStatus(source.status),
+    confidence: clampInt(source.confidence, 1, 5, 3),
+    energy: clampInt(source.energy, 1, 5, 3),
+    control: clampInt(source.control, 1, 5, 3),
+    notes: sanitizeText(source.notes, 2400),
+    createdAt,
+    updatedAt,
+    updatedById: normalizeUserId(source.updatedById, ""),
+    updatedByName: sanitizeText(source.updatedByName, 120)
+  };
+}
+
+function normalizeTrainingReviewScore(value, max) {
+  return clampInt(value, 0, max, 0);
+}
+
+function normalizeTrainingCallReview(input, index = 0) {
+  const source = input && typeof input === "object" ? input : {};
+  const userId = normalizeUserId(source.userId, "");
+  if (!userId) {
+    return null;
+  }
+
+  const createdAt = sanitizeText(source.createdAt, 64) || new Date().toISOString();
+  const idSeed = sanitizeText(source.id, 120) || `${userId}_${createdAt}_${index}`;
+  const id = sanitizeText(source.id, 120) || `rev_${Buffer.from(idSeed).toString("base64url").slice(0, 18)}`;
+
+  const start = normalizeTrainingReviewScore(source.start, 15);
+  const diagnostics = normalizeTrainingReviewScore(source.diagnostics, 25);
+  const presentation = normalizeTrainingReviewScore(source.presentation, 20);
+  const objections = normalizeTrainingReviewScore(source.objections, 15);
+  const closing = normalizeTrainingReviewScore(source.closing, 15);
+  const crm = normalizeTrainingReviewScore(source.crm, 10);
+  const totalScore = start + diagnostics + presentation + objections + closing + crm;
+
+  return {
+    id,
+    userId,
+    reviewerId: normalizeUserId(source.reviewerId, ""),
+    reviewerName: sanitizeText(source.reviewerName, 120) || "Руководитель",
+    channel: normalizeTrainingReviewChannel(source.channel),
+    start,
+    diagnostics,
+    presentation,
+    objections,
+    closing,
+    crm,
+    totalScore: clampInt(totalScore, 0, 100, 0),
+    redFlags: normalizeTrainingReviewRedFlags(source.redFlags),
+    confidence: clampInt(source.confidence, 1, 5, 3),
+    energy: clampInt(source.energy, 1, 5, 3),
+    control: clampInt(source.control, 1, 5, 3),
+    comment: sanitizeText(source.comment, 2000),
+    createdAt
+  };
+}
+
+function normalizeTrainingData(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const profiles = Array.isArray(source.profiles)
+    ? source.profiles.map((item) => normalizeTrainingProfile(item)).filter(Boolean)
+    : [];
+  const callReviews = Array.isArray(source.callReviews)
+    ? source.callReviews
+        .map((item, index) => normalizeTrainingCallReview(item, index))
+        .filter(Boolean)
+    : [];
+
+  return {
+    profiles,
+    callReviews
+  };
+}
+
+function normalizeImportantEvent(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const id = sanitizeText(source.id, 120);
+  const leadId = sanitizeText(source.leadId, 120);
+
+  if (!id || !leadId) {
+    return null;
+  }
+
+  const createdAt = sanitizeText(source.createdAt, 64) || new Date().toISOString();
+  const updatedAt = sanitizeText(source.updatedAt, 64) || createdAt;
+
+  return {
+    id,
+    leadId,
+    type: sanitizeText(source.type, 40).toLowerCase() || "birthday",
+    title: sanitizeText(source.title, 120) || "Важное событие",
+    eventDate: normalizeIsoDate(source.eventDate),
+    monthDay: normalizeMonthDay(source.monthDay),
+    nextOccurrence: normalizeIsoDate(source.nextOccurrence),
+    sourceText: sanitizeText(source.sourceText, 260),
+    source: sanitizeText(source.source, 40) || "auto",
+    clientName: sanitizeText(source.clientName, 120),
+    clientContact: sanitizeText(source.clientContact, 140),
+    createdAt,
+    updatedAt
+  };
+}
+
+function normalizeCrmData(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const events = Array.isArray(source.importantEvents)
+    ? source.importantEvents.map((item) => normalizeImportantEvent(item)).filter(Boolean)
+    : [];
+
+  return {
+    importantEvents: events
+  };
+}
+
+function daysInMonthUtc(year, month) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function normalizeYearPart(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return null;
+  }
+
+  if (numeric >= 1000 && numeric <= 9999) {
+    return numeric;
+  }
+
+  if (numeric >= 0 && numeric <= 99) {
+    return numeric <= 40 ? 2000 + numeric : 1900 + numeric;
+  }
+
+  return null;
+}
+
+function parseDateToken(token) {
+  const raw = sanitizeText(token, 30);
+  if (!raw) {
+    return null;
+  }
+
+  const isoMatch = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) {
+    const year = normalizeYearPart(isoMatch[1]);
+    const month = Number(isoMatch[2]);
+    const day = Number(isoMatch[3]);
+    if (!year || month < 1 || month > 12) {
+      return null;
+    }
+    if (day < 1 || day > daysInMonthUtc(year, month)) {
+      return null;
+    }
+    return { year, month, day, hasYear: true };
+  }
+
+  const classicMatch = raw.match(/^(\d{1,2})[./-](\d{1,2})(?:[./-](\d{2,4}))?$/);
+  if (!classicMatch) {
+    return null;
+  }
+
+  const day = Number(classicMatch[1]);
+  const month = Number(classicMatch[2]);
+  const year = classicMatch[3] ? normalizeYearPart(classicMatch[3]) : null;
+
+  if (month < 1 || month > 12 || day < 1) {
+    return null;
+  }
+
+  const maxDay = year ? daysInMonthUtc(year, month) : daysInMonthUtc(2000, month);
+  if (day > maxDay) {
+    return null;
+  }
+
+  return {
+    year,
+    month,
+    day,
+    hasYear: Boolean(year)
+  };
+}
+
+function toIsoDateUtc(year, month, day) {
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function computeNextOccurrenceIso(month, day, nowDate = new Date()) {
+  if (!Number.isFinite(month) || !Number.isFinite(day) || month < 1 || month > 12 || day < 1) {
+    return "";
+  }
+
+  const todayUtc = Date.UTC(
+    nowDate.getUTCFullYear(),
+    nowDate.getUTCMonth(),
+    nowDate.getUTCDate()
+  );
+
+  let year = nowDate.getUTCFullYear();
+  let safeDay = Math.min(day, daysInMonthUtc(year, month));
+  let candidateUtc = Date.UTC(year, month - 1, safeDay);
+
+  if (candidateUtc < todayUtc) {
+    year += 1;
+    safeDay = Math.min(day, daysInMonthUtc(year, month));
+    candidateUtc = Date.UTC(year, month - 1, safeDay);
+  }
+
+  const candidate = new Date(candidateUtc);
+  return toIsoDateUtc(candidate.getUTCFullYear(), candidate.getUTCMonth() + 1, candidate.getUTCDate());
+}
+
+function buildImportantEventId(seed) {
+  const digest = crypto.createHash("sha1").update(String(seed || "")).digest("hex");
+  return `evt_${digest.slice(0, 16)}`;
+}
+
+function getLeadTextForEventDetection(lead) {
+  const commentsText = Array.isArray(lead?.comments)
+    ? lead.comments.map((item) => sanitizeText(item?.text, 400)).filter(Boolean).join(" ")
+    : "";
+
+  return [
+    sanitizeText(lead?.message, 2200),
+    sanitizeText(lead?.internalNote, 2200),
+    sanitizeText(lead?.contact, 220),
+    sanitizeText(lead?.name, 160),
+    commentsText
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function extractImportantEventsFromLead(lead) {
+  const text = getLeadTextForEventDetection(lead);
+  if (!text) {
+    return [];
+  }
+
+  const out = [];
+  const now = new Date();
+  BIRTHDAY_KEYWORD_RE.lastIndex = 0;
+
+  let match;
+  let keywordIndex = 0;
+  while ((match = BIRTHDAY_KEYWORD_RE.exec(text)) !== null) {
+    const from = Math.max(0, match.index - 32);
+    const to = Math.min(text.length, match.index + String(match[0] || "").length + 96);
+    const context = text.slice(from, to).replace(/\s+/g, " ").trim();
+    const contextTokens = context.match(EVENT_DATE_TOKEN_RE) || [];
+    const fullTokens = contextTokens.length > 0 ? contextTokens : text.match(EVENT_DATE_TOKEN_RE) || [];
+
+    let parsedDate = null;
+    for (const token of fullTokens) {
+      const parsed = parseDateToken(token);
+      if (parsed) {
+        parsedDate = parsed;
+        break;
+      }
+    }
+
+    const monthDay = parsedDate
+      ? `${String(parsedDate.month).padStart(2, "0")}-${String(parsedDate.day).padStart(2, "0")}`
+      : "";
+    const eventDate = parsedDate && parsedDate.hasYear
+      ? toIsoDateUtc(parsedDate.year, parsedDate.month, parsedDate.day)
+      : "";
+    const nextOccurrence = parsedDate
+      ? computeNextOccurrenceIso(parsedDate.month, parsedDate.day, now)
+      : "";
+    const id = buildImportantEventId(
+      `${lead.id}|birthday|${monthDay || "unknown"}|${context.toLowerCase()}|${keywordIndex}`
+    );
+
+    out.push(
+      normalizeImportantEvent({
+        id,
+        leadId: lead.id,
+        type: "birthday",
+        title: "День рождения клиента",
+        eventDate,
+        monthDay,
+        nextOccurrence,
+        sourceText: context || String(match[0] || ""),
+        source: "auto",
+        clientName: lead.name,
+        clientContact: lead.contact
+      })
+    );
+
+    keywordIndex += 1;
+  }
+
+  const dedup = new Map();
+  out.filter(Boolean).forEach((event) => {
+    if (!dedup.has(event.id)) {
+      dedup.set(event.id, event);
+    }
+  });
+  return Array.from(dedup.values());
+}
+
+function ensureCrmStorage(data) {
+  const normalized = normalizeCrmData(data?.crm);
+  data.crm = normalized;
+  return normalized;
+}
+
+function sortImportantEvents(events) {
+  return [...events].sort((left, right) => {
+    const leftKey = left.nextOccurrence || "9999-12-31";
+    const rightKey = right.nextOccurrence || "9999-12-31";
+    if (leftKey !== rightKey) {
+      return leftKey.localeCompare(rightKey);
+    }
+    return String(left.createdAt || "").localeCompare(String(right.createdAt || ""));
+  });
+}
+
+function syncImportantEventsForAllLeads(data) {
+  const crm = ensureCrmStorage(data);
+  const existing = Array.isArray(crm.importantEvents) ? crm.importantEvents : [];
+  const leads = Array.isArray(data.leads) ? data.leads.map((item) => normalizeLead(item)) : [];
+  data.leads = leads;
+
+  const nowIso = new Date().toISOString();
+  const previousAutoById = new Map(
+    existing
+      .filter((event) => event && event.source === "auto")
+      .map((event) => [event.id, event])
+  );
+  const manualEvents = existing.filter((event) => event && event.source !== "auto");
+  const nextAutoEvents = [];
+
+  leads.forEach((lead) => {
+    const extracted = extractImportantEventsFromLead(lead);
+    extracted.forEach((event) => {
+      const prev = previousAutoById.get(event.id);
+      nextAutoEvents.push({
+        ...event,
+        createdAt: prev?.createdAt || nowIso,
+        updatedAt: nowIso
+      });
+    });
+  });
+
+  crm.importantEvents = sortImportantEvents([...manualEvents, ...nextAutoEvents]);
+  data.crm = crm;
+  return crm.importantEvents;
+}
+
+function getLeadEventsMap(events) {
+  const map = new Map();
+  const list = Array.isArray(events) ? events : [];
+
+  list.forEach((event) => {
+    if (!event || !event.leadId) {
+      return;
+    }
+    if (!map.has(event.leadId)) {
+      map.set(event.leadId, []);
+    }
+    map.get(event.leadId).push(event);
+  });
+
+  map.forEach((items, leadId) => {
+    map.set(leadId, sortImportantEvents(items));
+  });
+
+  return map;
+}
+
+function attachLeadEvents(lead, leadEventsMap) {
+  return {
+    ...lead,
+    importantEvents: Array.isArray(leadEventsMap.get(lead.id)) ? leadEventsMap.get(lead.id) : []
+  };
+}
+
+function getTodayIsoUtc(date = new Date()) {
+  return toIsoDateUtc(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+}
+
+function getDaysUntilIsoDate(isoDate, nowDate = new Date()) {
+  if (!isoDate) {
+    return null;
+  }
+
+  const match = String(isoDate).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!year || month < 1 || month > 12 || day < 1 || day > 31) {
+    return null;
+  }
+
+  const target = Date.UTC(year, month - 1, day);
+  const today = Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), nowDate.getUTCDate());
+  return Math.floor((target - today) / (24 * 60 * 60 * 1000));
+}
+
+function ensureTrainingStorage(data) {
+  const normalized = normalizeTrainingData(data?.training);
+  data.training = normalized;
+  return normalized;
+}
+
+function sortTrainingProfiles(profiles) {
+  const statusOrder = {
+    onboarding: 0,
+    active: 1,
+    paused: 2,
+    certified: 3
+  };
+
+  return [...profiles].sort((left, right) => {
+    const leftStatus = statusOrder[left.status] ?? 99;
+    const rightStatus = statusOrder[right.status] ?? 99;
+    if (leftStatus !== rightStatus) {
+      return leftStatus - rightStatus;
+    }
+    if (left.currentDay !== right.currentDay) {
+      return right.currentDay - left.currentDay;
+    }
+    return String(right.updatedAt || "").localeCompare(String(left.updatedAt || ""));
+  });
+}
+
+function ensureTrainingProfileForUser(training, userId, nowIso = new Date().toISOString()) {
+  const safeUserId = normalizeUserId(userId, "");
+  if (!safeUserId) {
+    return null;
+  }
+
+  const existing = training.profiles.find((item) => item.userId === safeUserId);
+  if (existing) {
+    return existing;
+  }
+
+  const created = normalizeTrainingProfile({
+    userId: safeUserId,
+    currentDay: 1,
+    stage: "foundation",
+    status: "onboarding",
+    confidence: 3,
+    energy: 3,
+    control: 3,
+    notes: "",
+    createdAt: nowIso,
+    updatedAt: nowIso
+  });
+
+  if (!created) {
+    return null;
+  }
+
+  training.profiles.push(created);
+  return created;
+}
+
+function getTrainingReviewsByUser(reviews, visibleUserIds) {
+  const map = new Map();
+  const list = Array.isArray(reviews) ? reviews : [];
+  const allowed = visibleUserIds instanceof Set ? visibleUserIds : null;
+
+  list.forEach((item) => {
+    if (!item || !item.userId) {
+      return;
+    }
+    if (allowed && !allowed.has(item.userId)) {
+      return;
+    }
+    if (!map.has(item.userId)) {
+      map.set(item.userId, []);
+    }
+    map.get(item.userId).push(item);
+  });
+
+  map.forEach((items, userId) => {
+    const sorted = [...items].sort((left, right) =>
+      String(right.createdAt || "").localeCompare(String(left.createdAt || ""))
+    );
+    map.set(userId, sorted);
+  });
+
+  return map;
+}
+
+function resolveTrainingMotivationLevel(profile) {
+  const avgScore = Number(profile?.avgScore) || 0;
+  const reviewCount = Number(profile?.reviewCount) || 0;
+
+  if (avgScore >= 90 && reviewCount >= 4) {
+    return "leader";
+  }
+  if (avgScore >= 75 && reviewCount >= 2) {
+    return "boost";
+  }
+  return "base";
+}
+
+function buildTrainingProfileSummary(profile, reviews) {
+  const list = Array.isArray(reviews) ? reviews : [];
+  const reviewCount = list.length;
+  const avgScore =
+    reviewCount > 0
+      ? Math.round(list.reduce((acc, item) => acc + (Number(item.totalScore) || 0), 0) / reviewCount)
+      : 0;
+  const lastReview = reviewCount > 0 ? list[0] : null;
+  const redFlagsCount = list.reduce(
+    (acc, item) => acc + (Array.isArray(item.redFlags) ? item.redFlags.length : 0),
+    0
+  );
+  const progressPercent = Math.round((Math.max(1, Math.min(30, profile.currentDay || 1)) / 30) * 100);
+
+  const out = {
+    ...profile,
+    reviewCount,
+    avgScore,
+    lastScore: lastReview ? Number(lastReview.totalScore) || 0 : 0,
+    lastReviewAt: lastReview ? lastReview.createdAt : "",
+    redFlagsCount,
+    progressPercent
+  };
+
+  out.motivationLevel = resolveTrainingMotivationLevel(out);
+  return out;
+}
+
+function trainingProfileWithUser(profile, usersById, reviewsByUser) {
+  const summary = buildTrainingProfileSummary(profile, reviewsByUser.get(profile.userId) || []);
+  const user = usersById.get(profile.userId) || null;
+  return {
+    ...summary,
+    user
   };
 }
 
@@ -326,7 +1001,9 @@ function getRolePermissions(role) {
   return {
     canViewStats: role === ROLE_OWNER,
     canAssignLeads: role === ROLE_OWNER || role === ROLE_MANAGER,
-    canViewAllLeads: role === ROLE_OWNER
+    canViewAllLeads: role === ROLE_OWNER,
+    canManageTraining: role === ROLE_OWNER || role === ROLE_MANAGER,
+    canReviewCalls: role === ROLE_OWNER || role === ROLE_MANAGER
   };
 }
 
@@ -530,6 +1207,38 @@ function canAssignLeads(actor) {
 
 function canManageUsers(actor) {
   return Boolean(actor && actor.role === ROLE_OWNER);
+}
+
+function canReadTrainingProfile(actor, targetUser) {
+  if (!actor || !targetUser) {
+    return false;
+  }
+
+  if (actor.role === ROLE_OWNER) {
+    return true;
+  }
+
+  if (actor.role === ROLE_MANAGER) {
+    return actor.department === targetUser.department;
+  }
+
+  return actor.id === targetUser.id;
+}
+
+function canManageTrainingProfile(actor, targetUser) {
+  if (!actor || !targetUser) {
+    return false;
+  }
+
+  if (actor.role === ROLE_OWNER) {
+    return true;
+  }
+
+  if (actor.role === ROLE_MANAGER) {
+    return actor.department === targetUser.department;
+  }
+
+  return false;
 }
 
 function canManageTargetDepartment(actor, targetDepartment) {
@@ -958,6 +1667,7 @@ async function handleApi(req, res, urlObject) {
       assigneeName: "",
       priority: "normal",
       internalNote: "",
+      comments: [],
       updatedById: "",
       updatedByName: "",
       createdAt: new Date().toISOString(),
@@ -969,6 +1679,7 @@ async function handleApi(req, res, urlObject) {
       if (data.leads.length > 5000) {
         data.leads.length = 5000;
       }
+      syncImportantEventsForAllLeads(data);
       return null;
     });
 
@@ -1046,7 +1757,9 @@ async function handleApi(req, res, urlObject) {
       : {
           canViewStats: false,
           canAssignLeads: false,
-          canViewAllLeads: true
+          canViewAllLeads: true,
+          canManageTraining: false,
+          canReviewCalls: false
         };
 
     sendJson(res, 200, {
@@ -1056,6 +1769,384 @@ async function handleApi(req, res, urlObject) {
       users: actor ? getVisibleUsers(actor) : [],
       departments: actor ? getVisibleDepartments(actor, data) : collectKnownDepartments(data)
     });
+    return;
+  }
+
+  if (pathname === "/api/admin/training" && req.method === "GET") {
+    const actor = getOptionalAdmin(req);
+    const rawLimit = Number(urlObject.searchParams.get("limit"));
+    const reviewLimit =
+      Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(Math.floor(rawLimit), 400) : 100;
+    const filterUserId = normalizeUserId(urlObject.searchParams.get("userId"), "");
+
+    const payload = await withDataLock((data) => {
+      const training = ensureTrainingStorage(data);
+      const visibleUsers = actor
+        ? getVisibleUsers(actor).filter((user) => user.role !== ROLE_OWNER)
+        : [];
+      const usersById = new Map(visibleUsers.map((user) => [user.id, user]));
+      const visibleUserIds = new Set(visibleUsers.map((user) => user.id));
+
+      const nowIso = new Date().toISOString();
+      visibleUsers.forEach((user) => {
+        ensureTrainingProfileForUser(training, user.id, nowIso);
+      });
+      training.profiles = sortTrainingProfiles(training.profiles);
+      data.training = training;
+
+      const reviewsByUser = getTrainingReviewsByUser(training.callReviews, visibleUserIds);
+      const profiles = training.profiles
+        .filter((profile) => visibleUserIds.has(profile.userId))
+        .map((profile) => trainingProfileWithUser(profile, usersById, reviewsByUser));
+
+      const allVisibleReviews = training.callReviews
+        .filter((review) => visibleUserIds.has(review.userId))
+        .sort((left, right) => String(right.createdAt || "").localeCompare(String(left.createdAt || "")))
+        .map((review) => ({
+          ...review,
+          user: usersById.get(review.userId) || null
+        }));
+
+      const reviews = allVisibleReviews
+        .filter((review) => !filterUserId || review.userId === filterUserId)
+        .slice(0, reviewLimit);
+
+      const avgScore =
+        profiles.length > 0
+          ? Math.round(
+              profiles.reduce((acc, profile) => acc + (Number(profile.avgScore) || 0), 0) /
+                profiles.length
+            )
+          : 0;
+      const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const reviewsThisWeek = allVisibleReviews.filter((review) => {
+        const ts = Date.parse(String(review.createdAt || ""));
+        return Number.isFinite(ts) && ts >= weekAgoMs;
+      }).length;
+
+      const leaderboard = [...profiles]
+        .sort((left, right) => {
+          if (left.avgScore !== right.avgScore) {
+            return right.avgScore - left.avgScore;
+          }
+          if (left.progressPercent !== right.progressPercent) {
+            return right.progressPercent - left.progressPercent;
+          }
+          return String(right.updatedAt || "").localeCompare(String(left.updatedAt || ""));
+        })
+        .slice(0, 10);
+
+      return {
+        ok: true,
+        generatedAt: nowIso,
+        actor,
+        permissions: actor
+          ? getRolePermissions(actor.role)
+          : {
+              canViewStats: false,
+              canAssignLeads: false,
+              canViewAllLeads: true,
+              canManageTraining: false,
+              canReviewCalls: false
+            },
+        users: visibleUsers,
+        profiles,
+        reviews,
+        leaderboard,
+        stats: {
+          profilesTotal: profiles.length,
+          activeProfiles: profiles.filter((profile) => profile.status === "active").length,
+          certifiedProfiles: profiles.filter((profile) => profile.status === "certified").length,
+          avgScore,
+          reviewsTotal: allVisibleReviews.length,
+          reviewsThisWeek
+        }
+      };
+    });
+
+    sendJson(res, 200, payload);
+    return;
+  }
+
+  if (pathname.startsWith("/api/admin/training/profiles/") && req.method === "PATCH") {
+    const actor = getOptionalAdmin(req);
+    if (!actor) {
+      sendJson(res, 401, { error: "UNAUTHORIZED" });
+      return;
+    }
+
+    const userId = normalizeUserId(decodeURIComponent(pathname.replace("/api/admin/training/profiles/", "")), "");
+    if (!userId) {
+      sendJson(res, 400, { error: "USER_ID_REQUIRED" });
+      return;
+    }
+
+    const targetUser = ADMIN_USERS_BY_ID.get(userId);
+    if (!targetUser) {
+      sendJson(res, 404, { error: "USER_NOT_FOUND" });
+      return;
+    }
+
+    if (!canManageTrainingProfile(actor, targetUser)) {
+      sendJson(res, 403, { error: "FORBIDDEN_TRAINING_PROFILE" });
+      return;
+    }
+
+    let body;
+    try {
+      body = await readJsonBody(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message || "INVALID_REQUEST" });
+      return;
+    }
+
+    const hasPlanStartDate = Object.prototype.hasOwnProperty.call(body, "planStartDate");
+    const hasCurrentDay = Object.prototype.hasOwnProperty.call(body, "currentDay");
+    const hasStage = Object.prototype.hasOwnProperty.call(body, "stage");
+    const hasStatus = Object.prototype.hasOwnProperty.call(body, "status");
+    const hasConfidence = Object.prototype.hasOwnProperty.call(body, "confidence");
+    const hasEnergy = Object.prototype.hasOwnProperty.call(body, "energy");
+    const hasControl = Object.prototype.hasOwnProperty.call(body, "control");
+    const hasNotes = Object.prototype.hasOwnProperty.call(body, "notes");
+
+    if (
+      !hasPlanStartDate &&
+      !hasCurrentDay &&
+      !hasStage &&
+      !hasStatus &&
+      !hasConfidence &&
+      !hasEnergy &&
+      !hasControl &&
+      !hasNotes
+    ) {
+      sendJson(res, 400, { error: "NO_UPDATABLE_FIELDS" });
+      return;
+    }
+
+    const result = await withDataLock((data) => {
+      const training = ensureTrainingStorage(data);
+      const nowIso = new Date().toISOString();
+      const profile = ensureTrainingProfileForUser(training, targetUser.id, nowIso);
+      if (!profile) {
+        return { error: "PROFILE_NOT_FOUND" };
+      }
+
+      let changed = false;
+
+      if (hasPlanStartDate) {
+        const nextPlanDate = normalizeIsoDate(body.planStartDate);
+        if (profile.planStartDate !== nextPlanDate) {
+          profile.planStartDate = nextPlanDate;
+          changed = true;
+        }
+      }
+
+      if (hasCurrentDay) {
+        const nextDay = clampInt(body.currentDay, 1, 30, profile.currentDay);
+        if (profile.currentDay !== nextDay) {
+          profile.currentDay = nextDay;
+          changed = true;
+        }
+        if (!hasStage) {
+          const nextStageByDay = resolveTrainingStageByDay(nextDay);
+          if (profile.stage !== nextStageByDay) {
+            profile.stage = nextStageByDay;
+            changed = true;
+          }
+        }
+      }
+
+      if (hasStage) {
+        const nextStage = normalizeTrainingStage(body.stage);
+        if (profile.stage !== nextStage) {
+          profile.stage = nextStage;
+          changed = true;
+        }
+      }
+
+      if (hasStatus) {
+        const nextStatus = normalizeTrainingStatus(body.status);
+        if (profile.status !== nextStatus) {
+          profile.status = nextStatus;
+          changed = true;
+        }
+      }
+
+      if (hasConfidence) {
+        const nextConfidence = clampInt(body.confidence, 1, 5, profile.confidence);
+        if (profile.confidence !== nextConfidence) {
+          profile.confidence = nextConfidence;
+          changed = true;
+        }
+      }
+
+      if (hasEnergy) {
+        const nextEnergy = clampInt(body.energy, 1, 5, profile.energy);
+        if (profile.energy !== nextEnergy) {
+          profile.energy = nextEnergy;
+          changed = true;
+        }
+      }
+
+      if (hasControl) {
+        const nextControl = clampInt(body.control, 1, 5, profile.control);
+        if (profile.control !== nextControl) {
+          profile.control = nextControl;
+          changed = true;
+        }
+      }
+
+      if (hasNotes) {
+        const nextNotes = sanitizeText(body.notes, 2400);
+        if (profile.notes !== nextNotes) {
+          profile.notes = nextNotes;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        profile.updatedAt = nowIso;
+        profile.updatedById = actor.id;
+        profile.updatedByName = actor.name;
+      }
+
+      training.profiles = sortTrainingProfiles(training.profiles);
+      data.training = training;
+
+      const reviewsByUser = getTrainingReviewsByUser(training.callReviews, new Set([targetUser.id]));
+      const usersById = new Map([[targetUser.id, toPublicAdminUser(targetUser)]]);
+
+      return {
+        ok: true,
+        changed,
+        profile: trainingProfileWithUser(profile, usersById, reviewsByUser)
+      };
+    });
+
+    if (!result || !result.ok) {
+      sendJson(res, 400, { error: result?.error || "TRAINING_PROFILE_UPDATE_FAILED" });
+      return;
+    }
+
+    sendJson(res, 200, { ok: true, changed: result.changed, profile: result.profile });
+    return;
+  }
+
+  if (pathname === "/api/admin/training/reviews" && req.method === "POST") {
+    const actor = getOptionalAdmin(req);
+    if (!actor) {
+      sendJson(res, 401, { error: "UNAUTHORIZED" });
+      return;
+    }
+
+    let body;
+    try {
+      body = await readJsonBody(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message || "INVALID_REQUEST" });
+      return;
+    }
+
+    const userId = normalizeUserId(body.userId, "");
+    if (!userId) {
+      sendJson(res, 400, { error: "USER_ID_REQUIRED" });
+      return;
+    }
+
+    const targetUser = ADMIN_USERS_BY_ID.get(userId);
+    if (!targetUser) {
+      sendJson(res, 404, { error: "USER_NOT_FOUND" });
+      return;
+    }
+
+    if (!canManageTrainingProfile(actor, targetUser)) {
+      sendJson(res, 403, { error: "FORBIDDEN_TRAINING_REVIEW" });
+      return;
+    }
+
+    const result = await withDataLock((data) => {
+      const training = ensureTrainingStorage(data);
+      const nowIso = new Date().toISOString();
+      const profile = ensureTrainingProfileForUser(training, targetUser.id, nowIso);
+      if (!profile) {
+        return { error: "PROFILE_NOT_FOUND" };
+      }
+
+      const review = normalizeTrainingCallReview(
+        {
+          userId: targetUser.id,
+          reviewerId: actor.id,
+          reviewerName: actor.name,
+          channel: body.channel,
+          start: body.start,
+          diagnostics: body.diagnostics,
+          presentation: body.presentation,
+          objections: body.objections,
+          closing: body.closing,
+          crm: body.crm,
+          redFlags: body.redFlags,
+          confidence: body.confidence,
+          energy: body.energy,
+          control: body.control,
+          comment: body.comment,
+          createdAt: nowIso
+        },
+        training.callReviews.length
+      );
+
+      if (!review) {
+        return { error: "REVIEW_INVALID" };
+      }
+
+      training.callReviews.push(review);
+      if (training.callReviews.length > 6000) {
+        training.callReviews = training.callReviews.slice(-6000);
+      }
+
+      if (profile.status === "onboarding") {
+        profile.status = "active";
+      }
+
+      if (profile.status !== "paused") {
+        const nextDay = Math.min(30, Math.max(1, profile.currentDay) + 1);
+        profile.currentDay = nextDay;
+        profile.stage = resolveTrainingStageByDay(nextDay);
+      }
+
+      profile.confidence = review.confidence;
+      profile.energy = review.energy;
+      profile.control = review.control;
+
+      if (profile.status !== "paused" && profile.currentDay >= 30 && review.totalScore >= 75) {
+        profile.status = "certified";
+      }
+
+      profile.updatedAt = nowIso;
+      profile.updatedById = actor.id;
+      profile.updatedByName = actor.name;
+
+      training.profiles = sortTrainingProfiles(training.profiles);
+      data.training = training;
+
+      const reviewsByUser = getTrainingReviewsByUser(training.callReviews, new Set([targetUser.id]));
+      const usersById = new Map([[targetUser.id, toPublicAdminUser(targetUser)]]);
+      return {
+        ok: true,
+        review: {
+          ...review,
+          user: toPublicAdminUser(targetUser)
+        },
+        profile: trainingProfileWithUser(profile, usersById, reviewsByUser)
+      };
+    });
+
+    if (!result || !result.ok) {
+      const code = result?.error || "TRAINING_REVIEW_CREATE_FAILED";
+      sendJson(res, code === "USER_NOT_FOUND" ? 404 : 400, { error: code });
+      return;
+    }
+
+    sendJson(res, 201, { ok: true, review: result.review, profile: result.profile });
     return;
   }
 
@@ -1275,6 +2366,7 @@ async function handleApi(req, res, urlObject) {
 
     const unassignedLeads = await withDataLock((data) => {
       const leads = Array.isArray(data.leads) ? data.leads.map((item) => normalizeLead(item)) : [];
+      const training = ensureTrainingStorage(data);
       let changedCount = 0;
       const now = new Date().toISOString();
 
@@ -1292,6 +2384,9 @@ async function handleApi(req, res, urlObject) {
       });
 
       data.leads = leads;
+      training.profiles = training.profiles.filter((profile) => profile.userId !== targetUser.id);
+      training.callReviews = training.callReviews.filter((review) => review.userId !== targetUser.id);
+      data.training = training;
       return changedCount;
     });
 
@@ -1362,11 +2457,15 @@ async function handleApi(req, res, urlObject) {
     const payload = await withDataLock((data) => {
       const normalizedLeads = Array.isArray(data.leads) ? data.leads.map((lead) => normalizeLead(lead)) : [];
       data.leads = normalizedLeads;
+      const events = syncImportantEventsForAllLeads(data);
+      const leadEventsMap = getLeadEventsMap(events);
       const visibleLeads = actor
         ? normalizedLeads.filter((lead) => canReadLead(actor, lead))
         : normalizedLeads;
       const total = visibleLeads.length;
-      const leads = visibleLeads.slice(offset, offset + limit);
+      const leads = visibleLeads
+        .slice(offset, offset + limit)
+        .map((lead) => attachLeadEvents(lead, leadEventsMap));
       return {
         leads,
         total,
@@ -1378,10 +2477,221 @@ async function handleApi(req, res, urlObject) {
           : {
               canViewStats: false,
               canAssignLeads: false,
-              canViewAllLeads: true
+              canViewAllLeads: true,
+              canManageTraining: false,
+              canReviewCalls: false
             }
       };
     });
+    sendJson(res, 200, payload);
+    return;
+  }
+
+  if (
+    pathname.startsWith("/api/admin/leads/") &&
+    pathname.endsWith("/comments") &&
+    req.method === "POST"
+  ) {
+    const actor = getOptionalAdmin(req);
+    if (!actor) {
+      sendJson(res, 401, { error: "UNAUTHORIZED" });
+      return;
+    }
+
+    const basePath = "/api/admin/leads/";
+    const suffix = "/comments";
+    const encodedLeadId = pathname.slice(basePath.length, pathname.length - suffix.length);
+    const id = decodeURIComponent(encodedLeadId || "");
+    if (!id) {
+      sendJson(res, 400, { error: "LEAD_ID_REQUIRED" });
+      return;
+    }
+
+    let body;
+    try {
+      body = await readJsonBody(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message || "INVALID_REQUEST" });
+      return;
+    }
+
+    const commentText = sanitizeText(body.text, 2000);
+    if (!commentText) {
+      sendJson(res, 400, { error: "COMMENT_REQUIRED" });
+      return;
+    }
+
+    const result = await withDataLock((data) => {
+      const index = data.leads.findIndex((item) => normalizeLead(item).id === id);
+      if (index < 0) {
+        return { error: "LEAD_NOT_FOUND" };
+      }
+
+      const lead = normalizeLead(data.leads[index]);
+      if (!canReadLead(actor, lead)) {
+        return { error: "FORBIDDEN_COMMENT" };
+      }
+
+      const comment = normalizeLeadComment(
+        {
+          text: commentText,
+          authorId: actor.id,
+          authorName: actor.name,
+          createdAt: new Date().toISOString()
+        },
+        lead.comments.length
+      );
+
+      if (!comment) {
+        return { error: "COMMENT_REQUIRED" };
+      }
+
+      lead.comments.push(comment);
+      if (lead.comments.length > 300) {
+        lead.comments = lead.comments.slice(-300);
+      }
+      lead.updatedAt = new Date().toISOString();
+      lead.updatedById = actor.id;
+      lead.updatedByName = actor.name;
+      data.leads[index] = lead;
+
+      const events = syncImportantEventsForAllLeads(data);
+      const leadEventsMap = getLeadEventsMap(events);
+      return {
+        ok: true,
+        comment,
+        lead: attachLeadEvents(lead, leadEventsMap)
+      };
+    });
+
+    if (!result || !result.ok) {
+      const code = result?.error || "COMMENT_FAILED";
+      if (code === "LEAD_NOT_FOUND") {
+        sendJson(res, 404, { error: code });
+        return;
+      }
+      if (code === "FORBIDDEN_COMMENT") {
+        sendJson(res, 403, { error: code });
+        return;
+      }
+      sendJson(res, 400, { error: code });
+      return;
+    }
+
+    sendJson(res, 201, { ok: true, comment: result.comment, lead: result.lead });
+    return;
+  }
+
+  if (pathname === "/api/admin/events" && req.method === "GET") {
+    const actor = getOptionalAdmin(req);
+    const rawLimit = Number(urlObject.searchParams.get("limit"));
+    const scope = sanitizeText(urlObject.searchParams.get("scope"), 40).toLowerCase();
+    const limit =
+      Number.isFinite(rawLimit) && rawLimit > 0
+        ? Math.min(Math.floor(rawLimit), 2000)
+        : 500;
+
+    const now = new Date();
+
+    const payload = await withDataLock((data) => {
+      const leads = Array.isArray(data.leads) ? data.leads.map((lead) => normalizeLead(lead)) : [];
+      data.leads = leads;
+      const events = syncImportantEventsForAllLeads(data);
+      const leadsById = new Map(leads.map((lead) => [lead.id, lead]));
+
+      const visibleEvents = events
+        .map((event) => normalizeImportantEvent(event))
+        .filter(Boolean)
+        .filter((event) => {
+          const lead = leadsById.get(event.leadId);
+          if (!lead) {
+            return false;
+          }
+          return actor ? canReadLead(actor, lead) : true;
+        })
+        .map((event) => {
+          const lead = leadsById.get(event.leadId);
+          const daysUntil = getDaysUntilIsoDate(event.nextOccurrence, now);
+          const timeline =
+            daysUntil === null
+              ? "no_date"
+              : daysUntil < 0
+                ? "overdue"
+                : daysUntil <= 7
+                  ? "soon"
+                  : "upcoming";
+
+          return {
+            ...event,
+            daysUntil,
+            timeline,
+            lead: lead
+              ? {
+                  id: lead.id,
+                  name: lead.name,
+                  contact: lead.contact,
+                  status: lead.status,
+                  assigneeName: lead.assigneeName
+                }
+              : null
+          };
+        });
+
+      const filteredEvents = visibleEvents.filter((event) => {
+        if (scope === "overdue") {
+          return event.timeline === "overdue";
+        }
+        if (scope === "soon") {
+          return event.timeline === "soon";
+        }
+        if (scope === "upcoming") {
+          return event.timeline === "soon" || event.timeline === "upcoming";
+        }
+        if (scope === "no_date") {
+          return event.timeline === "no_date";
+        }
+        return true;
+      });
+
+      const sorted = filteredEvents.sort((left, right) => {
+        const leftDate = left.nextOccurrence || "9999-12-31";
+        const rightDate = right.nextOccurrence || "9999-12-31";
+        if (leftDate !== rightDate) {
+          return leftDate.localeCompare(rightDate);
+        }
+        return String(left.createdAt || "").localeCompare(String(right.createdAt || ""));
+      });
+
+      const stats = {
+        total: visibleEvents.length,
+        overdue: visibleEvents.filter((event) => event.timeline === "overdue").length,
+        soon: visibleEvents.filter((event) => event.timeline === "soon").length,
+        upcoming: visibleEvents.filter((event) => event.timeline === "upcoming").length,
+        noDate: visibleEvents.filter((event) => event.timeline === "no_date").length
+      };
+
+      return {
+        ok: true,
+        generatedAt: now.toISOString(),
+        today: getTodayIsoUtc(now),
+        events: sorted.slice(0, limit),
+        total: sorted.length,
+        limit,
+        scope: scope || "all",
+        stats,
+        actor,
+        permissions: actor
+          ? getRolePermissions(actor.role)
+          : {
+              canViewStats: false,
+              canAssignLeads: false,
+              canViewAllLeads: true,
+              canManageTraining: false,
+              canReviewCalls: false
+            }
+      };
+    });
+
     sendJson(res, 200, payload);
     return;
   }
@@ -1523,14 +2833,18 @@ async function handleApi(req, res, urlObject) {
       }
 
       if (!changed) {
-        return { ok: true, lead };
+        const events = syncImportantEventsForAllLeads(data);
+        const leadEventsMap = getLeadEventsMap(events);
+        return { ok: true, lead: attachLeadEvents(lead, leadEventsMap) };
       }
 
       lead.updatedAt = new Date().toISOString();
       lead.updatedById = actor.id;
       lead.updatedByName = actor.name;
       data.leads[index] = lead;
-      return { ok: true, lead };
+      const events = syncImportantEventsForAllLeads(data);
+      const leadEventsMap = getLeadEventsMap(events);
+      return { ok: true, lead: attachLeadEvents(lead, leadEventsMap) };
     });
 
     if (!updateResult || !updateResult.ok) {
@@ -1574,6 +2888,10 @@ async function serveStatic(req, res, urlObject) {
     pathname = "/admin.html";
   } else if (pathname === "/admin-leads") {
     pathname = "/admin-leads.html";
+  } else if (pathname === "/admin-events") {
+    pathname = "/admin-events.html";
+  } else if (pathname === "/admin-training") {
+    pathname = "/admin-training.html";
   }
 
   const safePath = path.normalize(path.join(ROOT_DIR, pathname));
@@ -1647,5 +2965,3 @@ server.listen(PORT, () => {
     console.log("Warning: default team passwords detected. Set ADMIN_USERS_JSON or *_PASSWORD env variables.");
   }
 });
-
-

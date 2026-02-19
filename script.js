@@ -235,12 +235,12 @@ function writeFutureThemeState(isEnabled) {
   }
 }
 
-function startThemeTransition() {
+function startThemeTransition(durationMs = 620) {
   document.body.classList.add("theme-transitioning");
   window.clearTimeout(themeTransitionTimer);
   themeTransitionTimer = window.setTimeout(() => {
     document.body.classList.remove("theme-transitioning");
-  }, 620);
+  }, Math.max(120, Number(durationMs) || 620));
 }
 
 function applyThemeMode(mode, options = {}) {
@@ -460,6 +460,8 @@ async function runFutureSecretSequence() {
   try {
     await playFutureShipCinematic(turningOn);
 
+    startThemeTransition(turningOn ? 900 : 820);
+
     // Toggle theme while the page background layers are still disabled.
     const applied = setFutureThemeState(turningOn);
     writeFutureThemeState(applied);
@@ -470,6 +472,7 @@ async function runFutureSecretSequence() {
       });
     });
 
+    await wait(120);
     document.body.classList.remove("future-cinematic-running");
 
     const toastMessage = turningOn
@@ -737,7 +740,11 @@ function setWorkspaceNavigationState(isEnabled) {
   const navLinks = Array.from(siteNav.querySelectorAll("a[href]"));
   navLinks.forEach((link) => {
     const href = String(link.getAttribute("href") || "").toLowerCase();
-    const isWorkspaceLink = href.endsWith("admin.html") || href.endsWith("admin-leads.html");
+    const isWorkspaceLink =
+      href.endsWith("admin.html") ||
+      href.endsWith("admin-leads.html") ||
+      href.endsWith("admin-events.html") ||
+      href.endsWith("admin-training.html");
     link.classList.toggle("workspace-nav-hidden", Boolean(isEnabled) && !isWorkspaceLink);
   });
 
@@ -777,6 +784,14 @@ function ensureWorkspaceShell() {
       <a class="workspace-tile" href="admin.html">
         <h2>Статистика</h2>
         <p>Трафик, повторы, время просмотра и динамика.</p>
+      </a>
+      <a class="workspace-tile" href="admin-events.html">
+        <h2>События</h2>
+        <p>Дни рождения клиентов и другие важные даты.</p>
+      </a>
+      <a class="workspace-tile" href="admin-training.html">
+        <h2>Обучение</h2>
+        <p>30-дневная программа, контроль разговоров и рейтинг.</p>
       </a>
     </section>
     <section class="workspace-shell__board">
