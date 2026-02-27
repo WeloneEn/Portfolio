@@ -273,6 +273,11 @@ function applyThemeMode(mode, options = {}) {
   }
 
   updateThemeToggleLabel();
+  
+  // Redraw charts if they exist (admin dashboard)
+  if (typeof renderDashboardCharts === "function" && window.statsPayload) {
+    setTimeout(() => renderDashboardCharts(window.statsPayload), 100);
+  }
 }
 
 applyThemeMode(readThemeMode(), { persist: false, withTransition: false });
@@ -527,6 +532,11 @@ async function runFutureSecretSequence() {
 
     await wait(120);
     document.body.classList.remove("future-cinematic-running");
+    
+    // Redraw charts if they exist (admin dashboard)
+    if (typeof renderDashboardCharts === "function" && window.statsPayload) {
+      setTimeout(() => renderDashboardCharts(window.statsPayload), 100);
+    }
 
     const toastMessage = turningOn
       ? "Дополнительный визуальный режим включен."

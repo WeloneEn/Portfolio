@@ -19,6 +19,7 @@
   />
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <link rel="stylesheet" href="admin-ui.css?v=20260219ux2" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
   <script defer src="admin.js?v=20260220ux4"></script>
@@ -81,6 +82,129 @@
       </nav>
 
       <section class="admin-stats admin-stats--folders" id="adminStats">
+        <!-- KPI Dashboard Cards -->
+        <article class="card kpi-cards-container">
+          <div class="kpi-cards-grid">
+            <div class="kpi-card kpi-card--primary">
+              <div class="kpi-card__header">
+                <p class="kpi-card__label">Всего заявок</p>
+              </div>
+              <div class="kpi-card__content">
+                <h2 class="kpi-card__value" data-stat="leadsTotal">0</h2>
+                <div class="kpi-card__delta" data-stat-delta="leadsTotal">
+                  <span class="kpi-card__arrow">↑</span>
+                  <span class="kpi-card__percent">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-card--success">
+              <div class="kpi-card__header">
+                <p class="kpi-card__label">Успешные сделки</p>
+              </div>
+              <div class="kpi-card__content">
+                <h2 class="kpi-card__value" data-stat="leadsSuccess">0</h2>
+                <div class="kpi-card__delta" data-stat-delta="leadsSuccess">
+                  <span class="kpi-card__arrow">↑</span>
+                  <span class="kpi-card__percent">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-card--info">
+              <div class="kpi-card__header">
+                <p class="kpi-card__label">Процент конверсии</p>
+              </div>
+              <div class="kpi-card__content">
+                <h2 class="kpi-card__value" data-stat="leadSuccessRatePercent">0%</h2>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-card--secondary">
+              <div class="kpi-card__header">
+                <p class="kpi-card__label">Уникальные за 30 дней</p>
+              </div>
+              <div class="kpi-card__content">
+                <h2 class="kpi-card__value" data-stat="uniqueVisitors30d">0</h2>
+                <div class="kpi-card__delta" data-stat-delta="uniqueVisitors30d">
+                  <span class="kpi-card__arrow">↑</span>
+                  <span class="kpi-card__percent">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Analytics Charts Section -->
+        <div class="charts-row">
+          <article class="card chart-card chart-card--large">
+            <div class="chart-header">
+              <h3>Заявки по дням</h3>
+              <div class="chart-controls">
+                <span class="chart-legend">
+                  <span class="legend-item">
+                    <span class="legend-color" style="background: var(--admin-primary);"></span>
+                    Новые
+                  </span>
+                  <span class="legend-item">
+                    <span class="legend-color" style="background: var(--admin-ok);"></span>
+                    Обработано
+                  </span>
+                </span>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="leadsChart" role="img" aria-label="График заявок"></canvas>
+            </div>
+          </article>
+
+          <article class="card chart-card chart-card--performance">
+            <div class="chart-header">
+              <h3>Результаты конверсии</h3>
+            </div>
+            <div class="chart-container chart-container--small">
+              <canvas id="conversionChart" role="img" aria-label="Диаграмма конверсии"></canvas>
+            </div>
+          </article>
+        </div>
+
+        <!-- Revenue Analytics -->
+        <article class="card chart-card chart-card--full">
+          <div class="chart-header">
+            <h3>Статистика по временным периодам</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="revenueChart" role="img" aria-label="График статистики"></canvas>
+          </div>
+        </article>
+
+        <!-- Data Table -->
+        <article class="card data-table-card">
+          <div class="chart-header">
+            <h3>Недавние заявки</h3>
+            <div class="table-controls">
+              <input type="search" class="table-search" id="leadsTableSearch" placeholder="Поиск по заявкам..." aria-label="Поиск просмотров">
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="leadsDataTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Имя</th>
+                  <th>Контакт</th>
+                  <th>Тип</th>
+                  <th>Статус</th>
+                  <th>Приоритет</th>
+                </tr>
+              </thead>
+              <tbody id="leadsTableBody">
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- Traffic Statistics (Accordion) -->
         <details class="card admin-folder" id="trafficFolder" open>
           <summary>Посетители и трафик</summary>
           <div class="admin-folder__content admin-stats-grid">
@@ -93,18 +217,14 @@
               <h2 data-stat="uniqueVisitors7d">0</h2>
             </article>
             <article class="stat-card">
-              <p>Уникальные за 30 дней</p>
-              <h2 data-stat="uniqueVisitors30d">0</h2>
-            </article>
-            <article class="stat-card">
               <p>Нашли пасхалку</p>
               <h2 data-stat="secretHuntersPercent">0%</h2>
             </article>
           </div>
         </details>
 
-        <details class="card admin-folder" id="leadsFolder">
-          <summary>Заявки и обработка</summary>
+        <details class="card admin-folder" id="leadsFolder" hidden>
+          <summary>Заявки и обработка (архив)</summary>
           <div class="admin-folder__content admin-stats-grid">
             <article class="stat-card">
               <p>Новые (день)</p>
@@ -137,13 +257,9 @@
           </div>
         </details>
 
-        <details class="card admin-folder" id="conversionFolder">
-          <summary>Сделки и конверсия</summary>
+        <details class="card admin-folder" id="conversionFolder" hidden>
+          <summary>Сделки и конверсия (архив)</summary>
           <div class="admin-folder__content admin-stats-grid">
-            <article class="stat-card">
-              <p>Успешные сделки</p>
-              <h2 data-stat="leadsSuccess">0</h2>
-            </article>
             <article class="stat-card">
               <p>Отказы</p>
               <h2 data-stat="leadsFailure">0</h2>

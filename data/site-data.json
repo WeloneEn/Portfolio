@@ -1,6 +1,6 @@
 {
   "visits": {
-    "totalHits": 221,
+    "totalHits": 234,
     "uniqueVisitors": 1,
     "knownVisitors": {
       "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
@@ -8,8 +8,8 @@
         "sourcePage": "/index.html",
         "referrer": "http://localhost:3000/admin.html",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
-        "lastSeen": "2026-02-19T13:30:47.428Z",
-        "lastSecretPage": "/index.html"
+        "lastSeen": "2026-02-27T10:34:33.708Z",
+        "lastSecretPage": "/projects.html"
       }
     },
     "byDay": {
@@ -33,28 +33,35 @@
         "visitors": {
           "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
         }
+      },
+      "2026-02-27": {
+        "hits": 13,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
       }
     }
   },
   "engagement": {
-    "totalDurationMs": 1632496,
-    "samplesCount": 79,
+    "totalDurationMs": 2080770,
+    "samplesCount": 87,
     "byPage": {
       "/index.html": {
-        "durationMs": 1479950,
-        "samples": 52
+        "durationMs": 1648986,
+        "samples": 55
       },
       "/contact.html": {
-        "durationMs": 48909,
-        "samples": 14
+        "durationMs": 75563,
+        "samples": 15
       },
       "/about.html": {
-        "durationMs": 50136,
-        "samples": 6
+        "durationMs": 82815,
+        "samples": 7
       },
       "/projects.html": {
-        "durationMs": 42994,
-        "samples": 5
+        "durationMs": 262899,
+        "samples": 8
       },
       "/": {
         "durationMs": 10507,
@@ -63,17 +70,17 @@
     }
   },
   "secrets": {
-    "totalEvents": 75,
+    "totalEvents": 87,
     "bySecret": {
       "admin-hotspot": 8,
-      "adadsw": 6,
+      "adadsw": 10,
       "logo-7tap": 3,
-      "future": 33,
-      "logo-2tap": 25
+      "future": 37,
+      "logo-2tap": 29
     },
     "byVisitor": {
       "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
-        "totalEvents": 75,
+        "totalEvents": 87,
         "uniqueSecrets": {
           "admin-hotspot": true,
           "adadsw": true,
@@ -84,31 +91,7 @@
       }
     }
   },
-  "leads": [
-    {
-      "id": "lead_1771406176683_6928025c",
-      "name": "QA UI",
-      "contact": "qa@example.com",
-      "type": "Test",
-      "message": "hello",
-      "sourcePage": "/contact.html",
-      "status": "new",
-      "department": "sales",
-      "assigneeId": "help_helpteam1",
-      "assigneeName": "Сашуля",
-      "priority": "high",
-      "outcome": "pending",
-      "internalNote": "patched",
-      "updatedById": "workspace",
-      "updatedByName": "Workspace",
-      "completedAt": "",
-      "completedById": "",
-      "completedByName": "",
-      "comments": [],
-      "createdAt": "2026-02-18T09:16:16.684Z",
-      "updatedAt": "2026-02-18T09:19:05.821Z"
-    }
-  ],
+  "leads": [],
   "crm": {
     "importantEvents": []
   },
@@ -244,20 +227,20 @@
   "performance": {
     "plans": {
       "day": {
-        "target": 3,
-        "updatedAt": "2026-02-19T10:25:00.638Z",
+        "target": 10,
+        "updatedAt": "2026-02-27T10:14:55.775Z",
         "updatedById": "workspace",
         "updatedByName": "Workspace"
       },
       "week": {
-        "target": 12,
-        "updatedAt": "2026-02-19T10:25:00.638Z",
+        "target": 20,
+        "updatedAt": "2026-02-27T10:14:55.775Z",
         "updatedById": "workspace",
         "updatedByName": "Workspace"
       },
       "month": {
         "target": 50,
-        "updatedAt": "2026-02-19T10:25:00.638Z",
+        "updatedAt": "2026-02-27T10:14:55.775Z",
         "updatedById": "workspace",
         "updatedByName": "Workspace"
       }
