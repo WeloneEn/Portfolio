@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="welone-api-base" content="">
+  <title>Dashboard - Owner</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: var(--tone-panel-bg);
+      border: 1px solid var(--tone-border);
+      border-radius: 8px;
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: var(--tone-text);
+    }
+
+    .dashboard-header .actor-info {
+      text-align: right;
+      font-size: 0.9rem;
+      color: var(--tone-muted-text);
+    }
+
+    .logout-btn {
+      padding: 0.5rem 1rem;
+      margin-left: 1rem;
+      background: var(--tone-error);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .logout-btn:hover {
+      opacity: 0.9;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--tone-panel-bg);
+      border: 1px solid var(--tone-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-card .label {
+      font-size: 0.9rem;
+      color: var(--tone-muted-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--tone-success);
+    }
+
+    .users-section {
+      background: var(--tone-panel-bg);
+      border: 1px solid var(--tone-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .users-section h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+      color: var(--tone-text);
+    }
+
+    .create-user-btn {
+      padding: 0.75rem 1.5rem;
+      margin-bottom: 1rem;
+      background: var(--tone-info);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .create-user-btn:hover {
+      opacity: 0.9;
+    }
+
+    .users-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--tone-surface);
+      border: 1px solid var(--tone-border);
+      border-radius: 4px;
+    }
+
+    .user-item .info {
+      flex: 1;
+    }
+
+    .user-item .name {
+      font-weight: bold;
+      color: var(--tone-text);
+      margin-bottom: 0.3rem;
+    }
+
+    .user-item .role {
+      font-size: 0.85rem;
+      color: var(--tone-muted-text);
+    }
+
+    .user-item .badge {
+      display: inline-block;
+      padding: 0.3rem 0.7rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-left: auto;
+    }
+
+    .badge.owner { background: var(--tone-warning); color: black; }
+    .badge.product { background: var(--tone-info); color: white; }
+    .badge.manager { background: var(--tone-success); color: white; }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--tone-muted-text);
+    }
+
+    .error {
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid var(--tone-error);
+      color: var(--tone-error);
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="preloader" class="preloader"></div>
+
+  <main>
+    <section class="page-hero reveal">
+      <h1>Owner Dashboard</h1>
+      <p>Управление системой и пользователями</p>
+    </section>
+
+    <section class="dashboard-header reveal">
+      <h1 id="dashboardTitle">Добро пожаловать!</h1>
+      <div>
+        <div class="actor-info">
+          <div id="actorName">Loading...</div>
+          <div id="actorRole">—</div>
+          <button class="logout-btn" id="logoutBtn">🚪 Выход</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div id="errorMessage" class="error" hidden></div>
+      
+      <div class="stat-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="label">Всего пользователей</div>
+          <div class="value" id="totalUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Product Managers</div>
+          <div class="value" id="totalProducts">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Менеджеры</div>
+          <div class="value" id="totalManagers">0</div>
+        </div>
+      </div>
+
+      <div class="users-section">
+        <h2>👥 Пользователи системы</h2>
+        <button class="create-user-btn" id="createUserBtn">+ Создать пользователя</button>
+        
+        <div id="usersList" class="users-list">
+          <div class="loading">Загрузка пользователей...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script defer src="config.js?v=20260302"></script>
+  <script defer src="script.js?v=20260302"></script>
+  <script defer src="dashboard.js?v=20260302"></script>
+</body>
+</html>

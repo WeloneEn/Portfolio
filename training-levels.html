@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f0e8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Путь обучения менеджеров</title>
+  <meta name="description" content="Интерактивное обучение менеджеров в стиле игры: 10 уровней для освоения продажи." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260228z1" />
+  <link rel="stylesheet" href="admin-ui.css?v=20260228z1" />
+  <link rel="stylesheet" href="training-levels.css?v=20260228z1" />
+  <script defer src="config.js?v=20260228z1"></script>
+  <script defer src="script.js?v=20260228z1"></script>
+  <script defer src="training-levels.js?v=20260228z1"></script>
+</head>
+<body data-page="admin">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__ring"></div>
+    <p class="preloader__text">Загрузка...</p>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span>elone <span class="brand-initial">D</span>igital <span class="brand-initial">A</span>telier <span class="brand-initial">C</span>ommand</a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">Светлый режим</button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a href="admin.html">Статистика</a>
+      <a href="admin-leads.html">Заявки</a>
+      <a href="admin-events.html">Важные события</a>
+      <a href="admin-training.html">Обучение</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <p class="label">Sales Learning Path</p>
+      <h1>🎮 Путь обучения менеджеров</h1>
+      <p>10 уровней интерактивного обучения: от знаний о компании до сертификации. Пройди каждый этап, заработай баллы, стань лучшим!</p>
+    </section>
+
+    <section class="training-levels-auth reveal" id="trainingLevelsAuth" hidden>
+      <p class="admin-status" id="trainingLevelsAuthStatus">Требуется авторизация.</p>
+    </section>
+
+    <section class="training-levels-panel reveal" id="trainingLevelsPanel">
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="admin.html">← Статистика</a>
+        <a class="btn btn--ghost" href="admin-training.html">← Полное обучение</a>
+        <button class="btn btn--ghost" id="refreshLevels" type="button">Обновить</button>
+      </div>
+
+      <p class="admin-status" id="trainingLevelsStatus">Загрузка уровней...</p>
+
+      <!-- Game levels map -->
+      <article class="card training-levels-map reveal">
+        <h2>🗺️ Карта уровней</h2>
+        <div class="levels-road" id="levelsRoad" aria-label="Карта обучения с 10 уровнями"></div>
+      </article>
+
+      <!-- Level details -->
+      <article class="card training-level-detail reveal" id="levelDetailCard" hidden>
+        <div class="level-detail__header">
+          <button class="btn btn--ghost btn--small" id="closeLevelDetail" type="button">← Назад к карте</button>
+          <h2 id="levelDetailTitle">Уровень 1</h2>
+          <div class="level-detail__meta" id="levelDetailMeta"></div>
+        </div>
+
+        <div class="level-detail__progress">
+          <div class="level-progress-bar">
+            <div class="level-progress-fill" id="levelProgressFill" style="width: 0%"></div>
+          </div>
+          <p class="level-progress-text"><span id="levelProgressScore">0</span> / 100 баллов</p>
+        </div>
+
+        <div class="level-detail__content" id="levelDetailContent"></div>
+
+        <div class="level-detail__actions" id="levelDetailActions"></div>
+      </article>
+
+      <!-- Statistics -->
+      <article class="card training-levels-stats reveal">
+        <h2>📊 Ваш прогресс</h2>
+        <div class="levels-stats-grid" id="levelsStatsGrid"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+  </footer>
+</body>
+</html>

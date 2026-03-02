@@ -1,6 +1,6 @@
 {
   "visits": {
-    "totalHits": 234,
+    "totalHits": 249,
     "uniqueVisitors": 1,
     "knownVisitors": {
       "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
@@ -8,7 +8,7 @@
         "sourcePage": "/index.html",
         "referrer": "http://localhost:3000/admin.html",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
-        "lastSeen": "2026-02-27T10:34:33.708Z",
+        "lastSeen": "2026-03-02T05:10:22.123Z",
         "lastSecretPage": "/projects.html"
       }
     },
@@ -40,28 +40,35 @@
         "visitors": {
           "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
         }
+      },
+      "2026-03-02": {
+        "hits": 15,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
       }
     }
   },
   "engagement": {
-    "totalDurationMs": 2080770,
-    "samplesCount": 87,
+    "totalDurationMs": 2251878,
+    "samplesCount": 95,
     "byPage": {
       "/index.html": {
-        "durationMs": 1648986,
-        "samples": 55
+        "durationMs": 1807005,
+        "samples": 59
       },
       "/contact.html": {
         "durationMs": 75563,
         "samples": 15
       },
       "/about.html": {
-        "durationMs": 82815,
-        "samples": 7
+        "durationMs": 91168,
+        "samples": 9
       },
       "/projects.html": {
-        "durationMs": 262899,
-        "samples": 8
+        "durationMs": 267635,
+        "samples": 10
       },
       "/": {
         "durationMs": 10507,
@@ -91,7 +98,50 @@
       }
     }
   },
-  "leads": [],
+  "leads": [
+    {
+      "id": "lead_1772422624700_2b130f81",
+      "name": "Дмитрий 6617",
+      "contact": "client6617@example.com",
+      "type": "Многостраничный сайт",
+      "message": "Письки попки какашечки",
+      "sourcePage": "/contact.html",
+      "status": "done",
+      "department": "unassigned",
+      "assigneeId": "",
+      "assigneeName": "",
+      "priority": "normal",
+      "outcome": "pending",
+      "internalNote": "",
+      "updatedById": "workspace",
+      "updatedByName": "Workspace",
+      "completedAt": "2026-03-02T03:37:54.430Z",
+      "completedById": "workspace",
+      "completedByName": "Workspace",
+      "comments": [
+        {
+          "id": "cmt_MjAyNi0wMy0wMlQw",
+          "text": "Письки попки какашечки",
+          "authorId": "workspace",
+          "authorUsername": "admin",
+          "authorName": "Workspace",
+          "authorRole": "owner",
+          "createdAt": "2026-03-02T03:37:37.349Z"
+        },
+        {
+          "id": "cmt_MjAyNi0wMy0wMlQw",
+          "text": "Попки попки письки",
+          "authorId": "workspace",
+          "authorUsername": "admin",
+          "authorName": "Workspace",
+          "authorRole": "owner",
+          "createdAt": "2026-03-02T03:37:46.130Z"
+        }
+      ],
+      "createdAt": "2026-03-02T03:37:04.700Z",
+      "updatedAt": "2026-03-02T03:37:54.430Z"
+    }
+  ],
   "crm": {
     "importantEvents": []
   },

@@ -1,0 +1,368 @@
+/* Training Levels Game - CSS Styling */
+
+/* Road/path styling */
+.levels-road {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 20px;
+  padding: 40px 20px;
+  position: relative;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--admin-surface-soft, #162742) 5%, 
+    var(--admin-surface-soft, #162742) 95%, 
+    transparent 100%);
+  border-radius: var(--admin-radius, 14px);
+  overflow-x: auto;
+}
+
+.levels-road::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90%;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--admin-border, #294061) 0%, 
+    var(--admin-primary, #38bdf8) 50%, 
+    var(--admin-border, #294061) 100%);
+  z-index: 0;
+}
+
+/* Individual level circle */
+.level-circle {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 18px;
+  border: 3px solid;
+  background: var(--admin-surface, #121d31);
+}
+
+/* Level states */
+.level-circle[data-state="locked"] {
+  border-color: var(--admin-muted, #a5b4ce);
+  color: var(--admin-muted, #a5b4ce);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-circle[data-state="available"] {
+  border-color: var(--admin-primary, #38bdf8);
+  color: var(--admin-primary, #38bdf8);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+
+.level-circle[data-state="available"]:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.8);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.level-circle[data-state="in-progress"] {
+  border-color: var(--admin-warn, #f59e0b);
+  color: var(--admin-warn, #f59e0b);
+  animation: pulse-glow 2s ease-in-out infinite;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.level-circle[data-state="completed"] {
+  border-color: var(--admin-ok, #22c55e);
+  color: var(--admin-ok, #22c55e);
+  background: rgba(34, 197, 86, 0.1);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
+  }
+}
+
+.level-number {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.level-emoji {
+  font-size: 28px;
+}
+
+.level-score {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Level detail card */
+.level-detail__header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--admin-border, #294061);
+  padding-bottom: 16px;
+}
+
+.level-detail__header h2 {
+  flex: 1;
+  margin: 0;
+}
+
+.level-detail__meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--admin-muted, #a5b4ce);
+}
+
+.level-detail__meta span {
+  background: var(--admin-surface-soft, #162742);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border, #294061);
+}
+
+/* Progress bar */
+.level-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--admin-surface-soft, #162742);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid var(--admin-border, #294061);
+}
+
+.level-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    var(--admin-primary, #38bdf8), 
+    var(--admin-ok, #22c55e));
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.level-progress-text {
+  text-align: right;
+  font-size: 14px;
+  color: var(--admin-muted, #a5b4ce);
+  margin: 0;
+}
+
+/* Level content sections */
+.level-detail__content {
+  margin: 24px 0;
+}
+
+.level-section {
+  margin-bottom: 32px;
+}
+
+.level-section h3 {
+  color: var(--admin-primary, #38bdf8);
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.level-section p {
+  line-height: 1.6;
+  color: var(--admin-text, #ecf2fb);
+  margin-bottom: 8px;
+}
+
+.level-section ul,
+.level-section ol {
+  margin-left: 20px;
+  margin-bottom: 16px;
+}
+
+.level-section li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Video embed placeholder */
+.level-video-placeholder {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, 
+    var(--admin-surface-soft, #162742) 0%, 
+    var(--admin-border, #294061) 100%);
+  border-radius: var(--admin-radius-sm, 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin-bottom: 16px;
+  border: 2px dashed var(--admin-border, #294061);
+}
+
+/* Task/exercise box */
+.level-task {
+  background: rgba(56, 189, 248, 0.05);
+  border-left: 4px solid var(--admin-primary, #38bdf8);
+  padding: 16px;
+  border-radius: var(--admin-radius-sm, 10px);
+  margin: 16px 0;
+}
+
+.level-task strong {
+  color: var(--admin-primary, #38bdf8);
+}
+
+/* Test question */
+.level-test {
+  background: var(--admin-surface-soft, #162742);
+  border: 1px solid var(--admin-border, #294061);
+  border-radius: var(--admin-radius-sm, 10px);
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.level-test-question {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--admin-text, #ecf2fb);
+}
+
+.level-test-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.level-test-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--admin-surface, #121d31);
+  border: 1px solid var(--admin-border, #294061);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.level-test-option:hover {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: var(--admin-primary, #38bdf8);
+}
+
+.level-test-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* Actions bar */
+.level-detail__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--admin-border, #294061);
+}
+
+/* Statistics grid */
+.levels-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.level-stat-card {
+  background: var(--admin-surface-soft, #162742);
+  border: 1px solid var(--admin-border, #294061);
+  border-radius: var(--admin-radius-sm, 10px);
+  padding: 16px;
+  text-align: center;
+}
+
+.level-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--admin-primary, #38bdf8);
+  margin-bottom: 8px;
+}
+
+.level-stat-label {
+  font-size: 14px;
+  color: var(--admin-muted, #a5b4ce);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .levels-road {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+    padding: 20px 10px;
+  }
+
+  .level-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 14px;
+    gap: 4px;
+  }
+
+  .level-number {
+    font-size: 18px;
+  }
+
+  .level-emoji {
+    font-size: 24px;
+  }
+
+  .level-detail__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .level-detail__meta {
+    width: 100%;
+  }
+}
+
+/* Light mode adjustments */
+body.light-mode[data-page="admin"] .level-circle[data-state="available"],
+body.light-mode[data-page="admin"] .level-circle[data-state="in-progress"] {
+  background: rgba(2, 132, 199, 0.05);
+}
+
+body.light-mode[data-page="admin"] .level-circle[data-state="available"]:hover {
+  background: rgba(2, 132, 199, 0.1);
+}
+
+body.light-mode[data-page="admin"] .level-section h3 {
+  color: var(--admin-primary-strong, #0369a1);
+}
+
+/* Dark/future mode effects */
+body[data-page="admin"] .level-circle[data-state="in-progress"] {
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px var(--admin-warn, #f59e0b));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px var(--admin-warn, #f59e0b));
+  }
+}

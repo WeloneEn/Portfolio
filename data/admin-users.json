@@ -1,18 +1,27 @@
 [
   {
-    "id": "product_lead",
-    "username": "product_lead",
-    "password": "change-product",
-    "name": "Product Lead",
-    "role": "product",
+    "id": "owner",
+    "username": "admin",
+    "password": "admin123",
+    "name": "Owner",
+    "role": "owner",
     "department": "management"
   },
   {
-    "id": "manager_main",
-    "username": "manager_main",
-    "password": "change-manager",
-    "name": "Manager Main",
-    "role": "manager",
+    "id": "product_vera",
+    "username": "product_vera",
+    "password": "product123",
+    "name": "Вера Петровна",
+    "role": "product",
     "department": "sales"
+  },
+  {
+    "id": "manager_ivan",
+    "username": "manager_ivan",
+    "password": "manager123",
+    "name": "Иван Петров",
+    "role": "manager",
+    "department": "sales",
+    "assignedProductId": null
   }
 ]
