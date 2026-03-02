@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeSkillScanner();
   initializeMagneticButtons();
   initializeBrandAnimation();
+  initializeCustomSelect();
   hidePreloader();
 });
 
@@ -91,7 +92,18 @@ function applyTheme(theme) {
   document.body.classList.toggle("dark-mode", isDark);
 
   if (themeToggle) {
-    themeToggle.textContent = isDark ? "☀ Светлая" : "☾ Тёмная";
+    let iconSpan = themeToggle.querySelector('.theme-toggle__icon');
+    let textSpan = themeToggle.querySelector('.theme-toggle__text');
+
+    if (!iconSpan || !textSpan) {
+      themeToggle.innerHTML = '<span class="theme-toggle__icon"></span><span class="theme-toggle__text"></span>';
+      iconSpan = themeToggle.querySelector('.theme-toggle__icon');
+      textSpan = themeToggle.querySelector('.theme-toggle__text');
+    }
+
+    // Update text and icon to reflect the CURRENT status, so Light Mode = "Светлая", Dark Mode = "Тёмная" (hidden by CSS so only ☾ remains)
+    iconSpan.textContent = isDark ? "☾" : "☀";
+    textSpan.textContent = isDark ? "Тёмная" : "Светлая";
   }
 }
 
@@ -112,7 +124,7 @@ function initializeNavigation() {
 
 function toggleMenu() {
   if (!siteNav) return;
-  const isOpen = siteNav.classList.contains("nav-open");
+  const isOpen = siteNav.classList.contains("is-open");
   if (isOpen) {
     closeMenu();
   } else {
@@ -122,13 +134,17 @@ function toggleMenu() {
 
 function openMenu() {
   if (!siteNav || !menuToggle) return;
-  siteNav.classList.add("nav-open");
+  siteNav.classList.add("is-open");
+  document.body.classList.add("menu-open");
+  menuToggle.textContent = "Close";
   menuToggle.setAttribute("aria-expanded", "true");
 }
 
 function closeMenu() {
   if (!siteNav || !menuToggle) return;
-  siteNav.classList.remove("nav-open");
+  siteNav.classList.remove("is-open");
+  document.body.classList.remove("menu-open");
+  menuToggle.textContent = "Menu";
   menuToggle.setAttribute("aria-expanded", "false");
 }
 
@@ -328,5 +344,64 @@ function initializeMagneticButtons() {
     btn.addEventListener("mouseleave", () => {
       btn.style.transform = "";
     });
+  });
+}
+
+// ===== CUSTOM SELECT =====
+function initializeCustomSelect() {
+  const customSelects = document.querySelectorAll(".custom-select");
+  if (!customSelects.length) return;
+
+  customSelects.forEach(selectEl => {
+    const trigger = selectEl.querySelector(".custom-select__trigger");
+    const options = selectEl.querySelectorAll(".custom-select__option");
+    const input = selectEl.querySelector("input[type='hidden']");
+    const textSpan = selectEl.querySelector(".custom-select__text");
+
+    if (!trigger || !input || !textSpan || !options.length) return;
+
+    trigger.addEventListener("click", (e) => {
+      e.preventDefault();
+      const isOpen = selectEl.classList.contains("is-open");
+      // Close other selects first
+      document.querySelectorAll(".custom-select.is-open").forEach(openEl => {
+        if (openEl !== selectEl) {
+          openEl.classList.remove("is-open");
+          openEl.querySelector(".custom-select__trigger")?.setAttribute("aria-expanded", "false");
+        }
+      });
+      selectEl.classList.toggle("is-open");
+      trigger.setAttribute("aria-expanded", !isOpen);
+    });
+
+    options.forEach(option => {
+      option.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const value = option.dataset.value;
+        const text = option.textContent;
+
+        input.value = value;
+        textSpan.textContent = text;
+        textSpan.style.color = "var(--text)";
+
+        options.forEach(opt => opt.classList.remove("is-selected", "is-active", "active"));
+        option.classList.add("is-selected");
+
+        selectEl.classList.remove("is-open");
+        trigger.setAttribute("aria-expanded", "false");
+
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".custom-select")) {
+      customSelects.forEach(selectEl => {
+        selectEl.classList.remove("is-open");
+        const trigger = selectEl.querySelector(".custom-select__trigger");
+        if (trigger) trigger.setAttribute("aria-expanded", "false");
+      });
+    }
   });
 }

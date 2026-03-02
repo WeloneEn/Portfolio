@@ -112,13 +112,24 @@
         </label>
         <label>
           Формат проекта
-          <select name="type" required>
-            <option value="">Выберите...</option>
-            <option>Лендинг</option>
-            <option>Многостраничный сайт</option>
-            <option>Редизайн</option>
-            <option>Интерактивное портфолио</option>
-          </select>
+          <div class="custom-select" id="projectTypeSelect">
+            <input type="hidden" name="type" required>
+            <button class="custom-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="custom-select__text">Выберите...</span>
+              <svg class="custom-select__arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor"
+                stroke-width="2" fill="none">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <ul class="custom-select__options" role="listbox" tabindex="-1">
+              <li class="custom-select__option" role="option" data-value="Лендинг">Лендинг</li>
+              <li class="custom-select__option" role="option" data-value="Многостраничный сайт">Многостраничный сайт
+              </li>
+              <li class="custom-select__option" role="option" data-value="Редизайн">Редизайн</li>
+              <li class="custom-select__option" role="option" data-value="Интерактивное портфолио">Интерактивное
+                портфолио</li>
+            </ul>
+          </div>
         </label>
         <label>
           Описание
