@@ -144,7 +144,7 @@ function extractToken(req) {
 async function handleGetUsers(req, res) {
   try {
     const token = extractToken(req);
-    
+
     if (!token) {
       sendJson(res, 401, { error: "UNAUTHORIZED" });
       return;
@@ -152,7 +152,7 @@ async function handleGetUsers(req, res) {
 
     // For now, just return all users (in real app, verify token and check role)
     const users = await loadUsers();
-    
+
     sendJson(res, 200, {
       ok: true,
       users: users
@@ -238,18 +238,26 @@ async function serveStatic(req, res, urlObject) {
     }
 
     // Serve file
-    const content = await fs.promises.readFile(safePath, "utf-8");
-    const ext = path.extname(pathname);
+    const ext = path.extname(pathname).toLowerCase();
 
     let contentType = "text/plain";
+    let isBinary = false;
     if (ext === ".html") contentType = "text/html; charset=utf-8";
     else if (ext === ".css") contentType = "text/css; charset=utf-8";
     else if (ext === ".js") contentType = "application/javascript; charset=utf-8";
     else if (ext === ".json") contentType = "application/json; charset=utf-8";
     else if (ext === ".svg") contentType = "image/svg+xml";
-    else if (ext === ".png") contentType = "image/png";
-    else if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
-    else if (ext === ".gif") contentType = "image/gif";
+    else if (ext === ".png") { contentType = "image/png"; isBinary = true; }
+    else if (ext === ".jpg" || ext === ".jpeg") { contentType = "image/jpeg"; isBinary = true; }
+    else if (ext === ".gif") { contentType = "image/gif"; isBinary = true; }
+    else if (ext === ".webp") { contentType = "image/webp"; isBinary = true; }
+    else if (ext === ".ico") { contentType = "image/x-icon"; isBinary = true; }
+    else if (ext === ".woff2") { contentType = "font/woff2"; isBinary = true; }
+    else if (ext === ".woff") { contentType = "font/woff"; isBinary = true; }
+
+    const content = isBinary
+      ? await fs.promises.readFile(safePath)
+      : await fs.promises.readFile(safePath, "utf-8");
 
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);

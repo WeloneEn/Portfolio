@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d0d12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,12 +18,15 @@
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
+  <meta property="og:title" content="Welone Digital Atelier — Проекты" />
+  <meta property="og:description" content="Портфолио проектов и демо-версий сайтов." />
+  <meta property="og:type" content="website" />
 </head>
 
 <body data-page="projects">
   <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__logo">WDA</div>
     <div class="preloader__ring"></div>
-    <p class="preloader__text">Загрузка...</p>
   </div>
 
   <div class="noise" aria-hidden="true"></div>
@@ -49,10 +53,11 @@
   </header>
 
   <main>
-    <section class="page-hero reveal">
-      <p class="label">Проекты</p>
-      <h1>Примеры работ</h1>
-      <p>Реальные демо и версии развития одного проекта, от ранней сборки до финала.</p>
+    <section class="page-hero reveal" id="projectsHero">
+      <p class="label">Портфолио</p>
+      <h1>Проекты, которые <span class="glitch" data-text="работают">работают</span></h1>
+      <p>Реальные кейсы — от ранних прототипов до финальных продуктов. <br>Каждый проект создан по принципу: скорость,
+        эстетика, результат.</p>
     </section>
 
     <section class="projects-controls reveal">
@@ -68,35 +73,100 @@
       </div>
     </section>
 
-    <section class="projects reveal" id="projectsList">
-      <article class="project-card tilt" data-category="version">
-        <p class="project-card__tag">Версия 2</p>
-        <h2>Sashnaz v2</h2>
-        <p>Эволюция структуры и UI по сравнению с базовой версией.</p>
-        <a href="https://weloneen.github.io/sashnaz/index.html">Открыть проект</a>
-      </article>
+    <div class="bento-container">
+      <section class="projects bento-grid reveal" id="projectsList">
 
-      <article class="project-card tilt" data-category="version">
-        <p class="project-card__tag">Версия 3</p>
-        <h2>Sashnaz Demo v3</h2>
-        <p>Следующий шаг: улучшенная подача контента и расширенная визуальная часть.</p>
-        <a href="https://weloneen.github.io/sashnazDemo/index.html">Открыть проект</a>
-      </article>
+        <article class="project-card bento-card  tilt" data-category="version">
+          <figure class="project-card__media">
+            <img src="assets/projects/project-1.png"
+              alt="Sashnaz v2 — портфолио «Сашуля Бабиджон» с тёплым дизайном и медведем-пандой" loading="lazy"
+              width="800" height="450" />
+          </figure>
+          <div class="project-card__body">
+            <p class="project-card__tag">Версия 2</p>
+            <h3>Sashnaz v2</h3>
+            <p class="project-card__desc">Эволюция структуры и UI по сравнению с базовой версией. Новый визуальный язык
+              и адаптивная сетка.</p>
+            <ul class="project-card__chips">
+              <li>HTML5</li>
+              <li>CSS Grid</li>
+              <li>Анимации</li>
+            </ul>
+            <div class="project-card__footer">
+              <p class="project-card__result">⚡ PageSpeed 95/100</p>
+              <a href="https://weloneen.github.io/sashnaz/index.html" class="project-card__link">Открыть проект →</a>
+            </div>
+          </div>
+        </article>
 
-      <article class="project-card tilt" data-category="final">
-        <p class="project-card__tag">Версия 4 / Финал</p>
-        <h2>Sashnaz Final v4</h2>
-        <p>Финальная версия с выверенной структурой и аккуратным дизайном.</p>
-        <a href="https://weloneen.github.io/sashnazdemodemo/index.html">Открыть проект</a>
-      </article>
+        <article class="project-card bento-card tilt" data-category="version">
+          <figure class="project-card__media">
+            <img src="assets/projects/project-2.png" alt="Sashnaz Demo v3 — блог-платформа с элегантным контентом"
+              loading="lazy" width="800" height="450" />
+          </figure>
+          <div class="project-card__body">
+            <p class="project-card__tag">Версия 3</p>
+            <h3>Sashnaz Demo v3</h3>
+            <p class="project-card__desc">Улучшенная подача контента и расширенная визуальная часть.</p>
+            <ul class="project-card__chips">
+              <li>JavaScript</li>
+              <li>UI/UX</li>
+              <li>Адаптив</li>
+            </ul>
+            <div class="project-card__footer">
+              <p class="project-card__result">🚀 Загрузка &lt;1.5с</p>
+              <a href="https://weloneen.github.io/sashnazDemo/index.html" class="project-card__link">Открыть проект
+                →</a>
+            </div>
+          </div>
+        </article>
 
-      <article class="project-card tilt" data-category="special">
-        <p class="project-card__tag">Special Case</p>
-        <h2>Popis Box</h2>
-        <p>Отдельный проект с уникальной подачей контента.</p>
-        <a href="https://weloneen.github.io/popisbox/index.html">Открыть проект</a>
-      </article>
-    </section>
+        <article class="project-card bento-card tilt" data-category="final">
+          <figure class="project-card__media">
+            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
+              loading="lazy" width="800" height="450" />
+          </figure>
+          <div class="project-card__body">
+            <p class="project-card__tag">Версия 4 / Финал</p>
+            <h3>Sashnaz Final v4</h3>
+            <p class="project-card__desc">Финальная версия с выверенной структурой и аккуратным дизайном.</p>
+            <ul class="project-card__chips">
+              <li>CSS Variables</li>
+              <li>Grid</li>
+              <li>ARIA</li>
+            </ul>
+            <div class="project-card__footer">
+              <p class="project-card__result">💯 PageSpeed 99/100</p>
+              <a href="https://weloneen.github.io/sashnazdemodemo/index.html" class="project-card__link">Открыть проект
+                →</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card bento-card  tilt" data-category="special">
+          <figure class="project-card__media">
+            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
+              loading="lazy" width="800" height="450" />
+          </figure>
+          <div class="project-card__body">
+            <p class="project-card__tag">Special Case</p>
+            <h3>Popis Box</h3>
+            <p class="project-card__desc">Отдельный проект с уникальной подачей контента и нестандартной компоновкой.
+            </p>
+            <ul class="project-card__chips">
+              <li>Vanilla JS</li>
+              <li>Custom Layout</li>
+              <li>UX</li>
+            </ul>
+            <div class="project-card__footer">
+              <p class="project-card__result">🏆 UX Score A+</p>
+              <a href="https://weloneen.github.io/popisbox/index.html" class="project-card__link">Открыть проект →</a>
+            </div>
+          </div>
+        </article>
+
+      </section>
+    </div>
   </main>
 
   <footer class="site-footer">

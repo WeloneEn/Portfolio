@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>(function(){var t=localStorage.getItem('theme_mode')||'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark-mode');})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d0d12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,12 +18,15 @@
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
+  <meta property="og:title" content="Welone Digital Atelier — Обо мне" />
+  <meta property="og:description" content="Подход, технологии и навыки веб-разработчика." />
+  <meta property="og:type" content="profile" />
 </head>
 
 <body data-page="about">
   <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__logo">WDA</div>
     <div class="preloader__ring"></div>
-    <p class="preloader__text">Загрузка...</p>
   </div>
 
   <div class="noise" aria-hidden="true"></div>
@@ -48,49 +52,88 @@
     </nav>
   </header>
 
+  
   <main>
     <section class="page-hero reveal">
       <p class="label">Обо мне</p>
-      <h1>Я создаю решения, которые работают</h1>
-      <p>Каждый проект — это сочетание технической точности, интерактивности и внимания к тому, как пользователь
-        взаимодействует с продуктом.</p>
+      <h1>Инженерия & Эстетика</h1>
+      <p>Я создаю цифровые продукты, где математическая точность кода встречается с премиальным визуальным опытом. Моя цель — вызывать у ваших клиентов чувство доверия с первых секунд.</p>
     </section>
 
-    <section class="about-grid reveal">
-      <article class="card">
-        <h2>Подход</h2>
-        <p>Каждый проект начинается с анализа: кто ваш клиент, что он должен сделать на сайте и как это принесёт
-          результат.</p>
+    <!-- BENTO GRID -->
+    <section class="about-bento reveal">
+      <article class="bento-card tilt">
+        <div class="bento-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        </div>
+        <h2>Глобальный Подход</h2>
+        <p>Каждый проект начинается с глубокого анализа бизнеса клиента. Я не просто пишу код, я проектирую сценарий, по которому пользователь неизбежно придет к целевому действию (заявке или покупке).</p>
       </article>
-      <article class="card">
+      
+      <article class="bento-card tilt">
+        <div class="bento-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
         <h2>Инструменты</h2>
-        <ul class="chip-list">
-          <li>Современная верстка</li>
-          <li>JavaScript</li>
-          <li>Анимации интерфейса</li>
-          <li>Оптимизация скорости</li>
+        <ul class="chip-list chip-list--about">
+          <li>HTML5 / CSS3</li>
+          <li>JavaScript (ES6+)</li>
+          <li>GSAP / Анимации</li>
+          <li>React / Vue.js</li>
+          <li>Web API</li>
+          <li>Core Web Vitals</li>
         </ul>
       </article>
-      <article class="card">
+
+      <article class="bento-card bento-card--wide tilt">
+        <div class="bento-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
         <h2>Сильные стороны</h2>
-        <p>Соблюдение сроков, прозрачная коммуникация, чистая архитектура кода и микроанимации, которые делают интерфейс
-          живым.
-        </p>
+        <p>Абсолютная прозрачность в коммуникации, маниакальное внимание к микро-взаимодействиям (кнопкам, ховерам, фокусу) и чистая, легко-масштабируемая архитектура CSS/JS. Никаких шаблонных решений — только кастомная инженерия.</p>
       </article>
     </section>
 
-    <section class="signal reveal" id="signalScanner">
-      <h2>Ключевые навыки</h2>
-      <p>Нажмите на навык, чтобы увидеть уровень.</p>
-      <div class="signal__grid">
-        <button class="signal__item" type="button" data-level="96" data-skill="UI Engineering">UI Engineering</button>
-        <button class="signal__item" type="button" data-level="91" data-skill="Animation Logic">Animation Logic</button>
-        <button class="signal__item" type="button" data-level="94" data-skill="UX Flow">UX Flow</button>
-        <button class="signal__item" type="button" data-level="89" data-skill="Performance">Performance</button>
+    <!-- SKILLS SECTION -->
+    <section class="skills reveal" id="skillsSection">
+      <div class="card card--glow">
+        <h2>Уровень владения (Stack)</h2>
+        <p class="skills-desc">Технологический арсенал, отточенный на десятках реальных проектов.</p>
+        <div class="skills__grid">
+          <div class="skill-bar">
+            <div class="skill-bar__header">
+              <span class="skill-bar__name">UI/UX Engineering</span>
+              <span class="skill-bar__value" data-target="98">0%</span>
+            </div>
+            <div class="skill-bar__track"><div class="skill-bar__fill" data-width="98"></div></div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-bar__header">
+              <span class="skill-bar__name">JavaScript / Frontend Logic</span>
+              <span class="skill-bar__value" data-target="92">0%</span>
+            </div>
+            <div class="skill-bar__track"><div class="skill-bar__fill" data-width="92"></div></div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-bar__header">
+              <span class="skill-bar__name">Micro-Animations (CSS/JS)</span>
+              <span class="skill-bar__value" data-target="95">0%</span>
+            </div>
+            <div class="skill-bar__track"><div class="skill-bar__fill" data-width="95"></div></div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-bar__header">
+              <span class="skill-bar__name">Responsive & Mobile First</span>
+              <span class="skill-bar__value" data-target="100">0%</span>
+            </div>
+            <div class="skill-bar__track"><div class="skill-bar__fill" data-width="100"></div></div>
+          </div>
+        </div>
       </div>
-      <p class="signal__output" id="signalOutput">Выберите навык.</p>
     </section>
+
   </main>
+
 
   <footer class="site-footer">
     <p>© 2026 Welone Digital Atelier. Все права защищены.</p>

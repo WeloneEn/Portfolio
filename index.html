@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>(function(){var t=localStorage.getItem('theme_mode')||'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark-mode');})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d0d12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,12 +19,17 @@
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
+  <meta property="og:title" content="Welone Digital Atelier — Сайты будущего" />
+  <meta property="og:description" content="Создаём уютные, тёплые и современные сайты для вашего бизнеса." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://weloneen.github.io/Portfolio/" />
+  <meta property="og:image" content="https://weloneen.github.io/Portfolio/assets/og-preview.png" />
 </head>
 
 <body data-page="home">
   <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__logo">WDA</div>
     <div class="preloader__ring"></div>
-    <p class="preloader__text">Загрузка...</p>
   </div>
 
   <div class="noise" aria-hidden="true"></div>
@@ -71,11 +77,11 @@
 
     <section class="metrics reveal" id="metricsSection">
       <article>
-        <h2>45+</h2>
+        <h2 class="count-up" data-target="45" data-suffix="+">0</h2>
         <p>Реализованных проектов — от лендингов до корпоративных порталов</p>
       </article>
       <article>
-        <h2>99</h2>
+        <h2 class="count-up" data-target="99">0</h2>
         <p>Баллов Google PageSpeed — скорость, которая конвертирует</p>
       </article>
       <article>
@@ -98,6 +104,43 @@
         <article>
           <h3>03. Запуск</h3>
           <p>Тестирование качества, оптимизация скорости, подключение аналитики и передача проекта.</p>
+        </article>
+      </div>
+    </section>
+
+    
+    <section class="testimonials reveal" id="testimonialsSection">
+      <h2>Что говорят клиенты</h2>
+      <div class="testimonials__grid">
+        <article class="testimonial-card card">
+          <p class="testimonial-card__text">"Сайт превзошёл все ожидания. Скорость загрузки и внимание к деталям — на высшем уровне. Рекомендую!"</p>
+          <div class="testimonial-card__author">
+            <span class="testimonial-card__avatar">АК</span>
+            <div>
+              <p class="testimonial-card__name">Анна Козлова</p>
+              <p class="testimonial-card__role">CEO, StyleBrand</p>
+            </div>
+          </div>
+        </article>
+        <article class="testimonial-card card">
+          <p class="testimonial-card__text">"Профессиональный подход, чистый код и потрясающие анимации. Конверсия выросла на 35% после редизайна."</p>
+          <div class="testimonial-card__author">
+            <span class="testimonial-card__avatar">ДМ</span>
+            <div>
+              <p class="testimonial-card__name">Дмитрий Морозов</p>
+              <p class="testimonial-card__role">Маркетолог, TechGrow</p>
+            </div>
+          </div>
+        </article>
+        <article class="testimonial-card card">
+          <p class="testimonial-card__text">"Отличная коммуникация, всё в срок. Сайт работает как часы — 99 баллов PageSpeed с первого запуска."</p>
+          <div class="testimonial-card__author">
+            <span class="testimonial-card__avatar">ЕС</span>
+            <div>
+              <p class="testimonial-card__name">Елена Соколова</p>
+              <p class="testimonial-card__role">Фрилансер</p>
+            </div>
+          </div>
         </article>
       </div>
     </section>
