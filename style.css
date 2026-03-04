@@ -7281,3 +7281,177 @@ body.dark-mode .portfolio-card__badge {
   /* Subtle dark mode aesthetic */
   color: hsl(0, 0%, 78%);
 }
+
+/* ========================================
+   NEUROMARKETING: SCARCITY BAR
+   ======================================== */
+.scarcity-bar {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body.dark-mode .scarcity-bar {
+  background: hsl(30, 90%, 55%);
+  /* Warm color for dark mode attention */
+  color: #000;
+}
+
+/* Compensate header position because of scarcity bar */
+.site-header {
+  top: 36px;
+  /* Approx height of scarcity bar */
+}
+
+@media (max-width: 480px) {
+  .scarcity-bar {
+    font-size: 0.75rem;
+  }
+}
+
+/* ========================================
+   NEUROMARKETING: FOUNDER BLOCK
+   ======================================== */
+.founder {
+  padding: 6rem 5%;
+  background: var(--bg);
+}
+
+.founder__inner {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.founder__photo-wrapper {
+  flex-shrink: 0;
+}
+
+.founder-photo {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  border: 4px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background-image: url('https://placehold.co/400x400/e0e0e0/555?text=Фото+Основателя');
+  background-size: cover;
+  background-position: center;
+}
+
+body.dark-mode .founder-photo {
+  background-image: url('https://placehold.co/400x400/2b2b2b/aaa?text=Фото+Основателя');
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.founder__content {
+  flex-grow: 1;
+}
+
+.founder__content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+}
+
+.founder__content p {
+  font-size: 1.125rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .founder__inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .founder-photo {
+    width: 200px;
+    height: 200px;
+  }
+
+  .founder__content h2 {
+    font-size: 2rem;
+  }
+}
+
+/* ========================================
+   NEUROMARKETING: PRICING (Прозрачная стоимость)
+   ======================================== */
+.pricing {
+  padding: 4rem 5% 8rem;
+  background: var(--bg);
+  text-align: center;
+}
+
+.pricing h2 {
+  margin-bottom: 3rem;
+}
+
+.pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.pricing-card {
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 16px;
+  transition: transform 0.3s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+}
+
+.pricing-card h3 {
+  font-size: 1.125rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.pricing-card__price {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.pricing__note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  opacity: 0.7;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 480px) {
+  .pricing-card {
+    padding: 1.5rem;
+  }
+
+  .pricing-card__price {
+    font-size: 1.75rem;
+  }
+}
