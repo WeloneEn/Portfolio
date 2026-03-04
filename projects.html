@@ -8,13 +8,20 @@
   <meta name="theme-color" content="#0d0d12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | Projects</title>
-  <meta name="description" content="Портфолио проектов и демо-версий сайтов." />
+  <title>Цифровое ателье Welone | Проекты</title>
+  <meta name="description" content="Портфолио проектов и демо-версий сайтов — Цифровое ателье Welone." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+  </noscript>
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
@@ -78,9 +85,17 @@
 
         <article class="project-card bento-card  tilt" data-category="version">
           <figure class="project-card__media">
-            <img src="assets/projects/project-1.png"
-              alt="Sashnaz v2 — портфолио «Сашуля Бабиджон» с тёплым дизайном и медведем-пандой" loading="lazy"
-              width="800" height="450" />
+            <picture>
+              <source type="image/avif"
+                srcset="assets/projects/project-1.avif 800w, assets/projects/project-1.avif 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <source type="image/webp"
+                srcset="assets/projects/project-1.webp 800w, assets/projects/project-1.webp 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <img src="assets/projects/project-1.png"
+                alt="Sashnaz v2 — портфолио «Сашуля Бабиджон» с тёплым дизайном и медведем-пандой" fetchpriority="high"
+                width="800" height="450" />
+            </picture>
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Версия 2</p>
@@ -101,8 +116,16 @@
 
         <article class="project-card bento-card tilt" data-category="version">
           <figure class="project-card__media">
-            <img src="assets/projects/project-2.png" alt="Sashnaz Demo v3 — блог-платформа с элегантным контентом"
-              loading="lazy" width="800" height="450" />
+            <picture>
+              <source type="image/avif"
+                srcset="assets/projects/project-2.avif 800w, assets/projects/project-2.avif 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <source type="image/webp"
+                srcset="assets/projects/project-2.webp 800w, assets/projects/project-2.webp 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <img src="assets/projects/project-2.png" alt="Sashnaz Demo v3 — блог-платформа с элегантным контентом"
+                loading="lazy" width="800" height="450" />
+            </picture>
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Версия 3</p>
@@ -123,8 +146,16 @@
 
         <article class="project-card bento-card tilt" data-category="final">
           <figure class="project-card__media">
-            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
-              loading="lazy" width="800" height="450" />
+            <picture>
+              <source type="image/avif"
+                srcset="assets/projects/project-3.avif 800w, assets/projects/project-3.avif 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <source type="image/webp"
+                srcset="assets/projects/project-3.webp 800w, assets/projects/project-3.webp 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
+                loading="lazy" width="800" height="450" />
+            </picture>
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Версия 4 / Финал</p>
@@ -145,8 +176,16 @@
 
         <article class="project-card bento-card  tilt" data-category="special">
           <figure class="project-card__media">
-            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
-              loading="lazy" width="800" height="450" />
+            <picture>
+              <source type="image/avif"
+                srcset="assets/projects/project-4.avif 800w, assets/projects/project-4.avif 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <source type="image/webp"
+                srcset="assets/projects/project-4.webp 800w, assets/projects/project-4.webp 400w"
+                sizes="(max-width: 680px) 100vw, 50vw" />
+              <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
+                loading="lazy" width="800" height="450" />
+            </picture>
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Special Case</p>
@@ -169,8 +208,13 @@
     </div>
   </main>
 
+  <!-- Sticky Mobile CTA (visible on ≤680px) -->
+  <div class="mobile-cta-bar" aria-label="Быстрая заявка">
+    <a class="btn btn--primary" href="contact.html">Оставить заявку</a>
+  </div>
+
   <footer class="site-footer">
-    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+    <p>© 2026 Цифровое ателье Welone. Все права защищены.</p>
   </footer>
 
   <button class="filters-jump" id="filtersJump" type="button" aria-label="Перейти к фильтрам">Фильтры</button>

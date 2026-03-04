@@ -19,24 +19,56 @@ const THEME_MODE_KEY = "theme_mode";
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const IS_TOUCH_DEVICE = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
+// ===== IDLE CALLBACK HELPER (INP optimization) =====
+const scheduleIdle = (fn) => {
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(fn, { timeout: 2000 });
+  } else {
+    setTimeout(fn, 50);
+  }
+};
+
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
+  // --- Critical path (runs immediately for FCP/LCP) ---
   initializeTheme();
   initializeNavigation();
-  initializeVisitorTracking();
   initializeRevealAnimations();
-  initializeCardTilt();
-  initializeCounters();
-  initializeSkillScanner();
-  initializeSkillBars();
-  initDynamicGlare();
-  initKineticScroll();
-  initializeMagneticButtons();
-  initializeBrandAnimation();
-  initializeCustomSelect();
-  initializeProjectFilters();
-  initializeClickableTiles();
   hidePreloader();
+
+  // --- Deferred: non-critical enhancements (INP-safe) ---
+  scheduleIdle(() => {
+    initializeCardTilt();
+    initializeCounters();
+    initializeSkillScanner();
+    initializeSkillBars();
+    initializeCustomSelect();
+    initializeProjectFilters();
+    initializeClickableTiles();
+  });
+
+  // --- Deferred: visual candy (lowest priority) ---
+  scheduleIdle(() => {
+    initDynamicGlare();
+    initKineticScroll();
+    initializeMagneticButtons();
+    initializeBrandAnimation();
+  });
+
+  // --- Facade: visitor tracking deferred until scroll ---
+  let _trackingInitialized = false;
+  const initTrackingOnce = () => {
+    if (_trackingInitialized) return;
+    _trackingInitialized = true;
+    window.removeEventListener('scroll', _onScrollTrack);
+    initializeVisitorTracking();
+  };
+  const _onScrollTrack = () => {
+    if (window.scrollY > 100) initTrackingOnce();
+  };
+  window.addEventListener('scroll', _onScrollTrack, { passive: true });
+  // Fallback: init after 5s even without scroll
+  setTimeout(initTrackingOnce, 5000);
 });
 
 // ===== BRAND COLLAPSE ANIMATION =====
@@ -645,30 +677,118 @@ function initializeScrollSpy() {
 
 
 // ===== CONTACT FORM ANIMATION =====
+// ===== INLINE FORM VALIDATION (Epic 4) =====
+function validateField(field) {
+  const errorEl = field.getAttribute('aria-describedby')
+    ? document.getElementById(field.getAttribute('aria-describedby'))
+    : null;
+  let message = '';
+
+  // Check validity
+  if (field.required && !field.value.trim()) {
+    message = 'Обязательное поле';
+  } else if (field.minLength > 0 && field.value.trim().length < field.minLength) {
+    message = 'Минимум ' + field.minLength + ' символов';
+  } else if (field.type === 'email' && field.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value)) {
+    message = 'Некорректный email';
+  }
+
+  // Update UI
+  if (message) {
+    field.classList.add('is-invalid');
+    if (errorEl) errorEl.textContent = message;
+    return false;
+  } else {
+    field.classList.remove('is-invalid');
+    if (errorEl) errorEl.textContent = '';
+    return true;
+  }
+}
+
+function initInlineValidation() {
+  const form = document.querySelector('.contact-form');
+  if (!form) return;
+
+  const fields = form.querySelectorAll('input:not([type="hidden"]), textarea');
+  fields.forEach(field => {
+    // Validate on blur (when user leaves the field)
+    field.addEventListener('blur', () => validateField(field));
+
+    // Clear error as user types (only if already marked invalid)
+    field.addEventListener('input', () => {
+      if (field.classList.contains('is-invalid')) {
+        validateField(field);
+      }
+    });
+  });
+}
+
+// ===== CONTACT FORM ANIMATION (Enhanced with validation + spinner) =====
 function initializeContactForm() {
   const form = document.querySelector(".contact-form");
   if (!form) return;
+
+  // Initialize inline validation
+  initInlineValidation();
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');
     const note = form.querySelector(".form-note");
 
-    // Set loading state
+    // Validate all fields before submit
+    const fields = form.querySelectorAll('input:not([type="hidden"]), textarea');
+    let isValid = true;
+    fields.forEach(field => {
+      if (!validateField(field)) isValid = false;
+    });
+
+    // Check consent checkbox if present
+    const consent = form.querySelector('#consentCheck');
+    if (consent && !consent.checked) {
+      isValid = false;
+      const consentError = consent.closest('.consent-field');
+      if (consentError) {
+        consentError.classList.add('has-error');
+        // Clear error when user checks
+        consent.addEventListener('change', () => {
+          consentError.classList.remove('has-error');
+        }, { once: true });
+      }
+    }
+
+    if (!isValid) {
+      // Focus the first invalid field
+      const firstInvalid = form.querySelector('.is-invalid, #consentCheck:not(:checked)');
+      if (firstInvalid) firstInvalid.focus();
+      return;
+    }
+
+    // === SUBMIT: Set loading state + disable button ===
+    btn.disabled = true;
     btn.classList.add("is-loading");
-    note.textContent = "Отправка...";
-    note.className = "form-note"; // reset classes
+    if (note) {
+      note.textContent = "";
+      note.className = "form-note";
+    }
 
     // Simulate network request
     setTimeout(() => {
       btn.classList.remove("is-loading");
-      note.textContent = "✅ Заявка успешно отправлена! Я свяжусь с вами в ближайшее время.";
-      note.classList.add("success");
+      btn.disabled = false;
+      if (note) {
+        note.textContent = "\u2705 Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.";
+        note.classList.add("success");
+      }
       form.reset();
+
+      // Clear all error states
+      form.querySelectorAll('.is-invalid').forEach(f => f.classList.remove('is-invalid'));
+      form.querySelectorAll('.field-error').forEach(el => { el.textContent = ''; });
 
       // Clear success message after 5 seconds
       setTimeout(() => {
-        if (note.classList.contains("success")) {
+        if (note && note.classList.contains("success")) {
           note.textContent = "";
           note.className = "form-note";
         }

@@ -3,19 +3,26 @@
 
 <head>
   <meta charset="UTF-8" />
-  <script>(function(){var t=localStorage.getItem('theme_mode')||'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark-mode');})()</script>
+  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d0d12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | Portfolio</title>
+  <title>Цифровое ателье Welone | Портфолио</title>
   <meta name="description"
-    content="Welone Digital Atelier — создаём уютные, тёплые и современные сайты для вашего бизнеса." />
+    content="Цифровое ателье Welone — создаём уютные, тёплые и современные сайты для вашего бизнеса." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+  </noscript>
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
@@ -108,12 +115,13 @@
       </div>
     </section>
 
-    
+
     <section class="testimonials reveal" id="testimonialsSection">
       <h2>Что говорят клиенты</h2>
       <div class="testimonials__grid">
         <article class="testimonial-card card">
-          <p class="testimonial-card__text">"Сайт превзошёл все ожидания. Скорость загрузки и внимание к деталям — на высшем уровне. Рекомендую!"</p>
+          <p class="testimonial-card__text">"Сайт превзошёл все ожидания. Скорость загрузки и внимание к деталям — на
+            высшем уровне. Рекомендую!"</p>
           <div class="testimonial-card__author">
             <span class="testimonial-card__avatar">АК</span>
             <div>
@@ -123,7 +131,8 @@
           </div>
         </article>
         <article class="testimonial-card card">
-          <p class="testimonial-card__text">"Профессиональный подход, чистый код и потрясающие анимации. Конверсия выросла на 35% после редизайна."</p>
+          <p class="testimonial-card__text">"Профессиональный подход, чистый код и потрясающие анимации. Конверсия
+            выросла на 35% после редизайна."</p>
           <div class="testimonial-card__author">
             <span class="testimonial-card__avatar">ДМ</span>
             <div>
@@ -133,7 +142,8 @@
           </div>
         </article>
         <article class="testimonial-card card">
-          <p class="testimonial-card__text">"Отличная коммуникация, всё в срок. Сайт работает как часы — 99 баллов PageSpeed с первого запуска."</p>
+          <p class="testimonial-card__text">"Отличная коммуникация, всё в срок. Сайт работает как часы — 99 баллов
+            PageSpeed с первого запуска."</p>
           <div class="testimonial-card__author">
             <span class="testimonial-card__avatar">ЕС</span>
             <div>
@@ -152,8 +162,13 @@
     </section>
   </main>
 
+  <!-- Sticky Mobile CTA (visible on ≤680px) -->
+  <div class="mobile-cta-bar" aria-label="Быстрая заявка">
+    <a class="btn btn--primary" href="contact.html">Оставить заявку</a>
+  </div>
+
   <footer class="site-footer">
-    <p>© 2026 Welone Digital Atelier. Все права защищены.</p>
+    <p>© 2026 Цифровое ателье Welone. Все права защищены.</p>
   </footer>
 
   <dialog class="easter-egg" id="easterEgg">
