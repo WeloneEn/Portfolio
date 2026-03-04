@@ -7171,3 +7171,113 @@ body.dark-mode .cookie-banner__content a {
     padding: 1rem;
   }
 }
+
+/* ========================================
+   PORTFOLIO (НАШИ РАБОТЫ)
+   ======================================== */
+.portfolio {
+  padding: 8rem 5%;
+  background: var(--bg);
+}
+
+.portfolio h2 {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.portfolio__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.portfolio-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.portfolio-card__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.portfolio-card__image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  /* CORE WEB VITALS: Strict CLS prevention */
+  overflow: hidden;
+  background: var(--surface-strong);
+  /* Placeholder color while loading */
+  border-bottom: 1px solid var(--line);
+}
+
+.portfolio-card__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Interactive hover effect */
+.portfolio-card__link:hover .portfolio-card__img {
+  transform: scale(1.03);
+}
+
+/* Dynamic Theming Image Swaps */
+.portfolio-card__img--light {
+  opacity: 1;
+}
+
+.portfolio-card__img--dark {
+  opacity: 0;
+}
+
+body.dark-mode .portfolio-card__img--light {
+  opacity: 0;
+}
+
+body.dark-mode .portfolio-card__img--dark {
+  opacity: 1;
+}
+
+.portfolio-card__content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-grow: 1;
+}
+
+.portfolio-card__content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.portfolio-card__badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+body.dark-mode .portfolio-card__badge {
+  background: rgba(255, 255, 255, 0.05);
+  /* Subtle dark mode aesthetic */
+  color: hsl(0, 0%, 78%);
+}
