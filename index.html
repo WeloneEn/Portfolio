@@ -8,21 +8,14 @@
   <meta name="theme-color" content="#0d0d12" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Цифровое ателье Welone | Портфолио</title>
+  <title>Welone Digital Atelier | Portfolio</title>
   <meta name="description"
-    content="Цифровое ателье Welone — создаём уютные, тёплые и современные сайты для вашего бизнеса." />
+    content="Welone Digital Atelier — создаём уютные, тёплые и современные сайты для вашего бизнеса." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-      rel="stylesheet" />
-  </noscript>
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css?v=20260218z14" />
   <script defer src="config.js?v=20260218z14"></script>
   <script defer src="script.js?v=20260219ux2"></script>
@@ -43,9 +36,10 @@
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-        class="brand-collapse">elone </span><span class="brand-initial">D</span><span class="brand-collapse">igital
-      </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
+    <a href="index.html" class="brand" id="brandTrigger" title="Welone Digital Atelier">
+      <span class="brand-ru">Цифровое ателье Welone</span><br>
+      <span class="brand-en" style="font-size: 0.6em; opacity: 0.6; font-weight: 500;">Welone Digital Atelier</span>
+    </a>
     <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
       aria-controls="siteNav">Menu</button>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
@@ -77,19 +71,20 @@
       <p class="hero__lead">Продуманная структура, чистый код и внимание к каждой детали — ваш сайт работает на
         результат с первого дня.</p>
       <div class="hero__actions">
-        <a class="btn btn--primary" href="projects.html">Смотреть работы</a>
+        <!-- <a class="btn btn--primary" href="projects.html">Смотреть работы</a> -->
         <a class="btn btn--ghost" href="contact.html">Обсудить проект</a>
       </div>
     </section>
 
     <section class="metrics reveal" id="metricsSection">
       <article>
-        <h2 class="count-up" data-target="45" data-suffix="+">0</h2>
-        <p>Реализованных проектов — от лендингов до корпоративных порталов</p>
+        <h2>Бутиковый подход</h2>
+        <p>Берем в работу не более 2 проектов в месяц для максимального погружения</p>
       </article>
       <article>
-        <h2 class="count-up" data-target="99">0</h2>
-        <p>Баллов Google PageSpeed — скорость, которая конвертирует</p>
+        <h2>Гарантия скорости</h2>
+        <p>90+ баллов по стандартам PageSpeed* <br><small style="opacity:0.7; font-size:0.8em;">*Скорость загрузки
+            страниц по оценке Google</small></p>
       </article>
       <article>
         <h2>24/7</h2>
@@ -116,41 +111,26 @@
     </section>
 
 
-    <section class="testimonials reveal" id="testimonialsSection">
-      <h2>Что говорят клиенты</h2>
+    <section class="testimonials reveal" id="principlesSection">
+      <h2>Наши принципы разработки</h2>
       <div class="testimonials__grid">
         <article class="testimonial-card card">
-          <p class="testimonial-card__text">"Сайт превзошёл все ожидания. Скорость загрузки и внимание к деталям — на
-            высшем уровне. Рекомендую!"</p>
-          <div class="testimonial-card__author">
-            <span class="testimonial-card__avatar">АК</span>
-            <div>
-              <p class="testimonial-card__name">Анна Козлова</p>
-              <p class="testimonial-card__role">CEO, StyleBrand</p>
-            </div>
-          </div>
+          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Чистый семантический код</h3>
+          <p class="testimonial-card__text">Строгая структура HTML-документа, понятная поисковым роботам и программам
+            чтения экрана. Никакого лишнего кода — только валидная верстка.</p>
         </article>
         <article class="testimonial-card card">
-          <p class="testimonial-card__text">"Профессиональный подход, чистый код и потрясающие анимации. Конверсия
-            выросла на 35% после редизайна."</p>
-          <div class="testimonial-card__author">
-            <span class="testimonial-card__avatar">ДМ</span>
-            <div>
-              <p class="testimonial-card__name">Дмитрий Морозов</p>
-              <p class="testimonial-card__role">Маркетолог, TechGrow</p>
-            </div>
-          </div>
+          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Соблюдение Core Web Vitals*</h3>
+          <p class="testimonial-card__text">Оптимизация LCP, FID (INP) и CLS. Идеальная производительность, плавность
+            анимаций и мгновенная реакция интерфейса.</p>
+          <p style="margin-top: auto; font-size: 0.75rem; color: var(--muted); padding-top: 1rem;">*Ключевые
+            интернет-показатели производительности</p>
         </article>
         <article class="testimonial-card card">
-          <p class="testimonial-card__text">"Отличная коммуникация, всё в срок. Сайт работает как часы — 99 баллов
-            PageSpeed с первого запуска."</p>
-          <div class="testimonial-card__author">
-            <span class="testimonial-card__avatar">ЕС</span>
-            <div>
-              <p class="testimonial-card__name">Елена Соколова</p>
-              <p class="testimonial-card__role">Фрилансер</p>
-            </div>
-          </div>
+          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Инклюзивность и доступность</h3>
+          <p class="testimonial-card__text">Полное соответствие ГОСТ Р 52872-2019 и WCAG 2.2. Сайт удобен для всех
+            пользователей, включая людей с ограниченными возможностями здоровья (контраст > 4.5:1, управление
+            клавиатурой).</p>
         </article>
       </div>
     </section>
@@ -162,14 +142,34 @@
     </section>
   </main>
 
-  <!-- Sticky Mobile CTA (visible on ≤680px) -->
-  <div class="mobile-cta-bar" aria-label="Быстрая заявка">
-    <a class="btn btn--primary" href="contact.html">Оставить заявку</a>
-  </div>
-
   <footer class="site-footer">
-    <p>© 2026 Цифровое ателье Welone. Все права защищены.</p>
+    <div class="site-footer__inner">
+      <div class="site-footer__nav">
+        <nav class="site-footer__nav-links">
+          <a href="index.html">Главная</a>
+          <a href="about.html">Обо мне</a>
+          <a href="projects.html">Проекты</a>
+          <a href="contact.html">Контакты</a>
+        </nav>
+        <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
+      </div>
+      <div class="site-footer__legal">
+        <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН: {{OGRN}}</p>
+        <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
+        <p>E-mail для связи: {{CONTACT_EMAIL}}</p>
+      </div>
+    </div>
   </footer>
+
+  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite">
+    <div class="cookie-banner__content">
+      <p>Мы используем файлы cookie для аналитики и обеспечения правильной работы сайта. Продолжая навигацию, вы даете
+        согласие на их обработку в соответствии с <a href="privacy.html">Политикой конфиденциальности</a>.</p>
+      <div class="cookie-banner__actions">
+        <button class="btn btn--primary" id="acceptCookies" type="button">Согласен</button>
+      </div>
+    </div>
+  </div>
 
   <dialog class="easter-egg" id="easterEgg">
     <h2>Спасибо!</h2>
