@@ -1522,8 +1522,17 @@ p {
 }
 
 .btn--ghost {
-  background: rgba(184, 132, 92, 0.05);
-  backdrop-filter: blur(8px);
+  background: transparent;
+  color: var(--text);
+}
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: none;
+  filter: none;
+  color: var(--text);
 }
 
 .btn:hover,
@@ -5366,7 +5375,7 @@ body.dark-mode .card {
 }
 
 body.dark-mode .project-card {
-  border-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   background:
     linear-gradient(145deg, rgba(139, 92, 246, 0.08), rgba(139, 92, 246, 0.04)),
     rgba(22, 22, 34, 0.8);
@@ -5679,10 +5688,6 @@ body.dark-mode .contact-grid::after {
   background: linear-gradient(90deg, var(--accent), hsl(262, 83%, 70%));
   width: 0;
   transition: width 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.skill-bar__fill.is-animated {
-  /* width set by JS */
 }
 
 /* ========================================
@@ -7171,9 +7176,10 @@ body.dark-mode .legal-doc__content a:focus-visible {
 
 .cookie-banner__content p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--text);
+  opacity: 0.7;
 }
 
 .cookie-banner__content a {
@@ -7334,12 +7340,12 @@ body.dark-mode .portfolio-card__badge {
    NEUROMARKETING: SCARCITY BAR
    ======================================== */
 .scarcity-bar {
-  background: #111;
-  color: #fff;
+  background: var(--text);
+  color: var(--bg);
   text-align: center;
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.02em;
   position: relative;
   z-index: 1000;
@@ -7349,8 +7355,8 @@ body.dark-mode .portfolio-card__badge {
 }
 
 body.dark-mode .scarcity-bar {
-  background: #0a0a0c;
-  color: #aaa;
+  background: var(--surface-strong);
+  color: var(--text);
 }
 
 /* Compensate header position because of scarcity bar */
@@ -7369,14 +7375,14 @@ body.dark-mode .scarcity-bar {
    NEUROMARKETING: FOUNDER BLOCK
    ======================================== */
 .founder {
-  padding: 6rem 5%;
+  padding: 8rem 5%;
   background: var(--bg);
 }
 
 .founder__inner {
   display: flex;
   align-items: center;
-  gap: 4rem;
+  gap: 6rem;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -7391,7 +7397,7 @@ body.dark-mode .scarcity-bar {
   border-radius: 50%;
   background: var(--surface-strong);
   border: 4px solid var(--line);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   background-image: url('https://placehold.co/400x400/e0e0e0/555?text=Фото+Основателя');
   background-size: cover;
   background-position: center;
@@ -7439,13 +7445,13 @@ body.dark-mode .founder-photo {
    NEUROMARKETING: PRICING (Прозрачная стоимость)
    ======================================== */
 .pricing {
-  padding: 4rem 5% 8rem;
+  padding: 6rem 5% 10rem;
   background: var(--bg);
   text-align: center;
 }
 
 .pricing h2 {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
 }
 
 .pricing__grid {
@@ -7453,23 +7459,28 @@ body.dark-mode .founder-photo {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
   max-width: 800px;
-  margin: 0 auto 2rem;
+  margin: 0 auto 3rem;
 }
 
 .pricing-card {
-  padding: 2.5rem 2rem;
+  padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 16px;
-  transition: transform 0.3s ease;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .pricing-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  border-color: var(--line);
+  box-shadow: 0 12px 32px hsla(0, 0%, 0%, 0.08);
 }
 
 .pricing-card h3 {
@@ -7502,4 +7513,39 @@ body.dark-mode .founder-photo {
   .pricing-card__price {
     font-size: 1.75rem;
   }
+}
+
+/* ========================================
+   CONTACT FORM: CONSENT CHECKBOX (152-ФЗ)
+   ======================================== */
+.contact-form__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.contact-form__consent input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.contact-form__consent a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.3s ease;
+}
+
+.contact-form__consent a:hover,
+.contact-form__consent a:focus-visible {
+  color: var(--text);
 }

@@ -77,7 +77,7 @@
         результат с первого дня.</p>
       <div class="hero__actions">
         <!-- <a class="btn btn--primary" href="projects.html">Смотреть работы</a> -->
-        <a class="btn btn--ghost" href="contact.html">Обсудить проект</a>
+        <a class="btn btn--primary" href="contact.html">Обсудить проект</a>
       </div>
     </section>
 
@@ -137,59 +137,52 @@
     <section class="portfolio reveal" id="portfolioSection">
       <h2>Наши работы</h2>
       <div class="portfolio__grid">
-        <!-- Project 1 -->
-        <article class="portfolio-card card">
-          <a href="#" class="portfolio-card__link" aria-label="Смотреть проект eCommerce">
-            <div class="portfolio-card__image-wrapper">
-              <img src="https://placehold.co/800x450/e0e0e0/555?text=Светлый+интерфейс"
-                alt="Превью интернет-магазина (Светлая тема)" class="portfolio-card__img portfolio-card__img--light"
-                loading="lazy" width="800" height="450">
-              <img src="https://placehold.co/800x450/2b2b2b/aaa?text=Тёмный+интерфейс"
-                alt="Превью интернет-магазина (Тёмная тема)" class="portfolio-card__img portfolio-card__img--dark"
-                loading="lazy" width="800" height="450">
+        <article class="project-card bento-card tilt" data-category="final">
+          <figure class="project-card__media">
+            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
+              loading="lazy" width="800" height="450" />
+          </figure>
+          <div class="project-card__body">
+            <p class="project-card__tag">Версия 4 / Финал</p>
+            <h3>Sashnaz Final v4</h3>
+            <p class="project-card__desc">Финальная версия с выверенной структурой и аккуратным дизайном.</p>
+            <ul class="project-card__chips">
+              <li>CSS Variables</li>
+              <li>Grid</li>
+              <li>ARIA</li>
+            </ul>
+            <div class="project-card__footer">
+              <p class="project-card__result">💯 PageSpeed 99/100</p>
+              <a href="https://weloneen.github.io/sashnazdemodemo/index.html" class="project-card__link">Открыть проект
+                →</a>
             </div>
-            <div class="portfolio-card__content">
-              <h3>B2B Интернет-магазин</h3>
-              <p class="portfolio-card__badge">Адаптировано под: Тёмная тема</p>
-            </div>
-          </a>
+          </div>
         </article>
 
-        <!-- Project 2 -->
-        <article class="portfolio-card card">
-          <a href="#" class="portfolio-card__link" aria-label="Смотреть проект Корпоративный портал">
-            <div class="portfolio-card__image-wrapper">
-              <img src="https://placehold.co/800x450/e0e0e0/555?text=Светлый+интерфейс"
-                alt="Превью портала (Светлая тема)" class="portfolio-card__img portfolio-card__img--light"
-                loading="lazy" width="800" height="450">
-              <img src="https://placehold.co/800x450/2b2b2b/aaa?text=Тёмный+интерфейс"
-                alt="Превью портала (Тёмная тема)" class="portfolio-card__img portfolio-card__img--dark" loading="lazy"
-                width="800" height="450">
+        <article class="project-card bento-card tilt" data-category="special">
+          <figure class="project-card__media">
+            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
+              loading="lazy" width="800" height="450" />
+          </figure>
+          <div class="project-card__body">
+            <p class="project-card__tag">Special Case</p>
+            <h3>Popis Box</h3>
+            <p class="project-card__desc">Отдельный проект с уникальной подачей контента и нестандартной компоновкой.
+            </p>
+            <ul class="project-card__chips">
+              <li>Vanilla JS</li>
+              <li>Custom Layout</li>
+              <li>UX</li>
+            </ul>
+            <div class="project-card__footer">
+              <p class="project-card__result">✨ Креатив</p>
+              <a href="https://weloneen.github.io/popis/" class="project-card__link">Открыть проект →</a>
             </div>
-            <div class="portfolio-card__content">
-              <h3>Корпоративный портал логистики</h3>
-              <p class="portfolio-card__badge">Адаптировано под: Тёмная тема</p>
-            </div>
-          </a>
+          </div>
         </article>
-
-        <!-- Project 3 -->
-        <article class="portfolio-card card">
-          <a href="#" class="portfolio-card__link" aria-label="Смотреть проект SaaS Платформа">
-            <div class="portfolio-card__image-wrapper">
-              <img src="https://placehold.co/800x450/e0e0e0/555?text=Светлый+интерфейс"
-                alt="Превью SaaS-платформы (Светлая тема)" class="portfolio-card__img portfolio-card__img--light"
-                loading="lazy" width="800" height="450">
-              <img src="https://placehold.co/800x450/2b2b2b/aaa?text=Тёмный+интерфейс"
-                alt="Превью SaaS-платформы (Тёмная тема)" class="portfolio-card__img portfolio-card__img--dark"
-                loading="lazy" width="800" height="450">
-            </div>
-            <div class="portfolio-card__content">
-              <h3>SaaS-платформа аналитики</h3>
-              <p class="portfolio-card__badge">Адаптировано под: Тёмная тема</p>
-            </div>
-          </a>
-        </article>
+      </div>
+      <div style="text-align: center; margin-top: 3rem;">
+        <a href="projects.html" class="btn btn--ghost">Смотреть все проекты &rarr;</a>
       </div>
     </section>
 
