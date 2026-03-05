@@ -37,8 +37,99 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeProjectFilters();
   initializeClickableTiles();
   initializeCookieBanner();
+  initializeSmartHeader();
+  initAvailabilityStatus();
   hidePreloader();
 });
+
+// ===== SMART HEADER (AUTO HIDE ON SCROLL) =====
+function initializeSmartHeader() {
+  const header = document.querySelector(".site-header");
+  if (!header || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY <= 60) {
+          header.classList.remove("is-hidden-scroll");
+        } else if (currentScrollY > lastScrollY) {
+          header.classList.add("is-hidden-scroll");
+        } else {
+          header.classList.remove("is-hidden-scroll");
+        }
+
+        lastScrollY = currentScrollY;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+}
+
+// ===== SCARCITY ENGINE (AVAILABILITY STATUS) =====
+function initAvailabilityStatus() {
+  const spots = window.WELONE_AVAILABLE_SPOTS !== undefined ? window.WELONE_AVAILABLE_SPOTS : 1;
+  const statusContainers = document.querySelectorAll('.js-availability-block');
+  const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  const currentMonthName = monthNames[new Date().getMonth()].toLowerCase(); // в январе, в марте etc. (будем использовать просто название)
+
+  // Format month text based on spots
+  const currentMonth = monthNames[new Date().getMonth()];
+  const nextMonthObj = new Date();
+  nextMonthObj.setMonth(nextMonthObj.getMonth() + 1);
+  const nextMonth = monthNames[nextMonthObj.getMonth()];
+
+  statusContainers.forEach(container => {
+    const dot = container.querySelector('.status-dot');
+    const textNode = container.querySelector('.status-text');
+    const actionBtn = container.querySelector('.js-focus-brief');
+
+    if (spots > 0) {
+      if (dot) {
+        dot.classList.add('is-available');
+        dot.classList.remove('is-booked');
+      }
+      if (textNode) {
+        textNode.innerHTML = `Осталось <strong>${spots} место</strong> в этом месяце`;
+      }
+      if (actionBtn) {
+        actionBtn.textContent = 'Занять место';
+      }
+    } else {
+      // WAITLIST MODE
+      if (dot) {
+        dot.classList.remove('is-available');
+        dot.classList.add('is-booked');
+      }
+      if (textNode) {
+        textNode.innerHTML = `Запись закрыта. Бронь на <strong>${nextMonth}</strong>`;
+      }
+      if (actionBtn) {
+        actionBtn.textContent = 'В лист ожидания';
+      }
+    }
+
+    // Bind action button to focus the brief form
+    if (actionBtn) {
+      actionBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const briefNameInput = document.querySelector('.contact-form input[name="name"]');
+        if (briefNameInput) {
+          briefNameInput.focus();
+          briefNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // If not on the contact page, navigate there
+          window.location.href = 'contact.html';
+        }
+      });
+    }
+  });
+}
 
 // ===== BRAND COLLAPSE ANIMATION =====
 function initializeBrandAnimation() {
@@ -166,7 +257,7 @@ if (cursorGlow && !IS_TOUCH_DEVICE && !REDUCED_MOTION) {
 // ===== BENTO 2.0 GLARE TRACKING (2026 Trend) =====
 function initDynamicGlare() {
   if (IS_TOUCH_DEVICE || REDUCED_MOTION) return;
-  
+
   const cards = document.querySelectorAll('.bento-card-glare');
   if (!cards.length) return;
 
@@ -193,7 +284,7 @@ function initKineticScroll() {
 
   // We duplicate the text infinitely to prevent running out of words
   textEl.innerHTML += textEl.innerHTML;
-  
+
   let currentScroll = window.scrollY;
   let targetScroll = window.scrollY;
   let ease = 0.08;
@@ -201,14 +292,14 @@ function initKineticScroll() {
   function runKinetic() {
     // Determine scroll direction and velocity
     targetScroll = window.scrollY;
-    
+
     // Lerp (Linear Interpolation) for buttery smooth kinetic movement
     currentScroll += (targetScroll - currentScroll) * ease;
-    
+
     // Calculate translate X and arbitrary velocity Skew
     const velocity = targetScroll - currentScroll;
-    const skew = Math.max(-15, Math.min(15, velocity * -0.2)); 
-    
+    const skew = Math.max(-15, Math.min(15, velocity * -0.2));
+
     // Negative currentScroll moves it left. Add offset to start somewhat centered
     const translateX = -(currentScroll * 0.8) % (textEl.scrollWidth / 2);
 
@@ -645,12 +736,12 @@ function initializeScrollSpy() {
 }
 
 
-// ===== CONTACT FORM ANIMATION =====
+// ===== CONTACT FORM ANIMATION & LEAD ROUTER =====
 function initializeContactForm() {
   const form = document.querySelector(".contact-form");
   if (!form) return;
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');
     const note = form.querySelector(".form-note");
@@ -660,21 +751,64 @@ function initializeContactForm() {
     note.textContent = "Отправка...";
     note.className = "form-note"; // reset classes
 
-    // Simulate network request
-    setTimeout(() => {
+    // Extract form data
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    // CRM Lead Router Logic
+    const spots = window.WELONE_AVAILABLE_SPOTS !== undefined ? window.WELONE_AVAILABLE_SPOTS : 1;
+    let leadStatus = 'active';
+    let targetMonth = '';
+
+    if (data.type === 'Поддержка / Доработка') {
+      leadStatus = 'support';
+    } else if (spots === 0) {
+      leadStatus = 'waitlist';
+      const mapMonths = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+      const nextMonthObj = new Date();
+      nextMonthObj.setMonth(nextMonthObj.getMonth() + 1);
+      targetMonth = mapMonths[nextMonthObj.getMonth()];
+    }
+
+    const payload = {
+      ...data,
+      status: leadStatus,
+      target_month: targetMonth
+    };
+
+    const apiUrl = (window.WELONE_API_BASE || '') + 'api/leads';
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('Network error');
+
       btn.classList.remove("is-loading");
       note.textContent = "✅ Заявка успешно отправлена! Я свяжусь с вами в ближайшее время.";
       note.classList.add("success");
       form.reset();
 
-      // Clear success message after 5 seconds
+      // Also reset custom select UI text if present
+      const selectText = form.querySelector('.custom-select__text');
+      if (selectText) selectText.textContent = "Выберите...";
+
+      // Clear success message after 7 seconds
       setTimeout(() => {
         if (note.classList.contains("success")) {
           note.textContent = "";
           note.className = "form-note";
         }
-      }, 5000);
-    }, 1500);
+      }, 7000);
+    } catch (err) {
+      console.error('Submit error:', err);
+      btn.classList.remove("is-loading");
+      note.textContent = "❌ Ошибка отправки. Пожалуйста, попробуйте связаться со мной через Telegram.";
+      note.classList.add("error");
+    }
   });
 }
 
@@ -740,7 +874,7 @@ function initializeCookieBanner() {
 
   if (cookieBanner && acceptCookiesBtn) {
     const hasAcceptedCookies = localStorage.getItem("cookieConsentAccepted");
-    
+
     if (!hasAcceptedCookies) {
       setTimeout(() => {
         cookieBanner.classList.add("is-visible");

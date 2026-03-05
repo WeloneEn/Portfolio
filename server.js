@@ -47,6 +47,31 @@ async function saveData(data) {
   }
 }
 
+async function loadLeads() {
+  try {
+    const filePath = path.join(DATA_DIR, "leads.json");
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    const content = await fs.promises.readFile(filePath, "utf-8");
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Error loading leads:", error.message);
+    return [];
+  }
+}
+
+async function saveLeads(leadsData) {
+  try {
+    const filePath = path.join(DATA_DIR, "leads.json");
+    await fs.promises.writeFile(filePath, JSON.stringify(leadsData, null, 2), "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Error saving leads:", error.message);
+    return false;
+  }
+}
+
 // ===== RESPONSE HELPERS =====
 
 function sendJson(res, statusCode, data) {
@@ -127,6 +152,12 @@ async function handleApiRequest(req, res, pathname, urlObject) {
     return;
   }
 
+  // POST /api/leads (Public submission endpoint)
+  if (pathname === "/api/leads" && req.method === "POST") {
+    await handlePostLead(req, res);
+    return;
+  }
+
   // 404 for unknown API routes
   sendJson(res, 404, { error: "API_ROUTE_NOT_FOUND" });
 }
@@ -201,6 +232,45 @@ async function handleAdminLogin(req, res) {
   } catch (error) {
     console.error("Login error:", error);
     sendJson(res, 400, { error: "INVALID_REQUEST" });
+  }
+}
+
+// ===== HANDLE NEW LEAD SUBMISSION =====
+async function handlePostLead(req, res) {
+  try {
+    const body = await readJsonBody(req);
+
+    // Basic validation
+    if (!body.name || !body.contact) {
+      return sendJson(res, 400, { error: "MISSING_REQUIRED_FIELDS" });
+    }
+
+    const newLead = {
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      name: String(body.name).trim(),
+      contact: String(body.contact).trim(),
+      type: String(body.type || "Не указан").trim(),
+      message: String(body.message || "").trim(),
+      status: String(body.status || "active"),
+      target_month: body.target_month ? String(body.target_month) : null
+    };
+
+    const leads = await loadLeads();
+    leads.push(newLead);
+
+    const saved = await saveLeads(leads);
+    if (!saved) {
+      throw new Error("Failed to write leads file");
+    }
+
+    sendJson(res, 201, { success: true, leadId: newLead.id });
+  } catch (err) {
+    console.error("handlePostLead processing error:", err.message);
+    if (err.message === "INVALID_JSON") {
+      return sendJson(res, 400, { error: "INVALID_JSON" });
+    }
+    sendJson(res, 500, { error: "SERVER_ERROR" });
   }
 }
 
