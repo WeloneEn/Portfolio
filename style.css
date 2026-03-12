@@ -7796,7 +7796,8 @@ body.dark-mode .founder-photo {
   display: inline-block;
   transition: opacity 0.6s ease, max-width 0.6s ease;
   overflow: hidden;
-  max-width: 500px; /* Arbitrary large width to animate from */
+  max-width: 500px;
+  /* Arbitrary large width to animate from */
 }
 
 .apple-welcome.is-merging .apple-welcome__rest {
@@ -7808,7 +7809,8 @@ body.dark-mode .founder-photo {
 .apple-welcome.is-merging .apple-welcome__word {
   position: static;
   display: inline-flex;
-  margin: 0 4px; /* Small gap between W D A */
+  margin: 0 4px;
+  /* Small gap between W D A */
 }
 
 .apple-welcome__text-container.is-merged-container {
@@ -7837,7 +7839,9 @@ body.dark-mode .founder-photo {
 }
 
 @media (max-width: 600px) {
-  .apple-welcome__word, .apple-welcome__flying-wda {
+
+  .apple-welcome__word,
+  .apple-welcome__flying-wda {
     font-size: clamp(2.5rem, 8vw, 4rem);
   }
 }
