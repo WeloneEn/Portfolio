@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Main Site Script
  * Client-side functionality only (NO ADMIN LOGIC)
  */
@@ -21,6 +21,7 @@ const IS_TOUCH_DEVICE = window.matchMedia("(hover: none), (pointer: coarse)").ma
 
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
+  initializeWelcomeScreen();
   initializeTheme();
   initializeNavigation();
   initializeVisitorTracking();
@@ -891,5 +892,125 @@ function initializeCookieBanner() {
       }, 400);
     });
   }
+}
+
+// ===== APPLE WELCOME SCREEN =====
+function initializeWelcomeScreen() {
+  const welcomeScreen = document.getElementById("apple-welcome-screen");
+  if (!welcomeScreen) return;
+
+  const hasSeenWelcome = localStorage.getItem("apple_welcome_shown");
+  if (hasSeenWelcome) {
+    welcomeScreen.remove(); // Remove immediately if already seen
+    return;
+  }
+
+  // Not seen yet -> show it
+  welcomeScreen.classList.remove("is-hidden");
+  document.body.style.overflow = "hidden"; // Prevent scrolling during welcome
+
+  const words = welcomeScreen.querySelectorAll(".apple-welcome__word");
+  if (!words.length) return;
+
+  let currentIndex = 0;
+  const showDuration = 1000; // time to show each full word
+  const container = document.getElementById("appleWelcomeContainer");
+  const brandLogo = document.querySelector(".brand-initial") || document.querySelector(".brand-ru");
+
+  function showNextWord() {
+    if (currentIndex > 0) {
+      words[currentIndex - 1].classList.remove("is-active");
+      words[currentIndex - 1].classList.add("is-exiting");
+    }
+
+    if (currentIndex < words.length) {
+      words[currentIndex].classList.add("is-active");
+      currentIndex++;
+      setTimeout(showNextWord, showDuration);
+    } else {
+      // Finished showing all words individually, let's merge them
+      startMergeSequence();
+    }
+  }
+
+  function startMergeSequence() {
+    // Reset words to visible
+    words.forEach(w => w.classList.remove("is-exiting", "is-active"));
+    
+    // Add merging classes to container
+    welcomeScreen.classList.add("is-merging");
+    container.classList.add("is-merged-container");
+
+    // Wrap the rest of the text in spans to hide them easily
+    words.forEach(word => {
+      const textNode = word.childNodes[1]; // The text after the <span> letter
+      if (textNode && textNode.nodeType === 3) { // TEXT_NODE
+        const restSpan = document.createElement("span");
+        restSpan.className = "apple-welcome__rest";
+        restSpan.textContent = textNode.textContent;
+        word.replaceChild(restSpan, textNode);
+      }
+    });
+
+    // Wait a moment for W D A to form, then fly it to the logo
+    setTimeout(flyToLogo, 1400); 
+  }
+
+  function flyToLogo() {
+    if (!brandLogo) {
+      finishWelcome();
+      return;
+    }
+
+    // Create a new floating element containing exactly "WDA"
+    const flyingEl = document.createElement("div");
+    flyingEl.className = "apple-welcome__flying-wda";
+    flyingEl.innerHTML = `<span>W</span><span>D</span><span>A</span>`;
+    document.body.appendChild(flyingEl);
+
+    // Hide original merging text
+    container.style.opacity = '0';
+
+    // Calculate target position and scale
+    const targetRect = brandLogo.getBoundingClientRect();
+    const flyingRect = flyingEl.getBoundingClientRect();
+
+    // Scale down from big centered text to the size of the header logo
+    const scaleFactor = targetRect.height / flyingRect.height;
+    
+    // Calculate the translation required to move from center to the target logo
+    const dx = targetRect.left - flyingRect.left + (targetRect.width - flyingRect.width) / 2;
+    const dy = targetRect.top - flyingRect.top + (targetRect.height - flyingRect.height) / 2;
+
+    // Trigger flight animation
+    requestAnimationFrame(() => {
+      flyingEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scaleFactor})`;
+      
+      // Start fading black background right after
+      setTimeout(() => {
+        welcomeScreen.classList.add("is-hidden");
+      }, 400);
+    });
+
+    // Wait for flight to finish
+    setTimeout(() => {
+      flyingEl.style.opacity = '0'; // Fade out flying text smoothly as it lands
+      finishWelcome(flyingEl);
+    }, 1200);
+  }
+
+  function finishWelcome(flyingEl) {
+    welcomeScreen.classList.add("is-hidden");
+    document.body.style.overflow = "";
+    localStorage.setItem("apple_welcome_shown", "true");
+    
+    setTimeout(() => {
+      welcomeScreen.remove();
+      if (flyingEl) flyingEl.remove();
+    }, 1000);
+  }
+
+  // Start sequence shortly after load
+  setTimeout(showNextWord, 600);
 }
 

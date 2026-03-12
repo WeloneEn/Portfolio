@@ -176,12 +176,12 @@ body.theme-transitioning .btn--primary {
 }
 
 .btn--primary:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 24px var(--panel-glow);
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 6px 16px var(--panel-glow);
 }
 
 .btn--primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.99);
 }
 
 @keyframes boot {
@@ -299,7 +299,7 @@ body.theme-transitioning .btn--primary {
   padding: 0.95rem 1.2rem;
   background: var(--surface);
   border: 1px solid var(--line);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
   border-radius: 999px;
   position: sticky;
   top: calc(0.8rem + var(--safe-top));
@@ -401,14 +401,12 @@ body.theme-transitioning .btn--primary {
 .site-nav a::before {
   content: "";
   position: absolute;
-  left: -40%;
-  top: -45%;
-  width: 40%;
-  height: 190%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  transform: rotate(22deg);
+  inset: 0;
+  background: var(--text);
   opacity: 0;
-  transition: transform 0.35s ease, opacity 0.35s ease;
+  border-radius: inherit;
+  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
 .site-nav a:hover,
@@ -417,13 +415,16 @@ body.theme-transitioning .btn--primary {
 .site-nav a[aria-current="page"] {
   color: var(--text);
   border-color: var(--line);
-  background: rgba(184, 132, 92, 0.08);
 }
 
 .site-nav a:hover::before,
 .site-nav a:focus-visible::before {
-  opacity: 0.75;
-  transform: translateX(240%) rotate(22deg);
+  opacity: 0.04;
+}
+
+.site-nav a.is-active::before,
+.site-nav a[aria-current="page"]::before {
+  opacity: 0.08;
 }
 
 .admin-link.is-hidden-link {
@@ -968,17 +969,13 @@ main {
 .project-card:hover,
 .project-card:focus-within {
   transform: translateY(-6px);
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.12),
-    0 0 40px rgba(124, 58, 237, 0.08);
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
 }
 
 body.dark-mode .project-card:hover,
 body.dark-mode .project-card:focus-within {
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.4),
-    0 0 60px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 /* Wide card = horizontal layout */
@@ -5413,7 +5410,7 @@ body.dark-mode .projects:hover,
 body.dark-mode .projects-controls:hover,
 body.dark-mode .contact-grid:hover {
   border-color: transparent;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   /* border glow removed */
 }
 
@@ -6748,8 +6745,7 @@ body.dark-mode .spatial-trust {
 
 body.dark-mode .bento-card-glare::before {
   background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0),
-      rgba(255, 255, 255, 0.08),
-      /* subtle white border glow in dark mode */
+      rgba(255, 255, 255, 0.04),
       transparent 40%);
 }
 
@@ -6796,7 +6792,7 @@ body.dark-mode .bento-card-glare::before {
 
 body.dark-mode .bento-card-glare__content::before {
   background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0),
-      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.02),
       transparent 40%);
 }
 
@@ -7113,19 +7109,27 @@ body.dark-mode #metricsSection {
   box-shadow: none !important;
 }
 
-\nbody.dark-mode .hero {
+body.dark-mode .hero {
   border: none !important;
   box-shadow: none !important;
 }
 
-\n\n
-
 /* ULTIMATE BORDER PURGE FOR DARK MODE */
-\nbody.dark-mode hr {
+body.dark-mode hr {
   display: none !important;
 }
 
-\nbody.dark-mode section::before,
+/* Remove hover glowing pseudo-element gradients in dark mode */
+body.dark-mode .metrics article:hover::after,
+body.dark-mode .timeline__grid article:hover::after,
+body.dark-mode .card:hover::after,
+body.dark-mode .project-card:hover::after,
+body.dark-mode .bento-card:hover::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+body.dark-mode section::before,
 body.dark-mode section::after,
 body.dark-mode main::before,
 body.dark-mode main::after,
@@ -7716,4 +7720,153 @@ body.dark-mode .founder-photo {
 .contact-form__consent a:hover,
 .contact-form__consent a:focus-visible {
   color: var(--text);
+}
+
+/* Apple-style Welcome Screen */
+.apple-welcome {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.apple-welcome.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px) scale(1.02);
+}
+
+.apple-welcome__text-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apple-welcome__word {
+  position: absolute;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 500;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform, left, top;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.apple-welcome__word.is-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.apple-welcome__word.is-exiting {
+  opacity: 0;
+  transform: translateY(-15px) scale(1.05);
+}
+
+.apple-welcome__letter {
+  display: inline-block;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+}
+
+/* WDA Merge Animation */
+.apple-welcome.is-merging .apple-welcome__word {
+  transition: opacity 0.8s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.apple-welcome.is-merging .apple-welcome__word span {
+  /* Keep only the first letters visible */
+}
+
+/* Hide the rest of the word text smoothly */
+.apple-welcome__rest {
+  display: inline-block;
+  transition: opacity 0.6s ease, max-width 0.6s ease;
+  overflow: hidden;
+  max-width: 500px; /* Arbitrary large width to animate from */
+}
+
+.apple-welcome.is-merging .apple-welcome__rest {
+  opacity: 0;
+  max-width: 0;
+}
+
+/* Grouping W D A together */
+.apple-welcome.is-merging .apple-welcome__word {
+  position: static;
+  display: inline-flex;
+  margin: 0 4px; /* Small gap between W D A */
+}
+
+.apple-welcome__text-container.is-merged-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Final Flight Animation */
+.apple-welcome__flying-wda {
+  position: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 500;
+  color: #fff;
+  display: flex;
+  gap: 8px;
+  z-index: 1000000;
+  transition: all 1.2s cubic-bezier(0.8, 0, 0.1, 1);
+  pointer-events: none;
+  /* Origin centered */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 600px) {
+  .apple-welcome__word, .apple-welcome__flying-wda {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+  }
+}
+
+/* ========================================
+   PREMIUM DARK MODE CARDS (FALLBACK)
+   ======================================== */
+body.dark-mode .card,
+body.dark-mode .project-card,
+body.dark-mode .bento-card {
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: rgba(22, 22, 34, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .card:hover,
+body.dark-mode .project-card:hover,
+body.dark-mode .bento-card:hover {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(30, 30, 42, 0.9) !important;
+}
+
+/* ========================================
+   SEAMLESS DARK MODE SECTIONS
+   ======================================== */
+body.dark-mode .portfolio,
+body.dark-mode .projects,
+body.dark-mode .founder,
+body.dark-mode .pricing {
+  background: transparent !important;
 }

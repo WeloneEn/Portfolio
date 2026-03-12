@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Main Server
  * Client-side backend + Admin API (clean architecture)
  */
@@ -333,6 +333,18 @@ async function serveStatic(req, res, urlObject) {
     res.end(content);
   } catch (error) {
     if (error.code === "ENOENT") {
+      // Fallback: try appending .html if there's no extension
+      if (!path.extname(pathname)) {
+        try {
+          const fallbackPath = safePath + ".html";
+          const fallbackContent = await fs.promises.readFile(fallbackPath, "utf-8");
+          res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+          res.end(fallbackContent);
+          return;
+        } catch (fallbackError) {
+          // Fallback failed, send 404
+        }
+      }
       sendText(res, 404, "Not Found");
     } else {
       console.error("Error serving file:", error.message);
