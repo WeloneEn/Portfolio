@@ -80,9 +80,7 @@ body {
 
 body {
   position: relative;
-  padding-left: var(--safe-left);
-  padding-right: var(--safe-right);
-  padding-bottom: var(--safe-bottom);
+  padding: 0;
   opacity: 0;
   animation: boot 0.7s ease forwards;
   transition:
@@ -4830,7 +4828,8 @@ body.light-mode .training-review-item {
 
 @media (max-width: 768px) {
   .site-header {
-    width: min(100%, calc(100% - 1rem));
+    width: min(1120px, calc(100% - 1.5rem));
+    margin: 1rem auto 0;
     border-radius: 16px;
     padding: 0.6rem 0.8rem;
     align-items: center;
@@ -4845,8 +4844,8 @@ body.light-mode .training-review-item {
   }
 
   main {
-    width: min(100%, calc(100% - 1.5rem));
-    margin-top: 1.5rem;
+    width: min(1120px, calc(100% - 1.5rem));
+    margin: 1.5rem auto 3rem;
   }
 
   .site-footer {
@@ -7524,6 +7523,8 @@ body.dark-mode .portfolio-card__badge {
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 body.dark-mode .scarcity-bar {
@@ -7549,6 +7550,25 @@ body.dark-mode .scarcity-bar {
 .founder {
   padding: 8rem 5%;
   background: var(--bg);
+  overflow: hidden;
+}
+
+.hero, .metrics, .timeline, .testimonials, .portfolio, .pricing, .teaser {
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .site-header, main {
+    width: calc(100% - var(--space-xl) * 1.5);
+  }
+
+  .hero {
+    gap: var(--space-xl);
+  }
+
+  .founder {
+    padding: var(--space-3xl) var(--space-lg);
+  }
 }
 
 .founder__inner {
@@ -7678,8 +7698,12 @@ body.dark-mode .founder-photo {
 }
 
 @media (max-width: 480px) {
+  .pricing {
+    padding: var(--space-2xl) var(--space-lg) var(--space-3xl);
+  }
+
   .pricing-card {
-    padding: 1.5rem;
+    padding: var(--space-lg);
   }
 
   .pricing-card__price {
@@ -7788,7 +7812,7 @@ body.dark-mode .founder-photo {
 }
 
 .apple-welcome.is-merging .apple-welcome__word span {
-  /* Keep only the first letters visible */
+  opacity: 1;
 }
 
 /* Hide the rest of the word text smoothly */
