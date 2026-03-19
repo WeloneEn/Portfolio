@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обучение и сертификация | WDA Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin-ui.css">
+</head>
+
+<body data-page="admin">
+    <header class="site-header">
+        <div class="header-container">
+            <a href="/" class="brand-link">WDA</a>
+            <button class="menu-toggle" id="menuToggle" type="button">Menu</button>
+            <button class="theme-toggle" id="themeToggle" type="button">☾</button>
+            <nav class="admin-nav">
+                <a href="dashboard.html">Дашборд</a>
+                <a href="admin-leads.html">Лиды</a>
+                <a href="admin-events.html">События</a>
+                <a href="admin-training.html" class="active">Обучение</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="admin-main" id="trainingPanel">
+        <h1>Управление обучением</h1>
+
+        <form id="trainingReviewForm">
+            <select id="trainingUserSelect">
+                <option value="">Выберите ученика...</option>
+            </select>
+            <button type="submit">Добавить отзыв</button>
+        </form>
+
+        <section class="training-section">
+            <div class="section-header">
+                <h1>Центр обучения</h1>
+            </div>
+            <div class="training-dashboard">
+                <div class="profile-card" id="myProfile">
+                    <!-- Профиль пользователя -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="admin-training.js"></script>
+</body>
+
+</html>

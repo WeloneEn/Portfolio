@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>События и дедлайны | WDA Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin-ui.css">
+</head>
+
+<body data-page="admin">
+    <header class="site-header">
+        <div class="header-container">
+            <a href="/" class="brand-link">WDA</a>
+            <button class="menu-toggle" id="menuToggle" type="button">Menu</button>
+            <button class="theme-toggle" id="themeToggle" type="button">☾</button>
+            <nav class="admin-nav">
+                <a href="dashboard.html">Дашборд</a>
+                <a href="admin-leads.html">Лиды</a>
+                <a href="admin-events.html" class="active">События</a>
+                <a href="admin-training.html">Обучение</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="admin-main" id="eventsPanel">
+        <h1>Управление событиями</h1>
+        <div id="eventsList"></div>
+        <section class="events-section">
+            <div class="section-header">
+                <h1>Календарь событий</h1>
+            </div>
+            <div class="events-calendar">
+                <div id="calendarContainer">
+                    <!-- Календарь событий -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="admin-events.js"></script>
+</body>
+
+</html>

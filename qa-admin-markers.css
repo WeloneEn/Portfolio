@@ -1,0 +1,23 @@
+/* Admin-UI QA Markers */
+body[data-page="admin"] .site-header {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+body[data-page="admin"] .leads-filters {
+    display: flex;
+    gap: 1rem;
+}
+
+body[data-page="admin"] .lead-item {
+    background: var(--surface);
+    margin-bottom: 0.5rem;
+}
+
+body[data-page="admin"] .event-card {
+    border: 1px solid var(--line);
+}
+
+body[data-page="admin"] .training-layout {
+    display: flex;
+    flex-direction: column;
+}

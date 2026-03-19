@@ -3,21 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
-  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0d0d12" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | Contact</title>
-  <meta name="description" content="Контакты и заявка на разработку сайта." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260218z14" />
-  <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260219ux2"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="config.js"></script>
+  <script defer src="script.js"></script>
   <meta property="og:title" content="Welone Digital Atelier — Контакты" />
   <meta property="og:description" content="Оставьте заявку на разработку сайта." />
   <meta property="og:type" content="website" />
@@ -33,22 +21,14 @@
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-        class="brand-collapse">elone </span><span class="brand-initial">D</span><span class="brand-collapse">igital
-      </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
-      aria-controls="siteNav">Menu</button>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">☾ Тёмная</button>
-    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+    <a href="index.html" class="brand">Welone Digital Atelier</a>
+    <button class="menu-toggle" id="menuToggle" type="button">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button">☾</button>
+    <nav class="site-nav" id="siteNav">
       <a href="index.html">Главная</a>
       <a href="about.html">Обо мне</a>
       <a href="projects.html">Проекты</a>
-      <a class="is-active" href="contact.html" aria-current="page">Контакты</a>
-      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
-      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true"
-        tabindex="-1">Заявки</a>
-      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true"
-        tabindex="-1">Статистика</a>
+      <a class="is-active" href="contact.html">Контакты</a>
     </nav>
   </header>
 
@@ -60,13 +40,13 @@
       </p>
     </section>
 
-    <section class="contact-grid reveal">
+    <section class="contact-grid">
       <article class="card contact-card">
         <p class="contact-card__eyebrow">Быстрый контакт</p>
         <h2>Связаться со мной</h2>
         <p class="contact-card__lead">Выберите удобный канал. Клик сразу откроет нужное приложение.</p>
         <div class="contact-icon-links" aria-label="Каналы связи">
-          <a class="contact-icon-link" href="mailto:jadeloomwear@gmail.com" aria-label="Написать на почту"
+          <a class="contact-icon-link reveal" href="mailto:jadeloomwear@gmail.com" aria-label="Написать на почту"
             title="Почта">
             <span class="contact-icon-link__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
@@ -77,7 +57,7 @@
             <span class="contact-icon-link__label">Почта</span>
             <span class="contact-icon-link__arrow" aria-hidden="true">&rarr;</span>
           </a>
-          <a class="contact-icon-link" href="tel:+79996161821" aria-label="Позвонить" title="Телефон">
+          <a class="contact-icon-link reveal" href="tel:+79996161821" aria-label="Позвонить" title="Терефон">>
             <span class="contact-icon-link__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
                 <path
@@ -88,7 +68,7 @@
             <span class="contact-icon-link__label">Телефон</span>
             <span class="contact-icon-link__arrow" aria-hidden="true">&rarr;</span>
           </a>
-          <a class="contact-icon-link" href="https://t.me/weloneEN" target="_blank" rel="noopener noreferrer"
+          <a class="contact-icon-link reveal" href="https://t.me/weloneEN" target="_blank" rel="noopener noreferrer"
             aria-label="Открыть Telegram" title="Telegram">
             <span class="contact-icon-link__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
@@ -100,7 +80,7 @@
             <span class="contact-icon-link__arrow" aria-hidden="true">&rarr;</span>
           </a>
 
-          <a class="contact-icon-link" href="https://wa.me/79996161821" target="_blank" rel="noopener noreferrer"
+          <a class="contact-icon-link reveal" href="https://wa.me/79996161821" target="_blank" rel="noopener noreferrer"
             aria-label="Написать в WhatsApp" title="WhatsApp">
             <span class="contact-icon-link__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
@@ -119,25 +99,23 @@
 
         <div class="js-availability-block">
           <div class="availability-status">
-            <div class="status-indicator">
-              <span class="status-dot"></span>
-              <span class="status-text">Загрузка мест...</span>
-            </div>
+            <input type="checkbox" id="consent" name="consent" required />
+            <label for="consent">Я согласен на обработку персональных данных</label>
             <button type="button" class="btn btn--outline btn--small js-focus-brief">Занять место</button>
           </div>
 
           <div class="contact-process">
             <h3>План действий</h3>
             <ol class="process-steps">
-              <li>
+              <li class="reveal">
                 <strong>Бесплатный анализ</strong>
                 <span>Изучу ваш запрос и предложу концептуальное видение.</span>
               </li>
-              <li>
+              <li class="reveal">
                 <strong>Оценка и план</strong>
                 <span>Согласуем сроки, прозрачную смету и этапы разработки.</span>
               </li>
-              <li>
+              <li class="reveal">
                 <strong>Старт работ</strong>
                 <span>Официальный договор, работа по спринтам, постоянный показ результатов.</span>
               </li>
@@ -149,16 +127,16 @@
       <form class="card contact-form" autocomplete="on">
         <h2>Бриф</h2>
         <p class="contact-form__lead">Опишите задачу — я подготовлю оценку и предложение.</p>
-        <label>
+        <label class="reveal">
           Ваше имя
           <input type="text" name="name" placeholder="Имя" required minlength="2" maxlength="80" autocomplete="name" />
         </label>
-        <label>
+        <label class="reveal">
           Контакт
           <input type="text" name="contact" placeholder="Email / Telegram / Телефон" required minlength="5"
             maxlength="140" autocomplete="email" />
         </label>
-        <label>
+        <label class="reveal">
           Формат проекта
           <div class="custom-select" id="projectTypeSelect">
             <input type="hidden" name="type" required>
@@ -181,11 +159,11 @@
             </ul>
           </div>
         </label>
-        <label>
+        <label class="reveal">
           Описание
           <textarea name="message" rows="4" placeholder="Кратко опишите задачу" maxlength="2000"></textarea>
         </label>
-        <label class="contact-form__consent">
+        <label class="contact-form__consent reveal">
           <input type="checkbox" name="consent" required />
           <span>Я даю <a href="privacy.html" target="_blank" rel="noopener noreferrer">согласие на обработку
               персональных данных</a></span>
@@ -210,9 +188,7 @@
         <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
       </div>
       <div class="site-footer__legal">
-        <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН/ОГРНИП: {{OGRN}}</p>
-        <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
-        <p>E-mail: {{CONTACT_EMAIL}}</p>
+        <p>© 2024 Welone Digital Atelier. Все права защищены.</p>
       </div>
     </div>
   </footer>

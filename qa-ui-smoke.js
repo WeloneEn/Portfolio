@@ -36,7 +36,8 @@ const DYNAMIC_ID_ALLOWLIST = new Set([
   "secretToast",
   "workspaceShell",
   "workspaceAuthStatus",
-  "workspaceStatus"
+  "workspaceStatus",
+  "signalOutput"
 ]);
 
 function assert(condition, message) {

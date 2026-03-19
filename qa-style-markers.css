@@ -1,0 +1,22 @@
+/* Training QA Markers */
+body.light-mode .training-profile-meta,
+body.future-mode .training-profile-meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+body.light-mode .training-review-item,
+body.future-mode .training-review-item {
+    border-bottom: 1px solid var(--line);
+    padding: 1rem 0;
+}
+
+.training-layout {
+    display: grid;
+    gap: 2rem;
+}
+
+.training-summary {
+    background: var(--surface);
+    padding: 2rem;
+}

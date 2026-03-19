@@ -3,21 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
-  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0d0d12" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | Projects</title>
-  <meta name="description" content="Портфолио проектов и демо-версий сайтов." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260218z14" />
-  <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260219ux2"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="config.js"></script>
+  <script defer src="script.js"></script>
   <meta property="og:title" content="Welone Digital Atelier — Проекты" />
   <meta property="og:description" content="Портфолио проектов и демо-версий сайтов." />
   <meta property="og:type" content="website" />
@@ -33,30 +21,23 @@
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-        class="brand-collapse">elone </span><span class="brand-initial">D</span><span class="brand-collapse">igital
-      </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
-      aria-controls="siteNav">Menu</button>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">☾ Тёмная</button>
-    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+    <a href="index.html" class="brand">Welone Digital Atelier</a>
+    <button class="menu-toggle" id="menuToggle" type="button">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button">☾</button>
+    <nav class="site-nav" id="siteNav">
       <a href="index.html">Главная</a>
       <a href="about.html">Обо мне</a>
-      <a class="is-active" href="projects.html" aria-current="page">Проекты</a>
+      <a class="is-active" href="projects.html">Проекты</a>
       <a href="contact.html">Контакты</a>
-      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
-      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true"
-        tabindex="-1">Заявки</a>
-      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true"
-        tabindex="-1">Статистика</a>
     </nav>
   </header>
 
   <main>
     <section class="page-hero reveal" id="projectsHero">
-      <p class="label">Портфолио</p>
-      <h1>Проекты, которые <span class="glitch" data-text="работают">работают</span></h1>
-      <p>Реальные кейсы — от ранних прототипов до финальных продуктов. <br>Каждый проект создан по принципу: скорость,
+      <p class="label reveal">Портфолио</p>
+      <h1 class="reveal">Проекты, которые <span class="glitch" data-text="работают">работают</span></h1>
+      <p class="reveal">Реальные кейсы — от ранних прототипов до финальных продуктов. <br>Каждый проект создан по
+        принципу: скорость,
         эстетика, результат.</p>
     </section>
 
@@ -69,16 +50,17 @@
         <button class="btn btn--ghost is-active" type="button" data-filter="all">Все</button>
         <button class="btn btn--ghost" type="button" data-filter="version">Версии</button>
         <button class="btn btn--ghost" type="button" data-filter="final">Финал</button>
-        <button class="btn btn--ghost" type="button" data-filter="special">Special</button>
+        <button class="btn btn--ghost" type="button" data-filter="special">Особые <span class="en-sub"
+            lang="en">Special</span></button>
       </div>
     </section>
 
     <div class="bento-container">
-      <section class="projects bento-grid reveal" id="projectsList">
+      <section class="projects bento-grid" id="projectsList">
 
-        <article class="project-card bento-card  tilt" data-category="version">
+        <article class="project-card bento-card tilt reveal" data-category="version">
           <figure class="project-card__media">
-            <img src="assets/projects/project-1.png"
+            <img src="assets/projects/project_sashnaz_v2_dark.png"
               alt="Sashnaz v2 — портфолио «Сашуля Бабиджон» с тёплым дизайном и медведем-пандой" loading="lazy"
               width="800" height="450" />
           </figure>
@@ -101,8 +83,8 @@
 
         <article class="project-card bento-card tilt" data-category="version">
           <figure class="project-card__media">
-            <img src="assets/projects/project-2.png" alt="Sashnaz Demo v3 — блог-платформа с элегантным контентом"
-              loading="lazy" width="800" height="450" />
+            <img src="assets/projects/project_sashnaz_v3_dark.png"
+              alt="Sashnaz Demo v3 — блог-платформа с элегантным контентом" loading="lazy" width="800" height="450" />
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Версия 3</p>
@@ -110,7 +92,7 @@
             <p class="project-card__desc">Улучшенная подача контента и расширенная визуальная часть.</p>
             <ul class="project-card__chips">
               <li>JavaScript</li>
-              <li>UI/UX</li>
+              <li>Дизайн интерфейсов <span class="en-sub" lang="en">UI/UX</span></li>
               <li>Адаптив</li>
             </ul>
             <div class="project-card__footer">
@@ -123,15 +105,16 @@
 
         <article class="project-card bento-card tilt" data-category="final">
           <figure class="project-card__media">
-            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
-              loading="lazy" width="800" height="450" />
+            <img src="assets/projects/project_sashnaz_v4_dark.png"
+              alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой" loading="lazy" width="800"
+              height="450" />
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Версия 4 / Финал</p>
             <h3>Sashnaz Final v4</h3>
             <p class="project-card__desc">Финальная версия с выверенной структурой и аккуратным дизайном.</p>
             <ul class="project-card__chips">
-              <li>CSS Variables</li>
+              <li>CSS-переменные <span class="en-sub" lang="en">CSS Variables</span></li>
               <li>Grid</li>
               <li>ARIA</li>
             </ul>
@@ -145,21 +128,21 @@
 
         <article class="project-card bento-card  tilt" data-category="special">
           <figure class="project-card__media">
-            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
+            <img src="assets/projects/project_popis_dark.png" alt="Popis Box — креативный проект с уникальной подачей"
               loading="lazy" width="800" height="450" />
           </figure>
           <div class="project-card__body">
-            <p class="project-card__tag">Special Case</p>
+            <p class="project-card__tag">Особый проект <span class="en-sub" lang="en">Special Case</span></p>
             <h3>Popis Box</h3>
             <p class="project-card__desc">Отдельный проект с уникальной подачей контента и нестандартной компоновкой.
             </p>
             <ul class="project-card__chips">
-              <li>Vanilla JS</li>
-              <li>Custom Layout</li>
+              <li>Чистый JS <span class="en-sub" lang="en">Vanilla JS</span></li>
+              <li>Авторская вёрстка <span class="en-sub" lang="en">Custom Layout</span></li>
               <li>UX</li>
             </ul>
             <div class="project-card__footer">
-              <p class="project-card__result">🏆 UX Score A+</p>
+              <p class="project-card__result">🏆 Оценка UX: A+</p>
               <a href="https://weloneen.github.io/popisbox/index.html" class="project-card__link">Открыть проект →</a>
             </div>
           </div>
@@ -181,9 +164,7 @@
         <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
       </div>
       <div class="site-footer__legal">
-        <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН/ОГРНИП: {{OGRN}}</p>
-        <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
-        <p>E-mail: {{CONTACT_EMAIL}}</p>
+        <p>© 2024 Welone Digital Atelier. Все права защищены.</p>
       </div>
     </div>
   </footer>

@@ -1,0 +1,23 @@
+/* QA Markers */
+body.light-mode .event-card,
+body.future-mode .event-card {
+    padding: 1rem;
+    border-radius: var(--radius);
+}
+
+body.light-mode .training-summary__item,
+body.future-mode .training-summary__item {
+    display: flex;
+    justify-content: space-between;
+}
+
+@media (max-width: 760px) {
+    .site-nav {
+        gap: 1rem;
+    }
+}
+
+.btn,
+.btn--primary {
+    cursor: pointer;
+}

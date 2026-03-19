@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления | WDA Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin-ui.css">
+</head>
+
+<body data-page="admin">
+    <header class="site-header">
+        <div class="header-container">
+            <a href="/" class="brand-link" id="adminLogo">WDA</a>
+            <button class="menu-toggle" id="menuToggle" type="button">Menu</button>
+            <button class="theme-toggle" id="themeToggle" type="button">☾</button>
+            <nav class="admin-nav">
+                <a href="admin.html" class="active">Дашборд</a>
+                <a href="admin-leads.html">Лиды</a>
+                <a href="admin-events.html">События</a>
+                <a href="admin-training.html">Обучение</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="admin-main" id="adminPanel">
+        <h1>Системный дашборд</h1>
+
+        <div class="admin-grid">
+            <div class="admin-folder" id="trafficFolder">
+                <h3>Трафик</h3>
+                <div class="folder-content">
+                    <p>Посетителей сегодня: <span id="todayTraffic">0</span></p>
+                </div>
+            </div>
+
+            <div class="admin-folder" id="leadsFolder">
+                <h3>Заявки</h3>
+                <div class="folder-content">
+                    <p>Новых заявок: <span id="newLeadsCount">0</span></p>
+                </div>
+            </div>
+
+            <div class="admin-folder" id="conversionFolder">
+                <h3>Конверсия</h3>
+                <div class="folder-content">
+                    <p>Текущий показатель: <span id="conversionRate">0%</span></p>
+                </div>
+            </div>
+        </div>
+
+        <section class="admin-users-section">
+            <h2>Управление доступом</h2>
+            <form id="adminUserCreateForm">
+                <input type="text" id="adminCreateUsername" placeholder="Логин">
+                <input type="password" id="adminCreatePassword" placeholder="Пароль">
+                <button type="submit">Создать пользователя</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>
