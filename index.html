@@ -1,11 +1,24 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="style.css" />
-  <script defer src="config.js"></script>
-  <script defer src="script.js"></script>
+  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d0d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Welone Digital Atelier | Portfolio</title>
+  <meta name="description"
+    content="Welone Digital Atelier — создаём уютные, тёплые и современные сайты для вашего бизнеса." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260218z14" />
+  <script defer src="config.js?v=20260218z14"></script>
+  <script defer src="script.js?v=20260219ux2"></script>
   <meta property="og:title" content="Welone Digital Atelier — Сайты будущего" />
   <meta property="og:description" content="Создаём уютные, тёплые и современные сайты для вашего бизнеса." />
   <meta property="og:type" content="website" />
@@ -14,15 +27,17 @@
 </head>
 
 <body data-page="home">
-  <div id="preloader" aria-hidden="true">
-    <div class="preloader-stage" id="preStage1">Defining</div>
-    <div class="preloader-stage" id="preStage2">Designing</div>
-    <div class="preloader-stage" id="preStage3">Developing</div>
-    <div class="preloader-stage wda-logo" id="preStage4">WDA</div>
+  <div id="apple-welcome-screen" class="apple-welcome is-hidden" aria-hidden="true">
+    <div class="apple-welcome__text-container" id="appleWelcomeContainer">
+      <div class="apple-welcome__word"><span class="apple-welcome__letter">W</span>elone</div>
+      <div class="apple-welcome__word"><span class="apple-welcome__letter">D</span>igital</div>
+      <div class="apple-welcome__word"><span class="apple-welcome__letter">A</span>telier</div>
+    </div>
   </div>
 
-  <div class="model-container" id="futureModel" aria-hidden="true">
-    <!-- SVG models will be injected here relative to the current sub-theme -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__logo">WDA</div>
+    <div class="preloader__ring"></div>
   </div>
 
   <div class="noise" aria-hidden="true"></div>
@@ -34,38 +49,47 @@
   </div>
 
   <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-        class="brand-collapse">elone </span><span class="brand-initial">D</span><span class="brand-collapse">igital
-      </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
-    <button class="menu-toggle" id="menuToggle" type="button">Menu</button>
-    <button class="theme-toggle" id="themeToggle" type="button">☾</button>
-    <nav class="site-nav" id="siteNav">
-      <a class="is-active" href="index.html">Главная</a>
+    <a href="index.html" class="brand" id="brandTrigger" title="Welone Digital Atelier">
+      <span class="brand-ru">Цифровое ателье Welone</span><br>
+      <span class="brand-en" style="font-size: 0.6em; opacity: 0.6; font-weight: 500;">Welone Digital Atelier</span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
+      aria-controls="siteNav">Menu</button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
+      <span class="theme-toggle__icon">☾</span>
+      <span class="theme-toggle__text">Тёмная</span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
+      <a class="is-active" href="index.html" aria-current="page">Главная</a>
       <a href="about.html">Обо мне</a>
       <a href="projects.html">Проекты</a>
       <a href="contact.html">Контакты</a>
       <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
+      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true"
+        tabindex="-1">Заявки</a>
+      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true"
+        tabindex="-1">Статистика</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero" id="heroSection">
+    <section class="hero reveal" id="heroSection">
       <div class="hero__background" aria-hidden="true">
         <span></span><span></span><span></span><span></span>
       </div>
-      <p class="label reveal">Разработка сайтов</p>
-      <h1 class="reveal">
+      <p class="label">Разработка сайтов</p>
+      <h1>
         Создаю <span class="glitch" data-text="САЙТЫ БУДУЩЕГО">САЙТЫ БУДУЩЕГО</span>
       </h1>
-      <p class="hero__lead reveal">Продуманная структура, чистый код и внимание к каждой детали — ваш сайт работает на
+      <p class="hero__lead">Продуманная структура, чистый код и внимание к каждой детали — ваш сайт работает на
         результат с первого дня.</p>
-      <div class="hero__actions reveal">
+      <div class="hero__actions">
         <!-- <a class="btn btn--primary" href="projects.html">Смотреть работы</a> -->
         <a class="btn btn--primary" href="contact.html">Обсудить проект</a>
       </div>
     </section>
 
-    <section class="metrics" id="metricsSection">
+    <section class="metrics reveal" id="metricsSection">
       <article>
         <h2>Фокус на качество</h2>
         <p>Беру в работу не более 2 проектов в месяц для максимального погружения.</p>
@@ -97,11 +121,11 @@
           <h3>01. Аналитика</h3>
           <p>Разбираю задачу, изучаю аудиторию и конкурентов; составляю сценарий пути пользователя.</p>
         </article>
-        <article class="reveal">
+        <article>
           <h3>02. Разработка</h3>
           <p>Семантическая верстка, адаптив под все устройства, интерактивные элементы и плавные анимации.</p>
         </article>
-        <article class="reveal">
+        <article>
           <h3>03. Запуск</h3>
           <p>Тестирование качества, оптимизация скорости, подключение аналитики и передача проекта.</p>
         </article>
@@ -109,21 +133,18 @@
     </section>
 
 
-    <section class="testimonials" id="principlesSection">
+    <section class="testimonials reveal" id="principlesSection">
       <h2>Наши принципы разработки</h2>
       <div class="testimonials__grid">
-        <article class="testimonial-card card reveal">
+        <article class="testimonial-card card">
           <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Чистый семантический код</h3>
-          <p class="testimonial-card__text">Без лишних фреймворков, только чистый CSS и JS <span class="en-sub"
-              lang="en">Vanilla</span>.</p>
+          <p class="testimonial-card__text">Без лишних фреймворков, только Vanilla CSS и JS.</p>
         </article>
-        <article class="testimonial-card card reveal">
-          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Стандарты веб-производительности
-            <span class="en-sub" lang="en">Core Web Vitals</span>
-          </h3>
+        <article class="testimonial-card card">
+          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Стандарты Core Web Vitals</h3>
           <p class="testimonial-card__text">Абсолютная стабильность макета и мгновенная загрузка.</p>
         </article>
-        <article class="testimonial-card card reveal">
+        <article class="testimonial-card card">
           <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Инклюзивность и доступность</h3>
           <p class="testimonial-card__text">Соответствие интерфейсов стандартам ГОСТ Р 52872-2019.</p>
         </article>
@@ -131,21 +152,20 @@
     </section>
 
     <!-- ПОРТФОЛИО -->
-    <section class="portfolio" id="portfolioSection">
+    <section class="portfolio reveal" id="portfolioSection">
       <h2>Наши работы</h2>
       <div class="portfolio__grid">
-        <article class="project-card bento-card tilt reveal" data-category="final">
+        <article class="project-card bento-card tilt" data-category="final">
           <figure class="project-card__media">
-            <img src="assets/projects/project_sashnaz_v4_dark.png"
-              alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой" loading="lazy" width="800"
-              height="450" />
+            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
+              loading="lazy" width="800" height="450" />
           </figure>
           <div class="project-card__body">
             <p class="project-card__tag">Версия 4 / Финал</p>
             <h3>Sashnaz Final v4</h3>
             <p class="project-card__desc">Финальная версия с выверенной структурой и аккуратным дизайном.</p>
             <ul class="project-card__chips">
-              <li>CSS-переменные <span class="en-sub" lang="en">CSS Variables</span></li>
+              <li>CSS Variables</li>
               <li>Grid</li>
               <li>ARIA</li>
             </ul>
@@ -159,17 +179,17 @@
 
         <article class="project-card bento-card tilt" data-category="special">
           <figure class="project-card__media">
-            <img src="assets/projects/project_popis_dark.png" alt="Popis Box — креативный проект с уникальной подачей"
+            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
               loading="lazy" width="800" height="450" />
           </figure>
           <div class="project-card__body">
-            <p class="project-card__tag">Особый проект <span class="en-sub" lang="en">Special Case</span></p>
+            <p class="project-card__tag">Special Case</p>
             <h3>Popis Box</h3>
             <p class="project-card__desc">Отдельный проект с уникальной подачей контента и нестандартной компоновкой.
             </p>
             <ul class="project-card__chips">
-              <li>Чистый JS <span class="en-sub" lang="en">Vanilla JS</span></li>
-              <li>Авторская вёрстка <span class="en-sub" lang="en">Custom Layout</span></li>
+              <li>Vanilla JS</li>
+              <li>Custom Layout</li>
               <li>UX</li>
             </ul>
             <div class="project-card__footer">
@@ -236,36 +256,21 @@
       <div class="site-footer__legal">
         <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН: {{OGRN}}</p>
         <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
+        <p>Основной ОКВЭД: {{OKVED}}</p>
+        <p>E-mail для связи: {{CONTACT_EMAIL}}</p>
+        <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--muted); opacity: 0.6;">
+          <p>*</p>
+        </div>
       </div>
     </div>
   </footer>
 
-  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Настройки cookie" aria-live="polite">
+  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite">
     <div class="cookie-banner__content">
-      <p>Мы используем файлы cookie для аналитики и обеспечения правильной работы сайта.
-        Подробнее — в <a href="privacy.html">Политике конфиденциальности</a>.</p>
+      <p>Мы используем файлы cookie для аналитики и обеспечения правильной работы сайта. Продолжая навигацию, вы даете
+        согласие на их обработку в соответствии с <a href="privacy.html">Политикой конфиденциальности</a>.</p>
       <div class="cookie-banner__actions">
-        <button class="btn btn--primary" id="acceptCookies" type="button">Принять все</button>
-        <button class="btn btn--ghost" id="rejectCookies" type="button">Отклонить все</button>
-        <button class="btn btn--ghost" id="cookieSettingsBtn" type="button">Настройки</button>
-      </div>
-      <!-- Гранулярная панель настроек (скрыта по умолчанию) -->
-      <div class="cookie-banner__details" id="cookieDetails" hidden>
-        <label class="cookie-banner__option cookie-banner__option--disabled">
-          <input type="checkbox" checked disabled />
-          <span>Необходимые <small>(обязательные для работы сайта)</small></span>
-        </label>
-        <label class="cookie-banner__option">
-          <input type="checkbox" id="cookieAnalytics" />
-          <span>Аналитика</span>
-        </label>
-        <label class="cookie-banner__option">
-          <input type="checkbox" id="cookieMarketing" />
-          <span>Маркетинг</span>
-        </label>
-        <div class="cookie-banner__actions">
-          <button class="btn btn--primary" id="saveCookiePrefs" type="button">Сохранить выбор</button>
-        </div>
+        <button class="btn btn--primary" id="acceptCookies" type="button">Согласен</button>
       </div>
     </div>
   </div>

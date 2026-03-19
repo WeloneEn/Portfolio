@@ -1,105 +1,180 @@
-﻿"use strict";
+/**
+ * Main Site Script
+ * Client-side functionality only (NO ADMIN LOGIC)
+ */
+
+"use strict";
 
 // ===== DOM ELEMENTS =====
 const preloader = document.getElementById("preloader");
 const cursorGlow = document.getElementById("cursorGlow");
 const menuToggle = document.getElementById("menuToggle");
 const siteNav = document.getElementById("siteNav");
-const themeToggle = document.getElementById("themeToggle");
 const brandTrigger = document.getElementById("brandTrigger");
+const themeToggle = document.getElementById("themeToggle");
 
 // ===== CONSTANTS =====
 const VISITOR_STORAGE_KEY = "visitor_id";
 const THEME_MODE_KEY = "theme_mode";
-const IS_TOUCH_DEVICE = 'ontouchstart' in window;
-const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const WORKSPACE_EXIT_TAP_TARGET = 3;
+const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const IS_TOUCH_DEVICE = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
+  initializeWelcomeScreen();
   initializeTheme();
   initializeNavigation();
   initializeVisitorTracking();
   initializeRevealAnimations();
   initializeCardTilt();
-  initializeProjectFilters();
+  initializeCounters();
+  initializeSkillScanner();
+  initializeSkillBars();
+  initDynamicGlare();
+  initKineticScroll();
+  initializeMagneticButtons();
   initializeBrandAnimation();
-  initializeAdminHotspot();
+  initializeCustomSelect();
+  initializeProjectFilters();
+  initializeClickableTiles();
+  initializeCookieBanner();
+  initializeSmartHeader();
   initAvailabilityStatus();
-  runCinematicPreloader();
-  initializeFutureMode();
-  initializeEasterEgg();
-  initializeFiltersJump();
+  hidePreloader();
 });
 
-// ===== FILTERS JUMP =====
-function initializeFiltersJump() {
-  const jumpBtn = document.getElementById("filtersJump");
-  const filters = document.getElementById("filters");
-  if (jumpBtn && filters) {
-    jumpBtn.addEventListener("click", () => {
-      filters.scrollIntoView({ behavior: "smooth" });
-    });
-  }
-}
+// ===== SMART HEADER (AUTO HIDE ON SCROLL) =====
+function initializeSmartHeader() {
+  const header = document.querySelector(".site-header");
+  if (!header || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-// ===== WORKSPACE SHELL (QA TOKENS) =====
-/*
-  This ensures the core navigation satisfies system audits.
-  <a href="admin-events.html">Events Control</a>
-  <a href="admin-training.html">Training Control</a>
-*/
+  let lastScrollY = window.scrollY;
+  let ticking = false;
 
-// ===== EASTER EGG =====
-function initializeEasterEgg() {
-  const egg = document.getElementById("easterEgg");
-  const closeBtn = document.getElementById("closeEgg");
-  if (egg && closeBtn) {
-    closeBtn.addEventListener("click", () => egg.close());
-  }
-}
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
 
-function showEasterEggDialog() {
-  const egg = document.getElementById("easterEgg");
-  if (egg) egg.showModal();
-}
+        if (currentScrollY <= 60) {
+          header.classList.remove("is-hidden-scroll");
+        } else if (currentScrollY > lastScrollY) {
+          header.classList.add("is-hidden-scroll");
+        } else {
+          header.classList.remove("is-hidden-scroll");
+        }
 
-// ===== CINEMATIC PRELOADER =====
-async function runCinematicPreloader() {
-  if (!preloader) return;
-
-  const stages = [
-    document.getElementById("preStage1"),
-    document.getElementById("preStage2"),
-    document.getElementById("preStage3"),
-    document.getElementById("preStage4")
-  ];
-
-  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-  for (let i = 0; i < stages.length; i++) {
-    const stage = stages[i];
-    if (!stage) continue;
-
-    stage.classList.add("active");
-    await sleep(800);
-
-    if (i < stages.length - 1) {
-      stage.classList.remove("active");
-      stage.classList.add("exit");
-      await sleep(200);
+        lastScrollY = currentScrollY;
+        ticking = false;
+      });
+      ticking = true;
     }
-  }
-
-  // Final Fade out
-  preloader.style.opacity = "0";
-  setTimeout(() => {
-    preloader.style.display = "none";
-    document.body.classList.add("is-ready");
-  }, 1000);
+  });
 }
 
-// ===== THEME & FUTURE MODE =====
+// ===== SCARCITY ENGINE (AVAILABILITY STATUS) =====
+function initAvailabilityStatus() {
+  const spots = window.WELONE_AVAILABLE_SPOTS !== undefined ? window.WELONE_AVAILABLE_SPOTS : 1;
+  const statusContainers = document.querySelectorAll('.js-availability-block');
+  const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  const currentMonthName = monthNames[new Date().getMonth()].toLowerCase(); // в январе, в марте etc. (будем использовать просто название)
+
+  // Format month text based on spots
+  const currentMonth = monthNames[new Date().getMonth()];
+  const nextMonthObj = new Date();
+  nextMonthObj.setMonth(nextMonthObj.getMonth() + 1);
+  const nextMonth = monthNames[nextMonthObj.getMonth()];
+
+  statusContainers.forEach(container => {
+    const dot = container.querySelector('.status-dot');
+    const textNode = container.querySelector('.status-text');
+    const actionBtn = container.querySelector('.js-focus-brief');
+
+    if (spots > 0) {
+      if (dot) {
+        dot.classList.add('is-available');
+        dot.classList.remove('is-booked');
+      }
+      if (textNode) {
+        textNode.innerHTML = `Осталось <strong>${spots} место</strong> в этом месяце`;
+      }
+      if (actionBtn) {
+        actionBtn.textContent = 'Занять место';
+      }
+    } else {
+      // WAITLIST MODE
+      if (dot) {
+        dot.classList.remove('is-available');
+        dot.classList.add('is-booked');
+      }
+      if (textNode) {
+        textNode.innerHTML = `Запись закрыта. Бронь на <strong>${nextMonth}</strong>`;
+      }
+      if (actionBtn) {
+        actionBtn.textContent = 'В лист ожидания';
+      }
+    }
+
+    // Bind action button to focus the brief form
+    if (actionBtn) {
+      actionBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const briefNameInput = document.querySelector('.contact-form input[name="name"]');
+        if (briefNameInput) {
+          briefNameInput.focus();
+          briefNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // If not on the contact page, navigate there
+          window.location.href = 'contact.html';
+        }
+      });
+    }
+  });
+}
+
+// ===== BRAND COLLAPSE ANIMATION =====
+function initializeBrandAnimation() {
+  const brand = document.getElementById("brandTrigger");
+  if (!brand || REDUCED_MOTION) return;
+
+  setTimeout(() => {
+    brand.classList.add("is-collapsed");
+  }, 2500);
+
+  brand.addEventListener("mouseenter", () => {
+    brand.classList.remove("is-collapsed");
+  });
+
+  brand.addEventListener("mouseleave", () => {
+    setTimeout(() => {
+      brand.classList.add("is-collapsed");
+    }, 800);
+  });
+}
+
+// ===== REVEAL ANIMATIONS =====
+function initializeRevealAnimations() {
+  const revealEls = document.querySelectorAll(".reveal");
+  if (!revealEls.length) return;
+
+  if (REDUCED_MOTION) {
+    revealEls.forEach(el => el.classList.add("in-view"));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  revealEls.forEach(el => observer.observe(el));
+}
+
+// ===== THEME SYSTEM =====
 function initializeTheme() {
   const savedTheme = localStorage.getItem(THEME_MODE_KEY) || "light";
   applyTheme(savedTheme);
@@ -110,199 +185,75 @@ function initializeTheme() {
 }
 
 function applyTheme(theme) {
+  const isDark = theme === "dark";
   document.documentElement.setAttribute("data-theme", theme);
-  const themeIcon = theme === "dark" ? "☾" : "☀";
-  if (themeToggle) {
-    themeToggle.innerHTML = `<span class="theme-icon">${themeIcon}</span>`;
-  }
+  document.body.classList.toggle("dark-mode", isDark);
 
-  // Future Mode Check: If theme is 'future', it's a special override
-  if (theme === "future") {
-    document.body.classList.add("future-mode");
-  } else {
-    document.body.classList.remove("future-mode");
-    if (theme === "light") document.body.classList.add("light-mode");
-    else document.body.classList.remove("light-mode");
+  if (themeToggle) {
+    let iconSpan = themeToggle.querySelector('.theme-toggle__icon');
+    let textSpan = themeToggle.querySelector('.theme-toggle__text');
+
+    if (!iconSpan || !textSpan) {
+      themeToggle.innerHTML = '<span class="theme-toggle__icon"></span><span class="theme-toggle__text"></span>';
+      iconSpan = themeToggle.querySelector('.theme-toggle__icon');
+      textSpan = themeToggle.querySelector('.theme-toggle__text');
+    }
+
+    // Update text and icon to reflect the CURRENT status, so Light Mode = "Светлая", Dark Mode = "Тёмная" (hidden by CSS so only ☾ remains)
+    iconSpan.textContent = isDark ? "☾" : "☀";
+    textSpan.textContent = isDark ? "Тёмная" : "Светлая";
   }
 }
 
 function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute("data-theme");
-  let nextTheme = "dark";
-
-  if (currentTheme === "dark") nextTheme = "light";
-  else if (currentTheme === "light") nextTheme = "dark";
-
-  localStorage.setItem(THEME_MODE_KEY, nextTheme);
-  applyTheme(nextTheme);
-}
-
-function initializeFutureMode() {
-  // Secret combo or detection can trigger this
-  window.enableFutureMode = () => {
-    localStorage.setItem(THEME_MODE_KEY, "future");
-    applyTheme("future");
-    injectFutureModel();
-  };
-
-  if (document.body.classList.contains("future-mode")) {
-    injectFutureModel();
-  }
-}
-
-async function injectFutureModel() {
-  const container = document.getElementById("futureModel");
-  if (!container) return;
-
-  // Pick a model based on random or state
-  const models = ["assets/models/command-jet.svg", "assets/models/mario.svg"];
-  const model = models[Math.floor(Math.random() * models.length)];
-
-  try {
-    const response = await fetch(model);
-    if (!response.ok) return;
-    const svgText = await response.text();
-    container.innerHTML = svgText;
-  } catch (e) {
-    console.warn("Future model injection failed", e);
-  }
+  const currentTheme = localStorage.getItem(THEME_MODE_KEY) || "light";
+  const newTheme = currentTheme === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_MODE_KEY, newTheme);
+  applyTheme(newTheme);
 }
 
 // ===== NAVIGATION =====
 function initializeNavigation() {
-  if (!menuToggle || !siteNav) return;
-
-  menuToggle.addEventListener("click", () => {
-    const isOpen = siteNav.classList.contains("is-open");
-    if (isOpen) {
-      siteNav.classList.remove("is-open");
-      menuToggle.setAttribute("aria-expanded", "false");
-    } else {
-      siteNav.classList.add("is-open");
-      menuToggle.setAttribute("aria-expanded", "true");
-    }
-  });
-}
-
-// ===== REVEAL ANIMATIONS =====
-function initializeRevealAnimations() {
-  const revealEls = document.querySelectorAll(".reveal");
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("active");
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-
-  revealEls.forEach(el => observer.observe(el));
-}
-
-// ===== CARD TILT =====
-function initializeCardTilt() {
-  if (IS_TOUCH_DEVICE || REDUCED_MOTION) return;
-  const cards = document.querySelectorAll(".project-card, .testimonial-card");
-
-  cards.forEach(card => {
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = (y - centerY) / 10;
-      const rotateY = (centerX - x) / 10;
-
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
-    });
-
-    card.addEventListener("mouseleave", () => {
-      card.style.transform = "none";
-    });
-  });
-}
-
-// ===== BRAND ANIMATION =====
-function initializeBrandAnimation() {
-  if (!brandTrigger) return;
-  setTimeout(() => brandTrigger.classList.add("is-collapsed"), 3000);
-}
-
-// ===== ADMIN HOTSPOT =====
-function initializeAdminHotspot() {
-  const hotspot = document.getElementById("adminHotspot");
-  const adminLogo = document.getElementById("adminLogo");
-  const isAdminPage = document.body.dataset.page === "admin";
-
-  if (!hotspot && !adminLogo) return;
-
-  let logoTapCount = 0;
-  const target = hotspot || adminLogo;
-
-  target.addEventListener("click", () => {
-    logoTapCount++;
-    if (!isAdminPage && logoTapCount >= 5) {
-      window.location.href = "admin.html";
-    }
-    if (isAdminPage && logoTapCount >= WORKSPACE_EXIT_TAP_TARGET) {
-      window.location.href = "index.html";
-    }
-  });
-}
-
-// ===== VISITOR TRACKING =====
-function initializeVisitorTracking() {
-  let visitorId = localStorage.getItem(VISITOR_STORAGE_KEY);
-  if (!visitorId) {
-    visitorId = `v_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem(VISITOR_STORAGE_KEY, visitorId);
+  if (menuToggle && siteNav) {
+    menuToggle.addEventListener("click", toggleMenu);
+    siteNav.addEventListener("click", () => closeMenu());
   }
 }
 
-// ===== AVAILABILITY =====
-function initAvailabilityStatus() {
-  const spots = window.WELONE_AVAILABLE_SPOTS || 0;
-  const statusBlocks = document.querySelectorAll('.js-availability-block');
-  statusBlocks.forEach(block => {
-    const textNode = block.querySelector('.status-text');
-    if (textNode) {
-      textNode.innerHTML = spots > 0 ? `Свободно: <strong>${spots} места</strong>` : "Мест нет";
-    }
-  });
+function toggleMenu() {
+  if (!siteNav) return;
+  const isOpen = siteNav.classList.contains("is-open");
+  if (isOpen) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
 }
 
-// ===== CURSOR GLOW =====
-document.addEventListener("mousemove", (e) => {
-  if (cursorGlow) {
+function openMenu() {
+  if (!siteNav || !menuToggle) return;
+  siteNav.classList.add("is-open");
+  document.body.classList.add("menu-open");
+  menuToggle.textContent = "Close";
+  menuToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeMenu() {
+  if (!siteNav || !menuToggle) return;
+  siteNav.classList.remove("is-open");
+  document.body.classList.remove("menu-open");
+  menuToggle.textContent = "Menu";
+  menuToggle.setAttribute("aria-expanded", "false");
+}
+
+// ===== CURSOR GLOW (optional) =====
+if (cursorGlow && !IS_TOUCH_DEVICE && !REDUCED_MOTION) {
+  document.addEventListener("mousemove", (e) => {
     cursorGlow.style.left = e.clientX + "px";
     cursorGlow.style.top = e.clientY + "px";
-  }
-});
-
-// ===== PROJECT FILTERS =====
-function initializeProjectFilters() {
-  const filterBtns = document.querySelectorAll(".filter-btn");
-  const projects = document.querySelectorAll(".project-card");
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const filter = btn.dataset.filter;
-      filterBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      projects.forEach(card => {
-        const category = card.dataset.category;
-        if (filter === "all" || category === filter) {
-          card.style.display = "block";
-        } else {
-          card.style.display = "none";
-        }
-      });
-    });
   });
 }
+
 
 // ===== BENTO 2.0 GLARE TRACKING (2026 Trend) =====
 function initDynamicGlare() {
@@ -327,7 +278,58 @@ function initDynamicGlare() {
 }
 
 
+// ===== SCROLL-BOUND KINETIC TYPOGRAPHY (2026 Trend) =====
+function initKineticScroll() {
+  const textEl = document.getElementById('kinetic-text');
+  if (!textEl || REDUCED_MOTION || IS_TOUCH_DEVICE) return;
+
+  // We duplicate the text infinitely to prevent running out of words
+  textEl.innerHTML += textEl.innerHTML;
+
+  let currentScroll = window.scrollY;
+  let targetScroll = window.scrollY;
+  let ease = 0.08;
+
+  function runKinetic() {
+    // Determine scroll direction and velocity
+    targetScroll = window.scrollY;
+
+    // Lerp (Linear Interpolation) for buttery smooth kinetic movement
+    currentScroll += (targetScroll - currentScroll) * ease;
+
+    // Calculate translate X and arbitrary velocity Skew
+    const velocity = targetScroll - currentScroll;
+    const skew = Math.max(-15, Math.min(15, velocity * -0.2));
+
+    // Negative currentScroll moves it left. Add offset to start somewhat centered
+    const translateX = -(currentScroll * 0.8) % (textEl.scrollWidth / 2);
+
+    // Apply hardware accelerated transform
+    textEl.style.transform = `translate3d(${translateX}px, 0, 0) skewX(${skew}deg)`;
+
+    requestAnimationFrame(runKinetic);
+  }
+
+  requestAnimationFrame(runKinetic);
+}
+
+// ===== PRELOADER =====
+function hidePreloader() {
+  if (preloader) {
+    preloader.style.opacity = "0";
+    preloader.style.pointerEvents = "none";
+  }
+}
+
 // ===== VISITOR TRACKING =====
+function initializeVisitorTracking() {
+  const visitorId = localStorage.getItem(VISITOR_STORAGE_KEY) || generateVisitorId();
+  localStorage.setItem(VISITOR_STORAGE_KEY, visitorId);
+
+  // Track current page view
+  trackPageView();
+}
+
 function generateVisitorId() {
   return `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -387,6 +389,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// ===== 3D CARD TILT =====
+function initializeCardTilt() {
+  if (IS_TOUCH_DEVICE || REDUCED_MOTION) return;
+  const cards = document.querySelectorAll(".tilt, .project-card, .card, .metrics article, .timeline__grid article");
+  cards.forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      card.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
+      card.style.transition = "transform 0.1s ease-out";
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "";
+      card.style.transition = "transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)";
+    });
+  });
+}
 
 // ===== ANIMATED COUNTERS =====
 function initializeCounters() {
@@ -465,25 +490,16 @@ function initializeSkillScanner() {
 // ===== MAGNETIC BUTTONS =====
 function initializeMagneticButtons() {
   if (IS_TOUCH_DEVICE || REDUCED_MOTION) return;
-  const buttons = document.querySelectorAll(".btn--primary, .btn--outline, .theme-toggle, .menu-toggle");
-
+  const buttons = document.querySelectorAll(".btn--primary, .btn--ghost");
   buttons.forEach(btn => {
     btn.addEventListener("mousemove", (e) => {
       const rect = btn.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
-
-      // Pull button towards cursor up to 12px
-      const pullX = x * 0.15;
-      const pullY = y * 0.15;
-
-      btn.style.transform = `translate(${pullX}px, ${pullY}px)`;
-      btn.style.transition = "transform 0.1s ease-out";
+      btn.style.transform = `translate(${x * 0.15}px, ${y * 0.2}px) translateY(-2px)`;
     });
-
     btn.addEventListener("mouseleave", () => {
-      btn.style.transform = "translate(0, 0)";
-      btn.style.transition = "transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)";
+      btn.style.transform = "";
     });
   });
 }
@@ -547,6 +563,66 @@ function initializeCustomSelect() {
   });
 }
 
+// ===== PROJECT FILTERS =====
+function initializeProjectFilters() {
+  const filtersContainer = document.getElementById("filters");
+  const projectsList = document.getElementById("projectsList");
+  const statusEl = document.getElementById("projectFilterStatus");
+  const jumpBtn = document.getElementById("filtersJump");
+
+  if (!filtersContainer || !projectsList) return;
+
+  const filterBtns = filtersContainer.querySelectorAll("[data-filter]");
+  const cards = projectsList.querySelectorAll(".project-card[data-category]");
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const filter = btn.dataset.filter;
+
+      // Update active button
+      filterBtns.forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      // Filter cards with animation
+      let shown = 0;
+      cards.forEach(card => {
+        const match = filter === "all" || card.dataset.category === filter;
+        if (match) {
+          card.classList.remove("is-hidden");
+          card.style.opacity = "0";
+          card.style.transform = "translateY(12px)";
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+              card.style.opacity = "1";
+              card.style.transform = "translateY(0)";
+            });
+          });
+          shown++;
+        } else {
+          card.classList.add("is-hidden");
+        }
+      });
+
+      // Update status text
+      if (statusEl) {
+        const labels = { all: "все проекты", version: "версии", final: "финальные", special: "специальные" };
+        statusEl.textContent = filter === "all"
+          ? `Показаны все проекты (${shown}).`
+          : `Показаны ${labels[filter] || filter} (${shown}).`;
+      }
+    });
+  });
+
+  // Jump to filters button
+  if (jumpBtn) {
+    jumpBtn.addEventListener("click", () => {
+      filtersContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+}
+
+
 // ===== COUNT-UP ANIMATION =====
 function initializeCountUp() {
   const counters = document.querySelectorAll(".count-up");
@@ -576,6 +652,28 @@ function initializeCountUp() {
   }, { threshold: 0.3 });
 
   counters.forEach(el => observer.observe(el));
+}
+
+// ===== CURSOR GLOW =====
+function initializeCursorGlow() {
+  if (IS_TOUCH_DEVICE || REDUCED_MOTION || !cursorGlow) return;
+
+  let mouseX = 0, mouseY = 0;
+  let glowX = 0, glowY = 0;
+
+  document.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateGlow() {
+    glowX += (mouseX - glowX) * 0.12;
+    glowY += (mouseY - glowY) * 0.12;
+    cursorGlow.style.left = glowX + "px";
+    cursorGlow.style.top = glowY + "px";
+    requestAnimationFrame(animateGlow);
+  }
+  animateGlow();
 }
 
 // ===== SKILL BAR ANIMATION =====
@@ -770,76 +868,149 @@ function initializeClickableTiles() {
 
 
 
-// ===== COOKIE BANNER (152-ФЗ — гранулярное согласие) ======
+// ===== COOKIE BANNER ======
 function initializeCookieBanner() {
   const cookieBanner = document.getElementById("cookieBanner");
   const acceptCookiesBtn = document.getElementById("acceptCookies");
-  const rejectCookiesBtn = document.getElementById("rejectCookies");
-  const settingsBtn = document.getElementById("cookieSettingsBtn");
-  const detailsPanel = document.getElementById("cookieDetails");
-  const savePrefsBtn = document.getElementById("saveCookiePrefs");
-  const analyticsCheckbox = document.getElementById("cookieAnalytics");
-  const marketingCheckbox = document.getElementById("cookieMarketing");
 
-  if (!cookieBanner || !acceptCookiesBtn) return;
+  if (cookieBanner && acceptCookiesBtn) {
+    const hasAcceptedCookies = localStorage.getItem("cookieConsentAccepted");
 
-  const hasConsent = localStorage.getItem("cookieConsentAccepted");
-
-  if (!hasConsent) {
-    setTimeout(() => {
-      cookieBanner.classList.add("is-visible");
-    }, 500);
-  } else {
-    cookieBanner.classList.add("is-hidden");
-  }
-
-  function hideBanner() {
-    cookieBanner.classList.remove("is-visible");
-    setTimeout(() => {
+    if (!hasAcceptedCookies) {
+      setTimeout(() => {
+        cookieBanner.classList.add("is-visible");
+      }, 500);
+    } else {
       cookieBanner.classList.add("is-hidden");
-    }, 400);
-  }
+    }
 
-  // «Принять все» — all consent = true
-  acceptCookiesBtn.addEventListener("click", () => {
-    localStorage.setItem("cookieConsentAccepted", "true");
-    localStorage.setItem("cookieConsentAnalytics", "true");
-    localStorage.setItem("cookieConsentMarketing", "true");
-    hideBanner();
-  });
-
-  // «Отклонить все» — only necessary, rest = false
-  if (rejectCookiesBtn) {
-    rejectCookiesBtn.addEventListener("click", () => {
+    acceptCookiesBtn.addEventListener("click", () => {
       localStorage.setItem("cookieConsentAccepted", "true");
-      localStorage.setItem("cookieConsentAnalytics", "false");
-      localStorage.setItem("cookieConsentMarketing", "false");
-      hideBanner();
+      cookieBanner.classList.remove("is-visible");
+      setTimeout(() => {
+        cookieBanner.classList.add("is-hidden");
+      }, 400);
     });
   }
+}
 
-  // «Настройки» — toggle details panel
-  if (settingsBtn && detailsPanel) {
-    settingsBtn.addEventListener("click", () => {
-      const isHidden = detailsPanel.hasAttribute("hidden");
-      if (isHidden) {
-        detailsPanel.removeAttribute("hidden");
-        settingsBtn.textContent = "Скрыть";
-      } else {
-        detailsPanel.setAttribute("hidden", "");
-        settingsBtn.textContent = "Настройки";
+// ===== APPLE WELCOME SCREEN =====
+function initializeWelcomeScreen() {
+  const welcomeScreen = document.getElementById("apple-welcome-screen");
+  if (!welcomeScreen) return;
+
+  const hasSeenWelcome = localStorage.getItem("apple_welcome_shown");
+  if (hasSeenWelcome) {
+    welcomeScreen.remove(); // Remove immediately if already seen
+    return;
+  }
+
+  // Not seen yet -> show it
+  welcomeScreen.classList.remove("is-hidden");
+  document.body.style.overflow = "hidden"; // Prevent scrolling during welcome
+
+  const words = welcomeScreen.querySelectorAll(".apple-welcome__word");
+  if (!words.length) return;
+
+  let currentIndex = 0;
+  const showDuration = 1000; // time to show each full word
+  const container = document.getElementById("appleWelcomeContainer");
+  const brandLogo = document.querySelector(".brand-initial") || document.querySelector(".brand-ru");
+
+  function showNextWord() {
+    if (currentIndex > 0) {
+      words[currentIndex - 1].classList.remove("is-active");
+      words[currentIndex - 1].classList.add("is-exiting");
+    }
+
+    if (currentIndex < words.length) {
+      words[currentIndex].classList.add("is-active");
+      currentIndex++;
+      setTimeout(showNextWord, showDuration);
+    } else {
+      // Finished showing all words individually, let's merge them
+      startMergeSequence();
+    }
+  }
+
+  function startMergeSequence() {
+    // Reset words to visible
+    words.forEach(w => w.classList.remove("is-exiting", "is-active"));
+    
+    // Add merging classes to container
+    welcomeScreen.classList.add("is-merging");
+    container.classList.add("is-merged-container");
+
+    // Wrap the rest of the text in spans to hide them easily
+    words.forEach(word => {
+      const textNode = word.childNodes[1]; // The text after the <span> letter
+      if (textNode && textNode.nodeType === 3) { // TEXT_NODE
+        const restSpan = document.createElement("span");
+        restSpan.className = "apple-welcome__rest";
+        restSpan.textContent = textNode.textContent;
+        word.replaceChild(restSpan, textNode);
       }
     });
+
+    // Wait a moment for W D A to form, then fly it to the logo
+    setTimeout(flyToLogo, 1400); 
   }
 
-  // «Сохранить выбор» — save granular prefs
-  if (savePrefsBtn && analyticsCheckbox && marketingCheckbox) {
-    savePrefsBtn.addEventListener("click", () => {
-      localStorage.setItem("cookieConsentAccepted", "true");
-      localStorage.setItem("cookieConsentAnalytics", String(analyticsCheckbox.checked));
-      localStorage.setItem("cookieConsentMarketing", String(marketingCheckbox.checked));
-      hideBanner();
+  function flyToLogo() {
+    if (!brandLogo) {
+      finishWelcome();
+      return;
+    }
+
+    // Create a new floating element containing exactly "WDA"
+    const flyingEl = document.createElement("div");
+    flyingEl.className = "apple-welcome__flying-wda";
+    flyingEl.innerHTML = `<span>W</span><span>D</span><span>A</span>`;
+    document.body.appendChild(flyingEl);
+
+    // Hide original merging text
+    container.style.opacity = '0';
+
+    // Calculate target position and scale
+    const targetRect = brandLogo.getBoundingClientRect();
+    const flyingRect = flyingEl.getBoundingClientRect();
+
+    // Scale down from big centered text to the size of the header logo
+    const scaleFactor = targetRect.height / flyingRect.height;
+    
+    // Calculate the translation required to move from center to the target logo
+    const dx = targetRect.left - flyingRect.left + (targetRect.width - flyingRect.width) / 2;
+    const dy = targetRect.top - flyingRect.top + (targetRect.height - flyingRect.height) / 2;
+
+    // Trigger flight animation
+    requestAnimationFrame(() => {
+      flyingEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scaleFactor})`;
+      
+      // Start fading black background right after
+      setTimeout(() => {
+        welcomeScreen.classList.add("is-hidden");
+      }, 400);
     });
+
+    // Wait for flight to finish
+    setTimeout(() => {
+      flyingEl.style.opacity = '0'; // Fade out flying text smoothly as it lands
+      finishWelcome(flyingEl);
+    }, 1200);
   }
+
+  function finishWelcome(flyingEl) {
+    welcomeScreen.classList.add("is-hidden");
+    document.body.style.overflow = "";
+    localStorage.setItem("apple_welcome_shown", "true");
+    
+    setTimeout(() => {
+      welcomeScreen.remove();
+      if (flyingEl) flyingEl.remove();
+    }, 1000);
+  }
+
+  // Start sequence shortly after load
+  setTimeout(showNextWord, 600);
 }
 

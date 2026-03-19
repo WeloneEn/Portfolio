@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Main Server
  * Client-side backend + Admin API (clean architecture)
  */
@@ -140,70 +140,15 @@ async function handleRequest(req, res) {
 // ===== API ROUTES =====
 
 async function handleApiRequest(req, res, pathname, urlObject) {
-  // GET /api/health (QA heartbeat)
-  if (pathname === "/api/health" && req.method === "GET") {
-    sendJson(res, 200, { ok: true, version: "1.0.0" });
-    return;
-  }
-
-  // POST /api/visit
-  if (pathname === "/api/visit" && req.method === "POST") {
-    sendJson(res, 201, { ok: true });
-    return;
-  }
-
-  // POST /api/engagement
-  if (pathname === "/api/engagement" && req.method === "POST") {
-    sendJson(res, 201, { ok: true });
-    return;
-  }
-
-  // POST /api/secret
-  if (pathname === "/api/secret" && req.method === "POST") {
-    sendJson(res, 201, { ok: true });
-    return;
-  }
-
-  // GET /api/admin/stats
-  if (pathname === "/api/admin/stats" && req.method === "GET") {
-    sendJson(res, 200, {
-      totalHits: 1250,
-      todayUniqueVisitors: 42,
-      todayRepeatVisits: 12,
-      avgViewMs: 185000,
-      secretFindsTotal: 5,
-      leadsTotal: (await loadLeads()).length
-    });
-    return;
-  }
-
-  // GET /api/admin/team
-  if (pathname === "/api/admin/team" && req.method === "GET") {
-    const users = await loadUsers();
-    sendJson(res, 200, {
-      ok: true,
-      actor: { role: "owner" },
-      users: users,
-      departments: ["Design", "Development", "Management"]
-    });
-    return;
-  }
-
   // POST /api/admin/login
   if (pathname === "/api/admin/login" && req.method === "POST") {
     await handleAdminLogin(req, res);
     return;
   }
 
-  // GET /api/admin/users
+  // GET /api/admin/users (requires owner role)
   if (pathname === "/api/admin/users" && req.method === "GET") {
     await handleGetUsers(req, res);
-    return;
-  }
-
-  // POST /api/admin/users (User creation for QA)
-  if (pathname === "/api/admin/users" && req.method === "POST") {
-    sendJson(res, 201, { ok: true });
     return;
   }
 
@@ -237,18 +182,7 @@ async function handleGetUsers(req, res) {
     }
 
     // For now, just return all users (in real app, verify token and check role)
-    let users = await loadUsers();
-
-    // Ensure at least the system admin is in the list for QA
-    if (users.length === 0) {
-      users.push({
-        id: "system_admin",
-        username: process.env.ADMIN_USERNAME || "admin",
-        role: "owner",
-        name: "System Administrator",
-        department: "Systems"
-      });
-    }
+    const users = await loadUsers();
 
     sendJson(res, 200, {
       ok: true,
@@ -273,28 +207,7 @@ async function handleAdminLogin(req, res) {
     }
 
     // Load users from admin-users.json
-    let users = await loadUsers();
-
-    // Fallback/Override for QA Admin from Environment
-    const envAdminUser = process.env.ADMIN_USERNAME || "admin";
-    const envAdminPass = process.env.ADMIN_PASSWORD;
-
-    if (envAdminPass && username === envAdminUser && password === envAdminPass) {
-      const actor = {
-        id: "system_admin",
-        username: envAdminUser,
-        name: "System Administrator",
-        role: "owner",
-        department: "Systems"
-      };
-      sendJson(res, 200, {
-        ok: true,
-        token: `token_system_${Date.now()}`,
-        actor: actor
-      });
-      return;
-    }
-
+    const users = await loadUsers();
     const user = users.find((u) => u.username === username);
 
     if (!user || user.password !== password) {
@@ -371,14 +284,6 @@ async function serveStatic(req, res, urlObject) {
     pathname = "/index.html";
   }
 
-  // Handle extensionless URLs
-  if (!path.extname(pathname) && pathname !== "/") {
-    const htmlPath = path.join(ROOT_DIR, pathname + ".html");
-    if (fs.existsSync(htmlPath)) {
-      pathname += ".html";
-    }
-  }
-
   // Security check
   const safePath = path.normalize(path.join(ROOT_DIR, pathname));
   if (!safePath.startsWith(ROOT_DIR)) {
@@ -428,6 +333,18 @@ async function serveStatic(req, res, urlObject) {
     res.end(content);
   } catch (error) {
     if (error.code === "ENOENT") {
+      // Fallback: try appending .html if there's no extension
+      if (!path.extname(pathname)) {
+        try {
+          const fallbackPath = safePath + ".html";
+          const fallbackContent = await fs.promises.readFile(fallbackPath, "utf-8");
+          res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+          res.end(fallbackContent);
+          return;
+        } catch (fallbackError) {
+          // Fallback failed, send 404
+        }
+      }
       sendText(res, 404, "Not Found");
     } else {
       console.error("Error serving file:", error.message);
