@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Обсудить проект — Wel Web</title>
+  <meta name="description" content="Опишите задачу — мы вернёмся с предложением в течение 24 часов. Telegram, WhatsApp, почта.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Обсудить проект — Wel Web">
+  <meta property="og:description" content="Расскажите о задаче — мы ответим в течение 24 часов.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Wel Web</a>
+      <nav class="nav__links">
+        <a href="about.html" class="nav__link">О нас</a>
+        <a href="projects.html" class="nav__link">Работы</a>
+        <a href="contact.html" class="nav__cta">Обсудить проект</a>
+      </nav>
+      <button class="nav__hamburger" id="navHamburger" type="button" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-overlay" id="mobileOverlay">
+    <a href="about.html">О нас</a>
+    <a href="projects.html">Работы</a>
+    <a href="contact.html">Обсудить проект</a>
+  </div>
+
+  <main class="container">
+    <section class="contact-hero">
+      <h1 class="fade-up">Расскажите о задаче</h1>
+      <p class="hero__subtitle fade-up">Напишите пару слов о проекте — мы вернёмся с предметным ответом в течение 24 часов. Или свяжитесь напрямую, если нужно быстрее.</p>
+    </section>
+
+    <section class="contact-grid border-top section" style="padding-top: var(--space-lg);">
+      
+      <!-- Прямые контакты -->
+      <div class="contact-info fade-up">
+        <h3>Напрямую</h3>
+        <p>Для быстрых вопросов пишите в любой удобный мессенджер. Мы отвечаем в рабочее время, обычно — в течение часа.</p>
+        <div class="contact-channels">
+          <a href="https://t.me/weloneEN" target="_blank" class="contact-channel">Telegram →</a>
+          <a href="https://wa.me/79996161821" target="_blank" class="contact-channel">WhatsApp →</a>
+          <a href="mailto:jadeloomwear@gmail.com" class="contact-channel">jadeloomwear@gmail.com →</a>
+          <a href="tel:+79996161821" class="contact-channel">+7 (999) 616-18-21 →</a>
+        </div>
+      </div>
+
+      <!-- Форма заявки -->
+      <div class="contact-form fade-up">
+        <h3>Оставить заявку</h3>
+        <form class="form" id="contactForm">
+          <div class="form-group">
+            <label for="name" class="form-label">Ваше имя</label>
+            <input type="text" id="name" name="name" class="form-input" placeholder="Как к вам обращаться" required>
+          </div>
+          <div class="form-group">
+            <label for="contact" class="form-label">Телефон или Telegram</label>
+            <input type="text" id="contact" name="contact" class="form-input" placeholder="@username или номер" required>
+          </div>
+          <div class="form-group">
+            <label for="message" class="form-label">Кратко о задаче</label>
+            <textarea id="message" name="message" class="form-input" placeholder="Нужен сайт для…"></textarea>
+          </div>
+
+          <!-- 152-ФЗ -->
+          <div class="consent">
+            <input type="checkbox" id="consent" name="consent" class="consent__check" required>
+            <label for="consent" class="consent__label">Нажимая «Отправить», я даю согласие на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank">Политикой конфиденциальности</a>.</label>
+          </div>
+
+          <button type="submit" class="btn-submit" disabled>Отправить</button>
+          <p id="formStatus" style="display:none; margin-top: 0.75rem; font-size: 0.9rem; font-weight: 500;"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__bottom" style="border-top: none; padding-top: 3rem;">
+      <p>© 2026 Wel Web</p>
+      <div class="footer__links">
+        <a href="index.html">На главную</a>
+      </div>
+    </div>
+    <div class="container footer__privacy">
+      <a href="privacy.html">Политика обработки персональных данных</a>
+    </div>
+  </footer>
+
+  <div class="cookie-banner" id="cookieBanner">
+    <p class="cookie-banner__text">Мы используем cookie для работы сайта. Подробнее — в <a href="privacy.html">Политике обработки данных</a>.</p>
+    <button class="cookie-banner__btn" id="cookieAccept">Ок</button>
+  </div>
+
+  <script defer src="script.js"></script>
+  <script>
+    document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const status = document.getElementById('formStatus');
+      btn.textContent = 'Отправка…';
+
+      try {
+        const fd = new FormData(e.target);
+        const data = Object.fromEntries(fd.entries());
+        delete data.consent;
+        data.source = 'contact_page';
+
+        const res = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          e.target.reset();
+          btn.textContent = 'Отправлено ✓';
+          btn.disabled = true;
+          status.textContent = 'Спасибо! Мы свяжемся с вами в ближайшее время.';
+          status.style.color = 'var(--success)';
+          status.style.display = 'block';
+        } else { throw new Error(); }
+      } catch {
+        btn.textContent = 'Ошибка';
+        status.textContent = 'Не удалось отправить. Напишите нам напрямую в мессенджер.';
+        status.style.color = 'var(--error)';
+        status.style.display = 'block';
+      }
+
+      setTimeout(() => {
+        btn.textContent = 'Отправить';
+        btn.disabled = !document.getElementById('consent').checked;
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

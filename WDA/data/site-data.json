@@ -1,0 +1,300 @@
+{
+  "visits": {
+    "totalHits": 249,
+    "uniqueVisitors": 1,
+    "knownVisitors": {
+      "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
+        "firstSeen": "2026-02-16T05:02:38.133Z",
+        "sourcePage": "/index.html",
+        "referrer": "http://localhost:3000/admin.html",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
+        "lastSeen": "2026-03-02T05:10:22.123Z",
+        "lastSecretPage": "/projects.html"
+      }
+    },
+    "byDay": {
+      "2026-02-16": {
+        "hits": 162,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      },
+      "2026-02-18": {
+        "hits": 54,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      },
+      "2026-02-19": {
+        "hits": 5,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      },
+      "2026-02-27": {
+        "hits": 13,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      },
+      "2026-03-02": {
+        "hits": 15,
+        "uniqueVisitors": 1,
+        "visitors": {
+          "7a9f058d-1de1-45d8-8b67-79d7e740ae02": 1
+        }
+      }
+    }
+  },
+  "engagement": {
+    "totalDurationMs": 2251878,
+    "samplesCount": 95,
+    "byPage": {
+      "/index.html": {
+        "durationMs": 1807005,
+        "samples": 59
+      },
+      "/contact.html": {
+        "durationMs": 75563,
+        "samples": 15
+      },
+      "/about.html": {
+        "durationMs": 91168,
+        "samples": 9
+      },
+      "/projects.html": {
+        "durationMs": 267635,
+        "samples": 10
+      },
+      "/": {
+        "durationMs": 10507,
+        "samples": 2
+      }
+    }
+  },
+  "secrets": {
+    "totalEvents": 87,
+    "bySecret": {
+      "admin-hotspot": 8,
+      "adadsw": 10,
+      "logo-7tap": 3,
+      "future": 37,
+      "logo-2tap": 29
+    },
+    "byVisitor": {
+      "7a9f058d-1de1-45d8-8b67-79d7e740ae02": {
+        "totalEvents": 87,
+        "uniqueSecrets": {
+          "admin-hotspot": true,
+          "adadsw": true,
+          "logo-7tap": true,
+          "future": true,
+          "logo-2tap": true
+        }
+      }
+    }
+  },
+  "leads": [
+    {
+      "id": "lead_1772422624700_2b130f81",
+      "name": "Дмитрий 6617",
+      "contact": "client6617@example.com",
+      "type": "Многостраничный сайт",
+      "message": "Письки попки какашечки",
+      "sourcePage": "/contact.html",
+      "status": "done",
+      "department": "unassigned",
+      "assigneeId": "",
+      "assigneeName": "",
+      "priority": "normal",
+      "outcome": "pending",
+      "internalNote": "",
+      "updatedById": "workspace",
+      "updatedByName": "Workspace",
+      "completedAt": "2026-03-02T03:37:54.430Z",
+      "completedById": "workspace",
+      "completedByName": "Workspace",
+      "comments": [
+        {
+          "id": "cmt_MjAyNi0wMy0wMlQw",
+          "text": "Письки попки какашечки",
+          "authorId": "workspace",
+          "authorUsername": "admin",
+          "authorName": "Workspace",
+          "authorRole": "owner",
+          "createdAt": "2026-03-02T03:37:37.349Z"
+        },
+        {
+          "id": "cmt_MjAyNi0wMy0wMlQw",
+          "text": "Попки попки письки",
+          "authorId": "workspace",
+          "authorUsername": "admin",
+          "authorName": "Workspace",
+          "authorRole": "owner",
+          "createdAt": "2026-03-02T03:37:46.130Z"
+        }
+      ],
+      "createdAt": "2026-03-02T03:37:04.700Z",
+      "updatedAt": "2026-03-02T03:37:54.430Z"
+    }
+  ],
+  "crm": {
+    "importantEvents": []
+  },
+  "training": {
+    "profiles": [
+      {
+        "userId": "manager_main",
+        "planStartDate": "",
+        "currentDay": 1,
+        "stage": "foundation",
+        "status": "onboarding",
+        "confidence": 3,
+        "energy": 3,
+        "control": 3,
+        "notes": "",
+        "workflow": {
+          "modules": [
+            {
+              "id": "foundation",
+              "title": "Блок 1: База продукта и сценарий разговора",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            },
+            {
+              "id": "diagnostics",
+              "title": "Блок 2: Диагностика клиента и выявление потребностей",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            },
+            {
+              "id": "dialog_control",
+              "title": "Блок 3: Работа с возражениями и контроль диалога",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            },
+            {
+              "id": "closing",
+              "title": "Блок 4: Закрытие и фиксация в CRM",
+              "managerCompleted": false,
+              "managerCompletedAt": "",
+              "managerNote": "",
+              "productApproved": false,
+              "productScores": {
+                "knowledge": 0,
+                "communication": 0,
+                "process": 0,
+                "totalScore": 0
+              },
+              "productComment": "",
+              "productReviewedAt": "",
+              "productReviewedById": "",
+              "productReviewedByName": ""
+            }
+          ],
+          "practice": {
+            "maxContacts": 3,
+            "contacts": [],
+            "overallReview": {
+              "intro": 0,
+              "needs": 0,
+              "offer": 0,
+              "objections": 0,
+              "closing": 0,
+              "crm": 0,
+              "totalScore": 0,
+              "comment": "",
+              "reviewedAt": "",
+              "reviewedById": "",
+              "reviewedByName": ""
+            },
+            "decision": {
+              "status": "pending",
+              "note": "",
+              "decidedAt": "",
+              "decidedById": "",
+              "decidedByName": ""
+            }
+          },
+          "survey": {
+            "submitted": false,
+            "submittedAt": "",
+            "missingTopics": "",
+            "mentorScore": 0,
+            "mentorFeedback": "",
+            "companyScore": 0,
+            "companyFeedback": ""
+          }
+        },
+        "createdAt": "2026-02-19T13:30:27.146Z",
+        "updatedAt": "2026-02-19T13:30:27.146Z",
+        "updatedById": "",
+        "updatedByName": ""
+      }
+    ],
+    "callReviews": []
+  },
+  "performance": {
+    "plans": {
+      "day": {
+        "target": 10,
+        "updatedAt": "2026-02-27T10:14:55.775Z",
+        "updatedById": "workspace",
+        "updatedByName": "Workspace"
+      },
+      "week": {
+        "target": 20,
+        "updatedAt": "2026-02-27T10:14:55.775Z",
+        "updatedById": "workspace",
+        "updatedByName": "Workspace"
+      },
+      "month": {
+        "target": 50,
+        "updatedAt": "2026-02-27T10:14:55.775Z",
+        "updatedById": "workspace",
+        "updatedByName": "Workspace"
+      }
+    },
+    "trainingAssignments": []
+  }
+}
