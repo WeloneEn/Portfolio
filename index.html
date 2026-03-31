@@ -1,285 +1,150 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-
 <head>
-  <meta charset="UTF-8" />
-  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0d0d12" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | Portfolio</title>
-  <meta name="description"
-    content="Welone Digital Atelier — создаём уютные, тёплые и современные сайты для вашего бизнеса." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260218z14" />
-  <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260219ux2"></script>
-  <meta property="og:title" content="Welone Digital Atelier — Сайты будущего" />
-  <meta property="og:description" content="Создаём уютные, тёплые и современные сайты для вашего бизнеса." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://weloneen.github.io/Portfolio/" />
-  <meta property="og:image" content="https://weloneen.github.io/Portfolio/assets/og-preview.png" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wel Web — Надёжный партнёр в разработке сайтов</title>
+  <meta name="description" content="Делаем сайты для бизнеса. Прозрачные сметы, соблюдение сроков, поддержка после запуска. Говорим на простом языке.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Wel Web — Надёжный партнёр в разработке сайтов">
+  <meta property="og:description" content="Делаем сайты для бизнеса. Прозрачные сметы, соблюдение сроков, поддержка после запуска.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body data-page="home">
-  <div id="apple-welcome-screen" class="apple-welcome is-hidden" aria-hidden="true">
-    <div class="apple-welcome__text-container" id="appleWelcomeContainer">
-      <div class="apple-welcome__word"><span class="apple-welcome__letter">W</span>elone</div>
-      <div class="apple-welcome__word"><span class="apple-welcome__letter">D</span>igital</div>
-      <div class="apple-welcome__word"><span class="apple-welcome__letter">A</span>telier</div>
+  <!-- Nav -->
+  <header class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Wel Web</a>
+      <nav class="nav__links">
+        <a href="about.html" class="nav__link">О нас</a>
+        <a href="projects.html" class="nav__link">Работы</a>
+        <a href="contact.html" class="nav__cta">Обсудить проект</a>
+      </nav>
+      <button class="nav__hamburger" id="navHamburger" type="button" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-  </div>
-
-  <div class="preloader" id="preloader" aria-hidden="true">
-    <div class="preloader__logo">WDA</div>
-    <div class="preloader__ring"></div>
-  </div>
-
-  <div class="noise" aria-hidden="true"></div>
-  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-
-  <!-- SCARCITY TOP BAR -->
-  <div class="scarcity-bar">
-    <p>Фокус на качество: беру не более 2 проектов в месяц. На текущий месяц осталось 1 свободное место.</p>
-  </div>
-
-  <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger" title="Welone Digital Atelier">
-      <span class="brand-ru">Цифровое ателье Welone</span><br>
-      <span class="brand-en" style="font-size: 0.6em; opacity: 0.6; font-weight: 500;">Welone Digital Atelier</span>
-    </a>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
-      aria-controls="siteNav">Menu</button>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
-      <span class="theme-toggle__icon">☾</span>
-      <span class="theme-toggle__text">Тёмная</span>
-    </button>
-    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
-      <a class="is-active" href="index.html" aria-current="page">Главная</a>
-      <a href="about.html">Обо мне</a>
-      <a href="projects.html">Проекты</a>
-      <a href="contact.html">Контакты</a>
-      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
-      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true"
-        tabindex="-1">Заявки</a>
-      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true"
-        tabindex="-1">Статистика</a>
-    </nav>
   </header>
 
+  <div class="mobile-overlay" id="mobileOverlay">
+    <a href="about.html">О нас</a>
+    <a href="projects.html">Работы</a>
+    <a href="contact.html">Обсудить проект</a>
+  </div>
+
   <main>
-    <section class="hero reveal" id="heroSection">
-      <div class="hero__background" aria-hidden="true">
-        <span></span><span></span><span></span><span></span>
-      </div>
-      <p class="label">Разработка сайтов</p>
-      <h1>
-        Создаю <span class="glitch" data-text="САЙТЫ БУДУЩЕГО">САЙТЫ БУДУЩЕГО</span>
-      </h1>
-      <p class="hero__lead">Продуманная структура, чистый код и внимание к каждой детали — ваш сайт работает на
-        результат с первого дня.</p>
-      <div class="hero__actions">
-        <!-- <a class="btn btn--primary" href="projects.html">Смотреть работы</a> -->
-        <a class="btn btn--primary" href="contact.html">Обсудить проект</a>
+    <!-- Hero — честный разговор, без пафоса -->
+    <section class="hero container">
+      <div class="hero__inner fade-up">
+        <h1 class="hero__title">Ваш технический партнёр в&nbsp;создании сайтов</h1>
+        <p class="hero__subtitle">Мы не просто верстаем страницы. Мы вникаем в ваш бизнес, говорим на простом языке и берём на себя всю техническую сторону — от дизайна до запуска. Без скрытых платежей, без срыва сроков.</p>
+        <a href="projects.html" class="hero__cta">Посмотреть работы →</a>
       </div>
     </section>
 
-    <section class="metrics reveal" id="metricsSection">
-      <article>
-        <h2>Фокус на качество</h2>
-        <p>Беру в работу не более 2 проектов в месяц для максимального погружения.</p>
-        <div class="js-availability-block" style="margin-block: 1rem 0; padding: 1rem;">
-          <div class="availability-status">
-            <div class="status-indicator">
-              <span class="status-dot"></span>
-              <span class="status-text" style="font-size: 0.8rem;">Загрузка мест...</span>
-            </div>
-            <a href="contact.html" class="btn btn--outline btn--small js-focus-brief"
-              style="margin-top: 0.5rem; text-align: center;">Занять место</a>
-          </div>
+    <!-- Доверие — почему мы -->
+    <section class="section container border-top">
+      <div class="section-header fade-up">
+        <span class="section-label">Почему мы</span>
+        <h2 class="section-title">Строим сотрудничество на доверии</h2>
+        <p class="section-desc">Наша работа держится на трёх простых обещаниях, которые мы выполняем в каждом проекте.</p>
+      </div>
+
+      <div class="trust-grid">
+        <div class="trust-card fade-up">
+          <span class="trust-card__icon">📋</span>
+          <h3 class="trust-card__title">Прозрачная смета</h3>
+          <p class="trust-card__text">Вы знаете точную стоимость до начала работ. Никаких «доплат по ходу» и неожиданных расходов. Всё фиксируем в договоре.</p>
         </div>
-      </article>
-      <article>
-        <h2>Гарантия скорости</h2>
-        <p>*</p>
-      </article>
-      <article>
-        <h2>Поддержка проектов</h2>
-        <p>1 месяц бесплатного технического сопровождения после релиза</p>
-      </article>
-    </section>
-
-    <section class="timeline reveal" id="timelineSection">
-      <h2>Как строится проект</h2>
-      <div class="timeline__grid">
-        <article>
-          <h3>01. Аналитика</h3>
-          <p>Разбираю задачу, изучаю аудиторию и конкурентов; составляю сценарий пути пользователя.</p>
-        </article>
-        <article>
-          <h3>02. Разработка</h3>
-          <p>Семантическая верстка, адаптив под все устройства, интерактивные элементы и плавные анимации.</p>
-        </article>
-        <article>
-          <h3>03. Запуск</h3>
-          <p>Тестирование качества, оптимизация скорости, подключение аналитики и передача проекта.</p>
-        </article>
+        <div class="trust-card fade-up">
+          <span class="trust-card__icon">⏰</span>
+          <h3 class="trust-card__title">Соблюдение сроков</h3>
+          <p class="trust-card__text">Называем реальные сроки и держим слово. Если что-то идёт не по плану — предупреждаем заранее, а не в последний день.</p>
+        </div>
+        <div class="trust-card fade-up">
+          <span class="trust-card__icon">🤝</span>
+          <h3 class="trust-card__title">Не бросаем после запуска</h3>
+          <p class="trust-card__text">После сдачи проекта остаёмся на связи. Поможем с правками, расскажем, как работает сайт, и ответим на любой вопрос.</p>
+        </div>
       </div>
     </section>
 
-
-    <section class="testimonials reveal" id="principlesSection">
-      <h2>Наши принципы разработки</h2>
-      <div class="testimonials__grid">
-        <article class="testimonial-card card">
-          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Чистый семантический код</h3>
-          <p class="testimonial-card__text">Без лишних фреймворков, только Vanilla CSS и JS.</p>
-        </article>
-        <article class="testimonial-card card">
-          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Стандарты Core Web Vitals</h3>
-          <p class="testimonial-card__text">Абсолютная стабильность макета и мгновенная загрузка.</p>
-        </article>
-        <article class="testimonial-card card">
-          <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text);">Инклюзивность и доступность</h3>
-          <p class="testimonial-card__text">Соответствие интерфейсов стандартам ГОСТ Р 52872-2019.</p>
-        </article>
+    <!-- Проекты — только два реальных кейса -->
+    <section id="work" class="section container border-top">
+      <div class="section-header fade-up">
+        <span class="section-label">Наши работы</span>
+        <h2 class="section-title">Что мы уже сделали</h2>
+        <p class="section-desc">Не сто скриншотов, а два реальных проекта. Смотрите сами, какие задачи мы решаем.</p>
       </div>
-    </section>
 
-    <!-- ПОРТФОЛИО -->
-    <section class="portfolio reveal" id="portfolioSection">
-      <h2>Наши работы</h2>
-      <div class="portfolio__grid">
-        <article class="project-card bento-card tilt" data-category="final">
-          <figure class="project-card__media">
-            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
-              loading="lazy" width="800" height="450" />
-          </figure>
+      <div class="projects-list">
+        <!-- Кейс 1: Box 125 -->
+        <article class="project-card fade-up">
+          <a href="https://weloneen.github.io/Box125-/" target="_blank" rel="noopener">
+            <div class="project-card__image">
+              <img src="assets/projects/box125.png" alt="Box 125 — сайт автосервиса во Владивостоке" loading="lazy">
+            </div>
+          </a>
           <div class="project-card__body">
-            <p class="project-card__tag">Версия 4 / Финал</p>
-            <h3>Sashnaz Final v4</h3>
-            <p class="project-card__desc">Финальная версия с выверенной структурой и аккуратным дизайном.</p>
-            <ul class="project-card__chips">
-              <li>CSS Variables</li>
-              <li>Grid</li>
-              <li>ARIA</li>
-            </ul>
-            <div class="project-card__footer">
-              <p class="project-card__result">💯 PageSpeed 99/100</p>
-              <a href="https://weloneen.github.io/sashnazdemodemo/index.html" class="project-card__link">Открыть проект
-                →</a>
+            <div class="project-card__meta">
+              <h3 class="project-card__name">Box 125</h3>
+              <span class="project-card__type">Сайт автосервиса</span>
             </div>
+            <p class="project-card__desc">Убрали несерьезный «игрушечный» дизайн и собрали строгий, понятный сайт для взрослой мужской аудитории. Человек заходит, видит серьёзный подход мастерской, тут же находит контакты и записывается на ремонт — без лишних кликов и ненужных страниц.</p>
+            <a href="https://weloneen.github.io/Box125-/" target="_blank" rel="noopener" class="project-card__link">Открыть сайт →</a>
           </div>
         </article>
 
-        <article class="project-card bento-card tilt" data-category="special">
-          <figure class="project-card__media">
-            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
-              loading="lazy" width="800" height="450" />
-          </figure>
+        <!-- Кейс 2: Sashnaz -->
+        <article class="project-card fade-up">
+          <a href="https://weloneen.github.io/sashnazdemodemo/index.html" target="_blank" rel="noopener">
+            <div class="project-card__image">
+              <img src="assets/projects/sashnaz.png" alt="Sashnaz — сайт-портфолио для дизайнера интерьеров" loading="lazy">
+            </div>
+          </a>
           <div class="project-card__body">
-            <p class="project-card__tag">Special Case</p>
-            <h3>Popis Box</h3>
-            <p class="project-card__desc">Отдельный проект с уникальной подачей контента и нестандартной компоновкой.
-            </p>
-            <ul class="project-card__chips">
-              <li>Vanilla JS</li>
-              <li>Custom Layout</li>
-              <li>UX</li>
-            </ul>
-            <div class="project-card__footer">
-              <p class="project-card__result">✨ Креатив</p>
-              <a href="https://weloneen.github.io/popis/" class="project-card__link">Открыть проект →</a>
+            <div class="project-card__meta">
+              <h3 class="project-card__name">Sashnaz</h3>
+              <span class="project-card__type">Портфолио дизайнера</span>
             </div>
+            <p class="project-card__desc">Сделали минималистичный, быстрый сайт, который не перетягивает внимание на себя. Он работает как идеальная «рамка» для работ самого дизайнера: чистая типографика, логичная структура, и заказчик легко считывает эстетику автора — а не борется с тяжёлым интерфейсом.</p>
+            <a href="https://weloneen.github.io/sashnazdemodemo/index.html" target="_blank" rel="noopener" class="project-card__link">Открыть сайт →</a>
           </div>
         </article>
       </div>
-      <div style="text-align: center; margin-top: 3rem;">
-        <a href="projects.html" class="btn btn--ghost">Смотреть все проекты &rarr;</a>
-      </div>
-    </section>
-
-    <!-- ОСНОВАТЕЛЬ (FOUNDER BLOCK) -->
-    <section class="founder reveal" id="founderSection">
-      <div class="founder__inner">
-        <div class="founder__photo-wrapper">
-          <div class="founder-photo"></div>
-        </div>
-        <div class="founder__content">
-          <h2>Лично отвечаю за каждый пиксель</h2>
-          <p>Меня зовут Эдуард Николаев, я основатель цифрового ателье Welone. Я не передаю проекты на поток и работаю
-            бутиково. Вы общаетесь напрямую со мной, и я лично контролирую архитектуру, дизайн и код вашего сайта,
-            гарантируя результат.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ПРОЗРАЧНАЯ СТОИМОСТЬ (PRICING BLOCK) -->
-    <section class="pricing reveal" id="pricingSection">
-      <h2>Прозрачная стоимость</h2>
-      <div class="pricing__grid">
-        <article class="pricing-card card">
-          <h3>Посадочная страница</h3>
-          <p class="pricing-card__price">от 50 000 руб.</p>
-        </article>
-        <article class="pricing-card card">
-          <h3>Корпоративный сайт</h3>
-          <p class="pricing-card__price">от 100 000 руб.</p>
-        </article>
-      </div>
-      <p class="pricing__note">Итоговая смета фиксируется в договоре после аудита и не меняется в процессе работы</p>
-    </section>
-
-    <section class="teaser reveal" id="teaserSection">
-      <h2>Есть идея? Обсудим.</h2>
-      <p>Оставьте заявку — отвечу в течение дня и предложу решение под вашу задачу.</p>
-      <a class="btn btn--primary teaser__action" href="contact.html">Перейти в контакты</a>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div class="site-footer__nav">
-        <nav class="site-footer__nav-links">
-          <a href="index.html">Главная</a>
-          <a href="about.html">Обо мне</a>
-          <a href="projects.html">Проекты</a>
-          <a href="contact.html">Контакты</a>
-        </nav>
-        <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer__cta">
+      <h2 class="footer__cta-title fade-up">Есть задача? Давайте обсудим</h2>
+      <a href="contact.html" class="footer__cta-btn fade-up">Оставить заявку</a>
+    </div>
+    <div class="container footer__bottom">
+      <p>© 2026 Wel Web</p>
+      <div class="footer__links">
+        <a href="mailto:jadeloomwear@gmail.com">Почта</a>
+        <a href="tel:+79996161821">Телефон</a>
+        <a href="https://t.me/weloneEN" target="_blank">Telegram</a>
+        <a href="https://wa.me/79996161821" target="_blank">WhatsApp</a>
       </div>
-      <div class="site-footer__legal">
-        <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН: {{OGRN}}</p>
-        <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
-        <p>Основной ОКВЭД: {{OKVED}}</p>
-        <p>E-mail для связи: {{CONTACT_EMAIL}}</p>
-        <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--muted); opacity: 0.6;">
-          <p>*</p>
-        </div>
-      </div>
+    </div>
+    <div class="container footer__privacy">
+      <a href="privacy.html">Политика обработки персональных данных</a>
     </div>
   </footer>
 
-  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite">
-    <div class="cookie-banner__content">
-      <p>Мы используем файлы cookie для аналитики и обеспечения правильной работы сайта. Продолжая навигацию, вы даете
-        согласие на их обработку в соответствии с <a href="privacy.html">Политикой конфиденциальности</a>.</p>
-      <div class="cookie-banner__actions">
-        <button class="btn btn--primary" id="acceptCookies" type="button">Согласен</button>
-      </div>
-    </div>
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookieBanner">
+    <p class="cookie-banner__text">Мы используем cookie для работы сайта. Подробнее — в <a href="privacy.html">Политике обработки данных</a>.</p>
+    <button class="cookie-banner__btn" id="cookieAccept">Ок</button>
   </div>
 
-  <dialog class="easter-egg" id="easterEgg">
-    <h2>Спасибо!</h2>
-    <p>Приятного просмотра.</p>
-    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
-  </dialog>
+  <script defer src="script.js"></script>
 </body>
-
 </html>

@@ -1,200 +1,110 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-
 <head>
-  <meta charset="UTF-8" />
-  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0d0d12" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | Projects</title>
-  <meta name="description" content="Портфолио проектов и демо-версий сайтов." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260218z14" />
-  <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260219ux2"></script>
-  <meta property="og:title" content="Welone Digital Atelier — Проекты" />
-  <meta property="og:description" content="Портфолио проектов и демо-версий сайтов." />
-  <meta property="og:type" content="website" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Работы — Wel Web</title>
+  <meta name="description" content="Реальные проекты Wel Web: от автосервиса до портфолио дизайнера. Смотрите, какие задачи мы решаем.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Работы — Wel Web">
+  <meta property="og:description" content="Два реальных проекта. Смотрите, какие задачи мы решаем для бизнеса.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body data-page="projects">
-  <div class="preloader" id="preloader" aria-hidden="true">
-    <div class="preloader__logo">WDA</div>
-    <div class="preloader__ring"></div>
-  </div>
-
-  <div class="noise" aria-hidden="true"></div>
-  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-
-  <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-        class="brand-collapse">elone </span><span class="brand-initial">D</span><span class="brand-collapse">igital
-      </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
-      aria-controls="siteNav">Menu</button>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">☾ Тёмная</button>
-    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
-      <a href="index.html">Главная</a>
-      <a href="about.html">Обо мне</a>
-      <a class="is-active" href="projects.html" aria-current="page">Проекты</a>
-      <a href="contact.html">Контакты</a>
-      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
-      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true"
-        tabindex="-1">Заявки</a>
-      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true"
-        tabindex="-1">Статистика</a>
-    </nav>
+  <header class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Wel Web</a>
+      <nav class="nav__links">
+        <a href="about.html" class="nav__link">О нас</a>
+        <a href="projects.html" class="nav__link">Работы</a>
+        <a href="contact.html" class="nav__cta">Обсудить проект</a>
+      </nav>
+      <button class="nav__hamburger" id="navHamburger" type="button" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </header>
 
+  <div class="mobile-overlay" id="mobileOverlay">
+    <a href="about.html">О нас</a>
+    <a href="projects.html">Работы</a>
+    <a href="contact.html">Обсудить проект</a>
+  </div>
+
   <main>
-    <section class="page-hero reveal" id="projectsHero">
-      <p class="label">Портфолио</p>
-      <h1>Проекты, которые <span class="glitch" data-text="работают">работают</span></h1>
-      <p>Реальные кейсы — от ранних прототипов до финальных продуктов. <br>Каждый проект создан по принципу: скорость,
-        эстетика, результат.</p>
+    <section class="page-hero container">
+      <h1 class="fade-up">Наши работы</h1>
+      <p class="fade-up">Не десятки шаблонных скриншотов, а реальные проекты с понятным результатом. Каждый сайт решает конкретную бизнес-задачу клиента.</p>
     </section>
 
-    <section class="projects-controls reveal">
-      <div class="projects-controls__head">
-        <h2>Фильтр по типу</h2>
-        <p class="projects-controls__status" id="projectFilterStatus" aria-live="polite">Показаны все проекты.</p>
-      </div>
-      <div class="filters" id="filters">
-        <button class="btn btn--ghost is-active" type="button" data-filter="all">Все</button>
-        <button class="btn btn--ghost" type="button" data-filter="version">Версии</button>
-        <button class="btn btn--ghost" type="button" data-filter="final">Финал</button>
-        <button class="btn btn--ghost" type="button" data-filter="special">Special</button>
+    <section class="section container border-top">
+      <div class="projects-list">
+
+        <!-- Box 125 -->
+        <article class="project-card fade-up">
+          <a href="https://weloneen.github.io/Box125-/" target="_blank" rel="noopener">
+            <div class="project-card__image">
+              <img src="assets/projects/box125.png" alt="Box 125 — сайт автосервиса" loading="lazy">
+            </div>
+          </a>
+          <div class="project-card__body">
+            <div class="project-card__meta">
+              <h3 class="project-card__name">Box 125</h3>
+              <span class="project-card__type">Сайт автосервиса</span>
+            </div>
+            <p class="project-card__desc">Клиент — автосервис во Владивостоке. Старый сайт выглядел несерьёзно и не внушал доверия. Мы собрали строгий, профессиональный дизайн для аудитории 35–55 лет: контакты и запись на ремонт сразу на первом экране, форма «Быстрая запись» прямо под рукой, никаких лишних переходов. Результат — клиент мастерской понимает, куда звонить, ещё до того, как он прокрутил страницу вниз.</p>
+            <a href="https://weloneen.github.io/Box125-/" target="_blank" rel="noopener" class="project-card__link">Открыть сайт →</a>
+          </div>
+        </article>
+
+        <!-- Sashnaz -->
+        <article class="project-card fade-up">
+          <a href="https://weloneen.github.io/sashnazdemodemo/index.html" target="_blank" rel="noopener">
+            <div class="project-card__image">
+              <img src="assets/projects/sashnaz.png" alt="Sashnaz — портфолио дизайнера интерьеров" loading="lazy">
+            </div>
+          </a>
+          <div class="project-card__body">
+            <div class="project-card__meta">
+              <h3 class="project-card__name">Sashnaz</h3>
+              <span class="project-card__type">Портфолио дизайнера</span>
+            </div>
+            <p class="project-card__desc">Задача — дать дизайнеру интерьеров элегантную, тихую площадку, где говорят его работы, а не интерфейс. Мы выбрали минимализм: тёмный фон, чистая типографика с засечками, много воздуха. Сайт загружается моментально, не перетягивает внимание и позволяет будущему заказчику сразу оценить уровень и стиль дизайнера.</p>
+            <a href="https://weloneen.github.io/sashnazdemodemo/index.html" target="_blank" rel="noopener" class="project-card__link">Открыть сайт →</a>
+          </div>
+        </article>
+
       </div>
     </section>
-
-    <div class="bento-container">
-      <section class="projects bento-grid reveal" id="projectsList">
-
-        <article class="project-card bento-card  tilt" data-category="version">
-          <figure class="project-card__media">
-            <img src="assets/projects/project-1.png"
-              alt="Sashnaz v2 — портфолио «Сашуля Бабиджон» с тёплым дизайном и медведем-пандой" loading="lazy"
-              width="800" height="450" />
-          </figure>
-          <div class="project-card__body">
-            <p class="project-card__tag">Версия 2</p>
-            <h3>Sashnaz v2</h3>
-            <p class="project-card__desc">Эволюция структуры и UI по сравнению с базовой версией. Новый визуальный язык
-              и адаптивная сетка.</p>
-            <ul class="project-card__chips">
-              <li>HTML5</li>
-              <li>CSS Grid</li>
-              <li>Анимации</li>
-            </ul>
-            <div class="project-card__footer">
-              <p class="project-card__result">⚡ PageSpeed 95/100</p>
-              <a href="https://weloneen.github.io/sashnaz/index.html" class="project-card__link">Открыть проект →</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card bento-card tilt" data-category="version">
-          <figure class="project-card__media">
-            <img src="assets/projects/project-2.png" alt="Sashnaz Demo v3 — блог-платформа с элегантным контентом"
-              loading="lazy" width="800" height="450" />
-          </figure>
-          <div class="project-card__body">
-            <p class="project-card__tag">Версия 3</p>
-            <h3>Sashnaz Demo v3</h3>
-            <p class="project-card__desc">Улучшенная подача контента и расширенная визуальная часть.</p>
-            <ul class="project-card__chips">
-              <li>JavaScript</li>
-              <li>UI/UX</li>
-              <li>Адаптив</li>
-            </ul>
-            <div class="project-card__footer">
-              <p class="project-card__result">🚀 Загрузка &lt;1.5с</p>
-              <a href="https://weloneen.github.io/sashnazDemo/index.html" class="project-card__link">Открыть проект
-                →</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card bento-card tilt" data-category="final">
-          <figure class="project-card__media">
-            <img src="assets/projects/project-3.png" alt="Sashnaz Final v4 — корпоративный сайт с чистой типографикой"
-              loading="lazy" width="800" height="450" />
-          </figure>
-          <div class="project-card__body">
-            <p class="project-card__tag">Версия 4 / Финал</p>
-            <h3>Sashnaz Final v4</h3>
-            <p class="project-card__desc">Финальная версия с выверенной структурой и аккуратным дизайном.</p>
-            <ul class="project-card__chips">
-              <li>CSS Variables</li>
-              <li>Grid</li>
-              <li>ARIA</li>
-            </ul>
-            <div class="project-card__footer">
-              <p class="project-card__result">💯 PageSpeed 99/100</p>
-              <a href="https://weloneen.github.io/sashnazdemodemo/index.html" class="project-card__link">Открыть проект
-                →</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="project-card bento-card  tilt" data-category="special">
-          <figure class="project-card__media">
-            <img src="assets/projects/project-4.png" alt="Popis Box — креативный проект с уникальной подачей"
-              loading="lazy" width="800" height="450" />
-          </figure>
-          <div class="project-card__body">
-            <p class="project-card__tag">Special Case</p>
-            <h3>Popis Box</h3>
-            <p class="project-card__desc">Отдельный проект с уникальной подачей контента и нестандартной компоновкой.
-            </p>
-            <ul class="project-card__chips">
-              <li>Vanilla JS</li>
-              <li>Custom Layout</li>
-              <li>UX</li>
-            </ul>
-            <div class="project-card__footer">
-              <p class="project-card__result">🏆 UX Score A+</p>
-              <a href="https://weloneen.github.io/popisbox/index.html" class="project-card__link">Открыть проект →</a>
-            </div>
-          </div>
-        </article>
-
-      </section>
-    </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div class="site-footer__nav">
-        <nav class="site-footer__nav-links">
-          <a href="index.html">Главная</a>
-          <a href="about.html">Обо мне</a>
-          <a href="projects.html">Проекты</a>
-          <a href="contact.html">Контакты</a>
-        </nav>
-        <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
+  <footer class="footer">
+    <div class="container footer__cta">
+      <h2 class="footer__cta-title fade-up">Хотите такой же результат?</h2>
+      <a href="contact.html" class="footer__cta-btn fade-up">Обсудить задачу</a>
+    </div>
+    <div class="container footer__bottom">
+      <p>© 2026 Wel Web</p>
+      <div class="footer__links">
+        <a href="mailto:jadeloomwear@gmail.com">Почта</a>
+        <a href="tel:+79996161821">Телефон</a>
+        <a href="https://t.me/weloneEN" target="_blank">Telegram</a>
       </div>
-      <div class="site-footer__legal">
-        <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН/ОГРНИП: {{OGRN}}</p>
-        <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
-        <p>E-mail: {{CONTACT_EMAIL}}</p>
-      </div>
+    </div>
+    <div class="container footer__privacy">
+      <a href="privacy.html">Политика обработки персональных данных</a>
     </div>
   </footer>
 
-  <button class="filters-jump" id="filtersJump" type="button" aria-label="Перейти к фильтрам">Фильтры</button>
+  <div class="cookie-banner" id="cookieBanner">
+    <p class="cookie-banner__text">Мы используем cookie для работы сайта. Подробнее — в <a href="privacy.html">Политике обработки данных</a>.</p>
+    <button class="cookie-banner__btn" id="cookieAccept">Ок</button>
+  </div>
 
-  <dialog class="easter-egg" id="easterEgg">
-    <h2>Спасибо!</h2>
-    <p>Приятного просмотра.</p>
-    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
-  </dialog>
+  <script defer src="script.js"></script>
 </body>
-
 </html>

@@ -1,143 +1,102 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-
 <head>
-    <meta charset="UTF-8" />
-    <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0d0d12" />
-    <title>Политика обработки персональных данных | Welone Digital Atelier</title>
-    <meta name="description" content="Политика в отношении обработки персональных данных (ФЗ-152)." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
-    <script defer src="config.js"></script>
-    <script defer src="script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Политика обработки персональных данных — Wel Web</title>
+  <meta name="description" content="Политика в отношении обработки персональных данных. Wel Web.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body data-page="privacy">
-    <div class="preloader" id="preloader" aria-hidden="true">
-        <div class="preloader__logo">WDA</div>
-        <div class="preloader__ring"></div>
+  <header class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Wel Web</a>
+      <nav class="nav__links">
+        <a href="about.html" class="nav__link">О нас</a>
+        <a href="projects.html" class="nav__link">Работы</a>
+        <a href="contact.html" class="nav__cta">Обсудить проект</a>
+      </nav>
+      <button class="nav__hamburger" id="navHamburger" type="button" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+  </header>
 
-    <div class="noise" aria-hidden="true"></div>
-    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="mobile-overlay" id="mobileOverlay">
+    <a href="about.html">О нас</a>
+    <a href="projects.html">Работы</a>
+    <a href="contact.html">Обсудить проект</a>
+  </div>
 
-    <header class="site-header">
-        <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-                class="brand-collapse">elone </span><span class="brand-initial">D</span><span
-                class="brand-collapse">igital
-            </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
-        <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
-            aria-controls="siteNav">Menu</button>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">☾ Тёмная</button>
-        <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
-            <a href="index.html">Главная</a>
-            <a href="about.html">Обо мне</a>
-            <a href="projects.html">Проекты</a>
-            <a href="contact.html">Контакты</a>
-        </nav>
-    </header>
+  <main>
+    <section class="page-hero container">
+      <span class="section-label">Юридическая информация</span>
+      <h1>Политика обработки персональных данных</h1>
+      <p>В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ.</p>
+    </section>
 
-    <main>
-        <section class="page-hero reveal">
-            <p class="label">Юридическая информация</p>
-            <h1>Политика обработки персональных данных</h1>
-            <p>В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных».</p>
-        </section>
+    <section class="legal-doc">
+      <h2>1. Общие положения</h2>
+      <p>Настоящая Политика определяет порядок сбора, обработки, хранения и защиты персональных данных пользователей сайта.</p>
+      <p>Оператор персональных данных — физическое лицо, применяющее специальный налоговый режим «Налог на профессиональный доход» (самозанятый): <strong>[Ваше ФИО]</strong>, ИНН: <strong>[Ваш ИНН]</strong>, e-mail: <a href="mailto:jadeloomwear@gmail.com">jadeloomwear@gmail.com</a>.</p>
 
-        <section class="legal-doc reveal">
-            <div class="legal-doc__content">
-                <h2>1. Общие положения</h2>
-                <p>Настоящая Политика обработки персональных данных (далее — Политика) определяет порядок сбора,
-                    обработки, хранения и защиты персональных данных пользователей сайта.</p>
-                <p>Оператором персональных данных является физическое лицо, применяющее специальный налоговый режим
-                    «Налог на профессиональный доход» (самозанятый): <strong>{{NAME}}</strong>,
-                    ИНН:&nbsp;<strong>{{INN}}</strong>, электронная почта:
-                    <strong><a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></strong>
-                    (далее — Оператор).
-                </p>
-                <p>Политика разработана в соответствии с Федеральным законом от 27.07.2006 №&nbsp;152&#8209;ФЗ
-                    «О персональных данных» и действует в отношении всех персональных данных, которые Оператор может
-                    получить от пользователей сайта.</p>
+      <h2>2. Цели сбора данных</h2>
+      <p>Мы обрабатываем данные исключительно для:</p>
+      <ul>
+        <li>приёма и обработки заявок на разработку;</li>
+        <li>связи с вами для уточнения деталей;</li>
+        <li>исполнения обязательств перед вами.</li>
+      </ul>
 
-                <h2>2. Цели сбора персональных данных</h2>
-                <p>Оператор обрабатывает персональные данные исключительно в следующих целях:</p>
-                <ul>
-                    <li>приём и обработка заявок на разработку цифровых продуктов;</li>
-                    <li>связь с пользователем для уточнения деталей заявки, согласования сроков и стоимости;</li>
-                    <li>исполнение обязательств перед пользователем.</li>
-                </ul>
+      <h2>3. Какие данные мы собираем</h2>
+      <ul>
+        <li>имя;</li>
+        <li>контакт (телефон, e-mail или Telegram);</li>
+        <li>текст заявки.</li>
+      </ul>
 
-                <h2>3. Состав обрабатываемых данных</h2>
-                <p>Оператор собирает минимально необходимый объём персональных данных:</p>
-                <ul>
-                    <li>имя пользователя;</li>
-                    <li>контактные данные (адрес электронной почты, номер телефона и/или имя пользователя в Telegram);
-                    </li>
-                    <li>текст заявки (описание проекта).</li>
-                </ul>
+      <h2>4. Передача третьим лицам</h2>
+      <p>Мы <strong>не передаём</strong> ваши данные третьим лицам, кроме случаев, прямо предусмотренных законом РФ.</p>
 
-                <h2>4. Передача данных третьим лицам</h2>
-                <p>Оператор <strong>не передаёт</strong> персональные данные пользователей третьим лицам, за исключением
-                    случаев, прямо предусмотренных законодательством Российской Федерации (по запросу уполномоченных
-                    государственных органов).</p>
+      <h2>5. Хранение и защита</h2>
+      <p>Данные хранятся на территории Российской Федерации. Мы принимаем технические и организационные меры для их защиты. Данные хранятся не дольше, чем это необходимо, и уничтожаются в срок до 30 рабочих дней по вашему заявлению.</p>
 
-                <h2>5. Хранение и защита данных</h2>
-                <p>Персональные данные хранятся на территории Российской Федерации в соответствии с ч.&nbsp;5
-                    ст.&nbsp;18 Федерального закона №&nbsp;152&#8209;ФЗ. Оператор принимает необходимые организационные
-                    и технические меры для защиты данных от неправомерного доступа, уничтожения, изменения,
-                    блокирования, копирования и распространения.</p>
-                <p>Данные хранятся не дольше, чем этого требуют цели обработки. По достижении целей или по заявлению
-                    пользователя данные уничтожаются в срок не более 30 (тридцати) рабочих дней.</p>
+      <h2>6. Ваши права</h2>
+      <p>Вы можете:</p>
+      <ul>
+        <li>запросить информацию об обработке ваших данных;</li>
+        <li>потребовать их уточнения, блокирования или удаления;</li>
+        <li>отозвать согласие в любой момент.</li>
+      </ul>
+      <p>Для этого напишите на <a href="mailto:jadeloomwear@gmail.com">jadeloomwear@gmail.com</a>. Мы рассмотрим обращение в течение 10 рабочих дней.</p>
 
-                <h2>6. Права пользователя</h2>
-                <p>Пользователь вправе:</p>
-                <ul>
-                    <li>получить информацию об обработке своих персональных данных;</li>
-                    <li>потребовать уточнения, блокирования или уничтожения данных, если они являются неполными,
-                        устаревшими или были получены незаконно;</li>
-                    <li>отозвать согласие на обработку персональных данных в любой момент.</li>
-                </ul>
-                <p>Для реализации указанных прав достаточно направить заявление в свободной форме на электронную
-                    почту Оператора: <strong><a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></strong>.
-                    Оператор обязуется рассмотреть обращение в срок не более 10 (десяти) рабочих дней.</p>
+      <h2>7. Заключительные положения</h2>
+      <p>Мы можем обновлять эту Политику. Актуальная версия всегда находится на этой странице.</p>
+    </section>
+  </main>
 
-                <h2>7. Заключительные положения</h2>
-                <p>Оператор оставляет за собой право вносить изменения в настоящую Политику. Актуальная редакция
-                    размещается на данной странице. Продолжая пользоваться сайтом после внесения изменений,
-                    пользователь подтверждает согласие с обновлённой Политикой.</p>
-            </div>
-        </section>
-    </main>
+  <footer class="footer">
+    <div class="container footer__bottom">
+      <p>© 2026 Wel Web</p>
+      <div class="footer__links">
+        <a href="index.html">На главную</a>
+        <a href="mailto:jadeloomwear@gmail.com">Почта</a>
+      </div>
+    </div>
+    <div class="container footer__privacy">
+      <p style="color: var(--muted); font-size: 0.75rem;">[Ваше ФИО] ИНН: [Ваш ИНН] · jadeloomwear@gmail.com</p>
+    </div>
+  </footer>
 
-    <footer class="site-footer">
-        <div class="site-footer__inner">
-            <div class="site-footer__nav">
-                <nav class="site-footer__nav-links">
-                    <a href="index.html">Главная</a>
-                    <a href="about.html">Обо мне</a>
-                    <a href="projects.html">Проекты</a>
-                    <a href="contact.html">Контакты</a>
-                </nav>
-                <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
-            </div>
-            <div class="site-footer__legal">
-                <p>{{NAME}} ИНН: {{INN}}</p>
-                <p>E-mail: {{CONTACT_EMAIL}}</p>
-            </div>
-        </div>
-    </footer>
+  <div class="cookie-banner" id="cookieBanner">
+    <p class="cookie-banner__text">Мы используем cookie для работы сайта. Подробнее — в <a href="privacy.html">Политике обработки данных</a>.</p>
+    <button class="cookie-banner__btn" id="cookieAccept">Ок</button>
+  </div>
 
-    <dialog class="easter-egg" id="easterEgg">
-        <h2>Спасибо!</h2>
-        <p>Приятного просмотра.</p>
-        <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
-    </dialog>
+  <script defer src="script.js"></script>
 </body>
-
 </html>

@@ -1,185 +1,108 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-
 <head>
-  <meta charset="UTF-8" />
-  <script>(function () { var t = localStorage.getItem('theme_mode') || 'light'; document.documentElement.setAttribute('data-theme', t); if (t === 'dark') document.documentElement.classList.add('dark-mode'); })()</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0d0d12" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Welone Digital Atelier | About</title>
-  <meta name="description" content="О подходе и технологиях веб-разработчика Welone Digital Atelier." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260218z14" />
-  <script defer src="config.js?v=20260218z14"></script>
-  <script defer src="script.js?v=20260219ux2"></script>
-  <meta property="og:title" content="Welone Digital Atelier — Обо мне" />
-  <meta property="og:description" content="Подход, технологии и навыки веб-разработчика." />
-  <meta property="og:type" content="profile" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>О нас — Wel Web</title>
+  <meta name="description" content="Как мы работаем: честный подход, прозрачные условия и уважение к вашему бизнесу. Без заумных терминов.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="О нас — Wel Web">
+  <meta property="og:description" content="Как мы работаем: честный подход, прозрачные условия и уважение к вашему бизнесу.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body data-page="about">
-  <div class="preloader" id="preloader" aria-hidden="true">
-    <div class="preloader__logo">WDA</div>
-    <div class="preloader__ring"></div>
-  </div>
-
-  <div class="noise" aria-hidden="true"></div>
-  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
-
-  <header class="site-header">
-    <a href="index.html" class="brand" id="brandTrigger"><span class="brand-initial">W</span><span
-        class="brand-collapse">elone </span><span class="brand-initial">D</span><span class="brand-collapse">igital
-      </span><span class="brand-initial">A</span><span class="brand-collapse">telier</span></a>
-    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false"
-      aria-controls="siteNav">Menu</button>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">☾ Тёмная</button>
-    <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
-      <a href="index.html">Главная</a>
-      <a class="is-active" href="about.html" aria-current="page">Обо мне</a>
-      <a href="projects.html">Проекты</a>
-      <a href="contact.html">Контакты</a>
-      <button class="admin-hotspot" id="adminHotspot" type="button" aria-hidden="true" tabindex="-1"></button>
-      <a href="admin-leads.html" class="admin-link is-hidden-link" id="leadsNavLink" aria-hidden="true"
-        tabindex="-1">Заявки</a>
-      <a href="admin.html" class="admin-link is-hidden-link" id="adminNavLink" aria-hidden="true"
-        tabindex="-1">Статистика</a>
-    </nav>
+  <header class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Wel Web</a>
+      <nav class="nav__links">
+        <a href="about.html" class="nav__link">О нас</a>
+        <a href="projects.html" class="nav__link">Работы</a>
+        <a href="contact.html" class="nav__cta">Обсудить проект</a>
+      </nav>
+      <button class="nav__hamburger" id="navHamburger" type="button" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </header>
 
+  <div class="mobile-overlay" id="mobileOverlay">
+    <a href="about.html">О нас</a>
+    <a href="projects.html">Работы</a>
+    <a href="contact.html">Обсудить проект</a>
+  </div>
 
   <main>
-    <section class="page-hero reveal">
-      <p class="label">Обо мне</p>
-      <h1>Инженерия & Эстетика</h1>
-      <p>Я создаю цифровые продукты, где математическая точность кода встречается с премиальным визуальным опытом. Моя
-        цель — вызывать у ваших клиентов чувство доверия с первых секунд.</p>
+    <section class="page-hero container">
+      <h1 class="fade-up">Как мы работаем</h1>
+      <p class="fade-up">Без красивых слов ради красивых слов. Просто расскажем, как устроен наш процесс и почему с нами спокойно.</p>
     </section>
 
-    <!-- BENTO GRID -->
-    <section class="about-bento reveal">
-      <article class="bento-card tilt">
-        <div class="bento-card__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-            <path d="M2 12h20" />
-          </svg>
+    <section class="section container border-top">
+      <div class="about-grid">
+        <div class="fade-up">
+          <h2 class="about-title">Мы — не огромная студия с&nbsp;менеджерами и&nbsp;презентациями на&nbsp;50 слайдов</h2>
         </div>
-        <h2>Глобальный Подход</h2>
-        <p>Каждый проект начинается с глубокого анализа бизнеса клиента. Я не просто пишу код, я проектирую сценарий, по
-          которому пользователь неизбежно придет к целевому действию (заявке или покупке).</p>
-      </article>
-
-      <article class="bento-card tilt">
-        <div class="bento-card__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <polygon
-              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-        </div>
-        <h2>Инструменты</h2>
-        <ul class="chip-list chip-list--about">
-          <li>HTML5 / CSS3</li>
-          <li>JavaScript (ES6+)</li>
-          <li>GSAP / Анимации</li>
-          <li>React / Vue.js</li>
-          <li>Web API</li>
-          <li>Core Web Vitals</li>
-        </ul>
-      </article>
-
-      <article class="bento-card bento-card--wide tilt">
-        <div class="bento-card__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-        </div>
-        <h2>Сильные стороны</h2>
-        <p>Абсолютная прозрачность в коммуникации, маниакальное внимание к микро-взаимодействиям (кнопкам, ховерам,
-          фокусу) и чистая, легко-масштабируемая архитектура CSS/JS. Никаких шаблонных решений — только кастомная
-          инженерия.</p>
-      </article>
-    </section>
-
-    <!-- SKILLS SECTION -->
-    <section class="skills reveal" id="skillsSection">
-      <div class="card card--glow">
-        <h2>Уровень владения (Stack)</h2>
-        <p class="skills-desc">Технологический арсенал, отточенный на десятках реальных проектов.</p>
-        <div class="skills__grid">
-          <div class="skill-bar">
-            <div class="skill-bar__header">
-              <span class="skill-bar__name">Проектирование интерфейсов / UI/UX Engineering</span>
-              <span class="skill-bar__value" data-target="98">0%</span>
-            </div>
-            <div class="skill-bar__track">
-              <div class="skill-bar__fill" data-width="98"></div>
-            </div>
-          </div>
-          <div class="skill-bar">
-            <div class="skill-bar__header">
-              <span class="skill-bar__name">JavaScript / Фронтенд-логика</span>
-              <span class="skill-bar__value" data-target="92">0%</span>
-            </div>
-            <div class="skill-bar__track">
-              <div class="skill-bar__fill" data-width="92"></div>
-            </div>
-          </div>
-          <div class="skill-bar">
-            <div class="skill-bar__header">
-              <span class="skill-bar__name">Микроанимации / Micro-Animations (CSS/JS)</span>
-              <span class="skill-bar__value" data-target="95">0%</span>
-            </div>
-            <div class="skill-bar__track">
-              <div class="skill-bar__fill" data-width="95"></div>
-            </div>
-          </div>
-          <div class="skill-bar">
-            <div class="skill-bar__header">
-              <span class="skill-bar__name">Адаптивная вёрстка / Responsive & Mobile First</span>
-              <span class="skill-bar__value" data-target="100">0%</span>
-            </div>
-            <div class="skill-bar__track">
-              <div class="skill-bar__fill" data-width="100"></div>
-            </div>
-          </div>
+        <div class="about-content fade-up">
+          <p>Мы — небольшая команда, и это наше преимущество. Вы общаетесь напрямую с теми, кто делает ваш сайт. Без испорченного телефона, без бюрократии.</p>
+          <p>Мы объясняем каждое техническое решение простым языком. Если мы предлагаем что-то — вы понимаете, зачем и что это даст вашему бизнесу.</p>
+          <p>Нам важно, чтобы вы чувствовали себя спокойно на каждом этапе: от первого разговора до момента, когда ваш сайт увидят клиенты.</p>
         </div>
       </div>
     </section>
 
+    <section class="section container border-top">
+      <div class="section-header fade-up">
+        <span class="section-label">Процесс</span>
+        <h2 class="section-title">Три шага — от идеи до рабочего сайта</h2>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card fade-up">
+          <span class="step-card__num">01</span>
+          <h3 class="step-card__title">Разговор</h3>
+          <p class="step-card__text">Вы рассказываете задачу. Мы задаём конкретные вопросы, оцениваем объём работ и называем честную стоимость. Без торга и «приблизительных оценок».</p>
+        </div>
+        <div class="step-card fade-up">
+          <span class="step-card__num">02</span>
+          <h3 class="step-card__title">Работа</h3>
+          <p class="step-card__text">Делаем дизайн и разработку. Показываем промежуточные результаты, чтобы вы всегда понимали, на каком этапе проект, и могли вовремя скорректировать.</p>
+        </div>
+        <div class="step-card fade-up">
+          <span class="step-card__num">03</span>
+          <h3 class="step-card__title">Запуск и&nbsp;поддержка</h3>
+          <p class="step-card__text">Сдаём готовый сайт, объясняем, как им пользоваться, и остаёмся на связи. Если через месяц понадобится правка — мы рядом.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
-
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div class="site-footer__nav">
-        <nav class="site-footer__nav-links">
-          <a href="index.html">Главная</a>
-          <a href="about.html">Обо мне</a>
-          <a href="projects.html">Проекты</a>
-          <a href="contact.html">Контакты</a>
-        </nav>
-        <a href="privacy.html" class="site-footer__privacy">Политика обработки персональных данных</a>
+  <footer class="footer">
+    <div class="container footer__cta">
+      <h2 class="footer__cta-title fade-up">Готовы поговорить о проекте?</h2>
+      <a href="contact.html" class="footer__cta-btn fade-up">Связаться с нами</a>
+    </div>
+    <div class="container footer__bottom">
+      <p>© 2026 Wel Web</p>
+      <div class="footer__links">
+        <a href="mailto:jadeloomwear@gmail.com">Почта</a>
+        <a href="tel:+79996161821">Телефон</a>
+        <a href="https://t.me/weloneEN" target="_blank">Telegram</a>
       </div>
-      <div class="site-footer__legal">
-        <p>{{COMPANY_NAME}} ИНН: {{INN}} | ОГРН/ОГРНИП: {{OGRN}}</p>
-        <p>Юридический адрес: {{LEGAL_ADDRESS}}</p>
-        <p>E-mail: {{CONTACT_EMAIL}}</p>
-      </div>
+    </div>
+    <div class="container footer__privacy">
+      <a href="privacy.html">Политика обработки персональных данных</a>
     </div>
   </footer>
 
-  <dialog class="easter-egg" id="easterEgg">
-    <h2>Спасибо!</h2>
-    <p>Приятного просмотра.</p>
-    <button class="btn btn--primary" id="closeEgg" type="button">Закрыть</button>
-  </dialog>
-</body>
+  <div class="cookie-banner" id="cookieBanner">
+    <p class="cookie-banner__text">Мы используем cookie для работы сайта. Подробнее — в <a href="privacy.html">Политике обработки данных</a>.</p>
+    <button class="cookie-banner__btn" id="cookieAccept">Ок</button>
+  </div>
 
+  <script defer src="script.js"></script>
+</body>
 </html>
